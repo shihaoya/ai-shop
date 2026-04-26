@@ -598,9 +598,9 @@
         const selectedMessage = ref(null);
 
         const tabs = computed(() => [
-          { key: 'all', label: '全部', count: messages.length },
-          { key: 'system', label: '系统通知', count: messages.filter(m => m.type === '系统通知').length },
-          { key: 'audit', label: '审核通知', count: messages.filter(m => m.type === '审核通知').length }
+          { key: 'all', label: '全部', count: messages.value.length },
+          { key: 'system', label: '系统通知', count: messages.value.filter(m => m.type === '系统通知').length },
+          { key: 'audit', label: '审核通知', count: messages.value.filter(m => m.type === '审核通知').length }
         ]);
 
         const messages = ref([
