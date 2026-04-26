@@ -89,55 +89,25 @@
 
     /* Glass Effect */
     .glass {
-      background: var(--color-glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--color-glass-border);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
     .glass-strong {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
     .glass-content {
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--color-glass-border);
-    }
-
-    /* Background Mesh */
-    .bg-mesh {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .bg-mesh::before {
-      content: '';
-      position: absolute;
-      top: -20%;
-      left: -10%;
-      width: 50vw;
-      height: 50vw;
-      border-radius: 50%;
-      background: var(--theme-primary);
-      opacity: 0.1;
-      blur: 100px;
-      mix-blend-mode: multiply;
-    }
-    .bg-mesh::after {
-      content: '';
-      position: absolute;
-      top: 30%;
-      right: -20%;
-      width: 60vw;
-      height: 60vw;
-      border-radius: 50%;
-      background: var(--theme-secondary);
-      opacity: 0.1;
-      blur: 120px;
-      mix-blend-mode: multiply;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     }
 
     /* Typography */
@@ -241,31 +211,36 @@
 
     /* Card */
     .card {
-      background: var(--color-glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--color-glass-border);
-      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 28px;
       padding: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
     .card-stat {
       position: relative;
       overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-stat:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.2);
     }
     .card-stat::before {
       content: '';
       position: absolute;
       top: 0;
       right: 0;
-      width: 128px;
-      height: 128px;
-      background: var(--theme-primary);
-      opacity: 0.05;
+      width: 140px;
+      height: 140px;
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+      opacity: 0.08;
       border-radius: 0 0 0 100%;
-      transition: transform 0.3s ease;
+      transition: transform 0.4s ease;
     }
-    .card-stat:hover::before { transform: scale(1.1); }
+    .card-stat:hover::before { transform: scale(1.15); }
 
     /* Badge */
     .badge {
@@ -446,17 +421,51 @@
       overflow: hidden;
       transition: max-height 0.3s ease;
     }
+
+    /* Navigation Sidebar */
+    .nav-sidebar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .nav-sidebar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .nav-sidebar::-webkit-scrollbar-thumb {
+      background: var(--color-outline);
+      border-radius: 2px;
+      opacity: 0.5;
+    }
   </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-slate-100 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-slate-900 min-h-screen">
   <div id="app">
     <!-- Background Mesh -->
-    <div class="bg-mesh"></div>
+    <div class="bg-mesh">
+      <div class="bg-mesh-secondary"></div>
+      <div class="bg-mesh-tertiary"></div>
+    </div>
+
+    <!-- Fixed Navigation Sidebar -->
+    <nav class="fixed left-4 top-4 z-50 glass-strong rounded-3xl p-4" style="width: 240px; max-height: calc(100vh - 32px); overflow-y: auto;">
+      <div class="mb-4 pb-3 border-b border-white/30">
+        <h2 class="font-headline-sm mb-1" style="color: var(--color-on-surface);">组件目录</h2>
+        <p class="font-label-md" style="color: var(--color-on-surface-variant);">快速导航</p>
+      </div>
+      <div class="space-y-1">
+        <a v-for="item in navItems" :key="item.id"
+           :href="'#' + item.id"
+           class="nav-item text-sm py-2"
+           :class="{ 'active': item.active }"
+           @click.prevent="scrollToSection(item.id)">
+          <span class="material-symbols-outlined text-lg">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </a>
+      </div>
+    </nav>
 
     <!-- Main Content -->
-    <div class="relative z-10 min-h-screen p-8" style="padding-bottom: 120px;">
+    <div class="relative z-10 min-h-screen p-8" style="padding-bottom: 120px; padding-left: 280px;">
       <!-- Page Header -->
-      <header class="mb-12">
+      <header class="mb-12" id="top">
         <h1 class="font-display-lg mb-4" style="color: var(--color-on-surface);">UI Component Gallery</h1>
         <p class="font-body-lg" style="color: var(--color-on-surface-variant);">
           多店铺积分商城系统组件展示 · 玻璃拟态设计风格
@@ -467,7 +476,7 @@
       <div class="space-y-6">
 
         <!-- 1. Button Section -->
-        <section class="card">
+        <section class="card" id="buttons">
           <div class="collapse-header" @click="sections.buttons = !sections.buttons">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">smart_button</span>
@@ -564,7 +573,7 @@
         </section>
 
         <!-- 2. Input Section -->
-        <section class="card">
+        <section class="card" id="inputs">
           <div class="collapse-header" @click="sections.inputs = !sections.inputs">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">text_fields</span>
@@ -624,7 +633,7 @@
         </section>
 
         <!-- 3. Card Section -->
-        <section class="card">
+        <section class="card" id="cards">
           <div class="collapse-header" @click="sections.cards = !sections.cards">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">dashboard</span>
@@ -730,7 +739,7 @@
         </section>
 
         <!-- 4. Badge Section -->
-        <section class="card">
+        <section class="card" id="badges">
           <div class="collapse-header" @click="sections.badges = !sections.badges">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">label</span>
@@ -785,7 +794,7 @@
         </section>
 
         <!-- 5. Navigation Section -->
-        <section class="card">
+        <section class="card" id="nav">
           <div class="collapse-header" @click="sections.nav = !sections.nav">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">navigation</span>
@@ -848,7 +857,7 @@
         </section>
 
         <!-- 6. Table Section -->
-        <section class="card">
+        <section class="card" id="tables">
           <div class="collapse-header" @click="sections.tables = !sections.tables">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">table</span>
@@ -914,7 +923,7 @@
         </section>
 
         <!-- 7. Dialog Section -->
-        <section class="card">
+        <section class="card" id="dialogs">
           <div class="collapse-header" @click="sections.dialogs = !sections.dialogs">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">picture_in_picture</span>
@@ -993,7 +1002,7 @@
         </section>
 
         <!-- 8. Theme Section -->
-        <section class="card">
+        <section class="card" id="themes">
           <div class="collapse-header" @click="sections.themes = !sections.themes">
             <h2 class="font-headline-md" style="color: var(--color-on-surface);">
               <span class="material-symbols-outlined mr-3">palette</span>
@@ -1044,6 +1053,1242 @@
                     固定在右下角，点击切换明暗模式
                   </span>
                 </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. Store Card Section -->
+        <section class="card" id="store-card">
+          <div class="collapse-header" @click="sections.storeCard = !sections.storeCard">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">storefront</span>
+              店铺卡片组件 Store Card
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.storeCard }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.storeCard">
+            <div class="p-6 space-y-8">
+
+              <!-- Store Card Grid -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">店铺卡片 Store Card</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div class="card card-stat cursor-pointer hover:shadow-lg transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#004ac6] to-[#2563eb] flex items-center justify-center text-white">
+                          <span class="material-symbols-outlined fill-icon">storefront</span>
+                        </div>
+                        <div>
+                          <h4 class="font-semibold" style="color: var(--color-on-surface);">优选旗舰店</h4>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">ID: S001</p>
+                        </div>
+                      </div>
+                      <span class="badge badge-success">营业中</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-on-surface);">128</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">商品数</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-on-surface);">5.6k</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">订单数</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-success);">+12%</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">增长</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card card-stat cursor-pointer hover:shadow-lg transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-white">
+                          <span class="material-symbols-outlined fill-icon">storefront</span>
+                        </div>
+                        <div>
+                          <h4 class="font-semibold" style="color: var(--color-on-surface);">数码专营店</h4>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">ID: S002</p>
+                        </div>
+                      </div>
+                      <span class="badge badge-warning">审核中</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-on-surface);">256</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">商品数</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-on-surface);">3.2k</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">订单数</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-warning);">+5%</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">增长</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card card-stat cursor-pointer hover:shadow-lg transition-all">
+                    <div class="flex justify-between items-start mb-4">
+                      <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#EC4899] to-[#DB2777] flex items-center justify-center text-white">
+                          <span class="material-symbols-outlined fill-icon">storefront</span>
+                        </div>
+                        <div>
+                          <h4 class="font-semibold" style="color: var(--color-on-surface);">时尚服饰店</h4>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">ID: S003</p>
+                        </div>
+                      </div>
+                      <span class="badge badge-danger">已停业</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 pt-4 border-t border-white/20">
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-on-surface);">64</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">商品数</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-on-surface);">890</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">订单数</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-lg" style="color: var(--color-danger);">-8%</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">增长</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. Store Detail Section -->
+        <section class="card" id="store-detail">
+          <div class="collapse-header" @click="sections.storeDetail = !sections.storeDetail">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">store</span>
+              店铺详情组件 Store Detail
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.storeDetail }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.storeDetail">
+            <div class="p-6 space-y-8">
+
+              <!-- Store Detail Card -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">店铺详情 Store Detail</h3>
+                <div class="glass-strong rounded-3xl p-8">
+                  <div class="flex items-start gap-6 mb-6">
+                    <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#2563eb] flex items-center justify-center text-white flex-shrink-0">
+                      <span class="material-symbols-outlined fill-icon text-4xl">storefront</span>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <h3 class="font-headline-md" style="color: var(--color-on-surface);">优选旗舰店</h3>
+                        <span class="badge badge-success">营业中</span>
+                      </div>
+                      <p class="font-body-md mb-3" style="color: var(--color-on-surface-variant);">ID: S001 · 创建于 2024-01-15</p>
+                      <p class="font-body-md" style="color: var(--color-on-surface-variant);">专注高端品质生活，提供优质商品和服务。店铺评分 4.8，好评率 98%</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <button class="btn btn-secondary btn-md">编辑</button>
+                      <button class="btn btn-ghost btn-md">
+                        <span class="material-symbols-outlined">more_vert</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Stats Grid -->
+                  <div class="grid grid-cols-4 gap-6 pt-6 border-t border-white/30">
+                    <div class="text-center">
+                      <p class="font-points-display text-2xl mb-1" style="color: var(--color-on-surface);">128</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">商品数量</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="font-points-display text-2xl mb-1" style="color: var(--color-on-surface);">5,678</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">总订单数</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="font-points-display text-2xl mb-1" style="color: var(--color-success);">¥128,560</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">本月销售额</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="font-points-display text-2xl mb-1" style="color: var(--color-on-surface);">4.8</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">店铺评分</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. User Card Section -->
+        <section class="card" id="user-card">
+          <div class="collapse-header" @click="sections.userCard = !sections.userCard">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">group</span>
+              用户卡片组件 User Card
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.userCard }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.userCard">
+            <div class="p-6 space-y-8">
+
+              <!-- User Card Grid - Enhanced Design -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">用户卡片 User Card</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                  <!-- VIP User - Full Featured -->
+                  <div class="card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden">
+                    <!-- VIP Badge -->
+                    <div class="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-15" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                    <div class="absolute top-4 right-4">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        <span class="material-symbols-outlined text-[12px]">stars</span>
+                        VIP 3
+                      </span>
+                    </div>
+
+                    <!-- User Info -->
+                    <div class="flex items-center gap-4 mb-5">
+                      <div class="relative">
+                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white shadow-lg">
+                          <span class="material-symbols-outlined fill-icon text-3xl">person</span>
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                          <span class="material-symbols-outlined text-sm fill-icon" style="color: #667eea;">verified</span>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-lg mb-1" style="color: var(--color-on-surface);">张明远</h4>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">
+                          <span class="material-symbols-outlined text-[12px] align-middle mr-1">calendar_today</span>
+                          注册于 2024-01-01
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-3 mb-5 p-4 rounded-2xl" style="background: rgba(0,0,0,0.02);">
+                      <div class="text-center">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">12,580</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">积分余额</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">¥8,920</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">累计消费</p>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                      <button class="btn btn-primary btn-sm flex-1" onclick="showPointsHistory('zhangmingyuan')">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        积分流水
+                      </button>
+                      <button class="btn btn-secondary btn-sm">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        详情
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Regular User -->
+                  <div class="card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10" style="background: linear-gradient(135deg, #10B981, #059669);"></div>
+
+                    <!-- User Info -->
+                    <div class="flex items-center gap-4 mb-5">
+                      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-white shadow-lg">
+                        <span class="material-symbols-outlined fill-icon text-3xl">person</span>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-lg mb-1" style="color: var(--color-on-surface);">李小红</h4>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">
+                          <span class="material-symbols-outlined text-[12px] align-middle mr-1">calendar_today</span>
+                          注册于 2024-02-15
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-3 mb-5 p-4 rounded-2xl" style="background: rgba(0,0,0,0.02);">
+                      <div class="text-center">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">3,280</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">积分余额</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">¥2,150</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">累计消费</p>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                      <button class="btn btn-primary btn-sm flex-1" onclick="showPointsHistory('lixiaohong')">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        积分流水
+                      </button>
+                      <button class="btn btn-secondary btn-sm">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        详情
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- New User -->
+                  <div class="card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer relative overflow-hidden border-2 border-dashed" style="border-color: rgba(245,158,11,0.3);">
+                    <div class="absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-10" style="background: linear-gradient(135deg, #F59E0B, #D97706);"></div>
+                    <div class="absolute top-4 right-4">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                        <span class="material-symbols-outlined text-[12px]">new_releases</span>
+                        新用户
+                      </span>
+                    </div>
+
+                    <!-- User Info -->
+                    <div class="flex items-center gap-4 mb-5">
+                      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center text-white shadow-lg">
+                        <span class="material-symbols-outlined fill-icon text-3xl">person</span>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold text-lg mb-1" style="color: var(--color-on-surface);">王小丫</h4>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">
+                          <span class="material-symbols-outlined text-[12px] align-middle mr-1">calendar_today</span>
+                          注册于 2024-03-01
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-3 mb-5 p-4 rounded-2xl" style="background: rgba(0,0,0,0.02);">
+                      <div class="text-center">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">500</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">积分余额</p>
+                      </div>
+                      <div class="text-center">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">¥128</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">累计消费</p>
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-2">
+                      <button class="btn btn-primary btn-sm flex-1" onclick="showPointsHistory('wangxiaoya')">
+                        <span class="material-symbols-outlined text-sm">history</span>
+                        积分流水
+                      </button>
+                      <button class="btn btn-secondary btn-sm">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        详情
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Points History Modal Example -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">积分流水弹框 Points History Modal</h3>
+                <div class="card p-6">
+                  <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined fill-icon">person</span>
+                      </div>
+                      <div>
+                        <h4 class="font-semibold" style="color: var(--color-on-surface);">张明远</h4>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">VIP 3 · 12,580 积分</p>
+                      </div>
+                    </div>
+                    <button class="btn btn-ghost btn-sm" onclick="closePointsHistory()">
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </div>
+
+                  <!-- Points Summary -->
+                  <div class="grid grid-cols-3 gap-4 p-4 rounded-2xl mb-6" style="background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.1));">
+                    <div class="text-center">
+                      <p class="font-points-display text-lg" style="color: #10B981;">+2,580</p>
+                      <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">累计获得</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="font-points-display text-lg" style="color: #EF4444;">-1,000</p>
+                      <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">累计消耗</p>
+                    </div>
+                    <div class="text-center">
+                      <p class="font-points-display text-lg" style="color: var(--color-on-surface);">12,580</p>
+                      <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">当前余额</p>
+                    </div>
+                  </div>
+
+                  <!-- History List -->
+                  <div class="space-y-3 max-h-80 overflow-y-auto">
+                    <!-- Income Item -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                      <div class="w-10 h-10 rounded-full bg-[#10B981]/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[#10B981]">add_circle</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" style="color: var(--color-on-surface);">订单完成奖励</p>
+                        <p class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">订单 #ORD20240115001</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-semibold" style="color: #10B981;">+500</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">2024-01-15</p>
+                      </div>
+                    </div>
+
+                    <!-- Expense Item -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                      <div class="w-10 h-10 rounded-full bg-[#EF4444]/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[#EF4444]">remove_circle</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" style="color: var(--color-on-surface);">积分兑换商品</p>
+                        <p class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">兑换星巴克礼品卡</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-semibold" style="color: #EF4444;">-200</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">2024-01-14</p>
+                      </div>
+                    </div>
+
+                    <!-- Income Item -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                      <div class="w-10 h-10 rounded-full bg-[#10B981]/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[#10B981]">add_circle</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" style="color: var(--color-on-surface);">新人注册奖励</p>
+                        <p class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">首次注册</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-semibold" style="color: #10B981;">+1,000</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">2024-01-01</p>
+                      </div>
+                    </div>
+
+                    <!-- Income Item -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                      <div class="w-10 h-10 rounded-full bg-[#10B981]/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[#10B981]">add_circle</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" style="color: var(--color-on-surface);">订单完成奖励</p>
+                        <p class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">订单 #ORD20240108002</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-semibold" style="color: #10B981;">+800</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">2024-01-08</p>
+                      </div>
+                    </div>
+
+                    <!-- Expense Item -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                      <div class="w-10 h-10 rounded-full bg-[#EF4444]/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[#EF4444]">remove_circle</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" style="color: var(--color-on-surface);">积分兑换商品</p>
+                        <p class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">兑换优惠券</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-semibold" style="color: #EF4444;">-500</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">2024-01-05</p>
+                      </div>
+                    </div>
+
+                    <!-- Income Item -->
+                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 transition-colors">
+                      <div class="w-10 h-10 rounded-full bg-[#10B981]/10 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-[#10B981]">add_circle</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-sm truncate" style="color: var(--color-on-surface);">订单完成奖励</p>
+                        <p class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">订单 #ORD20240102003</p>
+                      </div>
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-semibold" style="color: #10B981;">+280</p>
+                        <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">2024-01-02</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Load More -->
+                  <div class="mt-4 text-center">
+                    <button class="btn btn-ghost btn-sm">
+                      <span class="material-symbols-outlined text-sm">expand_more</span>
+                      加载更多
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Code Example -->
+              <div class="code-block relative">
+                <button class="copy-btn" @click="copyCode('usercard')">复制</button>
+                <code>&lt;!-- 用户卡片组件 --&gt;<br>&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"card p-6"</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 用户头像 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"w-16 h-16 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2]"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined fill-icon text-3xl text-white"</span>&gt;person&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;h4</span> <span class="attr">class</span>=<span class="string">"font-semibold text-lg"</span>&gt;张明远&lt;/<span class="tag">h4</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;p</span> <span class="attr">class</span>=<span class="string">"font-label-md text-xs"</span>&gt;注册于 2024-01-01&lt;/<span class="tag">p</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 积分信息 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;p</span>&gt;12,580 <span class="tag">积分余额</span>&lt;/<span class="tag">p</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn btn-primary btn-sm"</span> <span class="attr">onclick</span>=<span class="string">"showPointsHistory('userId')"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined text-sm"</span>&gt;history&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;积分流水<br>&nbsp;&nbsp;<span class="tag">&lt;/button</span>&gt;<br>&lt;<span class="tag">/div</span>&gt;</code>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. Points Display Section -->
+        <section class="card" id="points-display">
+          <div class="collapse-header" @click="sections.pointsDisplay = !sections.pointsDisplay">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">stars</span>
+              积分展示组件 Points Display
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.pointsDisplay }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.pointsDisplay">
+            <div class="p-6 space-y-8">
+
+              <!-- Points Balance Card -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">积分余额 Points Balance</h3>
+                <div class="glass-strong rounded-3xl p-8 text-center relative overflow-hidden">
+                  <div class="absolute top-0 left-0 w-full h-full opacity-5">
+                    <div class="absolute top-4 left-4 w-32 h-32 rounded-full" style="background: var(--theme-primary);"></div>
+                    <div class="absolute bottom-4 right-4 w-48 h-48 rounded-full" style="background: var(--theme-secondary);"></div>
+                  </div>
+                  <div class="relative z-10">
+                    <p class="font-label-md mb-2" style="color: var(--color-on-surface-variant);">当前积分余额</p>
+                    <div class="flex items-center justify-center gap-2 mb-4">
+                      <span class="material-symbols-outlined fill-icon text-4xl" style="color: var(--color-warning);">stars</span>
+                      <span class="font-points-display text-5xl" style="color: var(--color-on-surface);">12,580</span>
+                    </div>
+                    <div class="flex items-center justify-center gap-4">
+                      <button class="btn btn-primary btn-md">
+                        <span class="material-symbols-outlined">add</span>
+                        充值积分
+                      </button>
+                      <button class="btn btn-secondary btn-md">
+                        <span class="material-symbols-outlined">swap_horiz</span>
+                        积分兑换
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Points History Summary -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">积分变动记录 Points History</h3>
+                <div class="space-y-4">
+                  <!-- Income -->
+                  <div class="card flex items-center justify-between py-4">
+                    <div class="flex items-center gap-4">
+                      <div class="w-10 h-10 rounded-full bg-[#10B981]/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#10B981]">add_circle</span>
+                      </div>
+                      <div>
+                        <p class="font-semibold" style="color: var(--color-on-surface);">订单完成奖励</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">订单 #20240115001</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-semibold text-[#10B981]">+500</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">2024-01-15 14:32</p>
+                    </div>
+                  </div>
+
+                  <!-- Expense -->
+                  <div class="card flex items-center justify-between py-4">
+                    <div class="flex items-center gap-4">
+                      <div class="w-10 h-10 rounded-full bg-[#EF4444]/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#EF4444]">remove_circle</span>
+                      </div>
+                      <div>
+                        <p class="font-semibold" style="color: var(--color-on-surface);">积分兑换商品</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">兑换优惠券</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-semibold text-[#EF4444]">-200</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">2024-01-14 10:15</p>
+                    </div>
+                  </div>
+
+                  <!-- Income -->
+                  <div class="card flex items-center justify-between py-4">
+                    <div class="flex items-center gap-4">
+                      <div class="w-10 h-10 rounded-full bg-[#10B981]/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[#10B981]">add_circle</span>
+                      </div>
+                      <div>
+                        <p class="font-semibold" style="color: var(--color-on-surface);">新人注册奖励</p>
+                        <p class="font-label-md" style="color: var(--color-on-surface-variant);">首次注册</p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-semibold text-[#10B981]">+1,000</p>
+                      <p class="font-label-md" style="color: var(--color-on-surface-variant);">2024-01-01 09:00</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 13. Order Card Section -->
+        <section class="card" id="order-card">
+          <div class="collapse-header" @click="sections.orderCard = !sections.orderCard">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">receipt_long</span>
+              订单卡片组件 Order Card
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.orderCard }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.orderCard">
+            <div class="p-6 space-y-8">
+
+              <!-- Order Cards - Enhanced Design -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">完整订单卡片 Complete Order Card</h3>
+                <div class="space-y-4">
+
+                  <!-- Order Card 1: Completed with Express Info -->
+                  <div class="card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-5">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-white shadow-lg">
+                          <span class="material-symbols-outlined fill-icon text-xl">storefront</span>
+                        </div>
+                        <div>
+                          <h4 class="font-semibold" style="color: var(--color-on-surface);">优选旗舰店</h4>
+                          <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">订单号: #ORD20240115001</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <span class="badge badge-success">
+                          <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                          已完成
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="flex gap-4 p-4 rounded-2xl mb-4" style="background: rgba(0,0,0,0.02);">
+                      <!-- Product Image -->
+                      <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-3xl text-white">inventory_2</span>
+                      </div>
+                      <!-- Product Details -->
+                      <div class="flex-1 min-w-0">
+                        <h5 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">Premium会员年卡</h5>
+                        <p class="font-body-md text-sm mb-2 truncate" style="color: var(--color-on-surface-variant);">尊享12个月会员权益，专属折扣优先购买权</p>
+                        <div class="flex items-center gap-4 text-sm">
+                          <span class="font-label-md" style="color: var(--color-on-surface-variant);">单价: <span class="font-semibold" style="color: var(--color-on-surface);">¥299</span></span>
+                          <span class="font-label-md" style="color: var(--color-on-surface-variant);">x <span class="font-semibold" style="color: var(--color-on-surface);">1</span></span>
+                        </div>
+                      </div>
+                      <!-- Total Points -->
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">¥299</p>
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[12px]">stars</span>
+                          +500积分
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Express Info -->
+                    <div class="flex items-center gap-6 p-3 rounded-xl mb-4" style="background: rgba(var(--theme-rgb-primary), 0.05);">
+                      <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg" style="color: var(--theme-primary);">local_shipping</span>
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">顺丰快递</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">运单号:</span>
+                        <span class="font-semibold text-sm" style="color: var(--color-on-surface);">SF1234567890</span>
+                        <button class="p-1 rounded hover:bg-black/5 transition-colors">
+                          <span class="material-symbols-outlined text-sm" style="color: var(--theme-primary);">content_copy</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between pt-4 border-t border-black/5">
+                      <div class="flex items-center gap-4">
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">
+                          <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
+                          2024-01-15 14:32
+                        </span>
+                      </div>
+                      <button class="btn btn-primary btn-sm">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        查看详情
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Order Card 2: Processing with Detailed Info -->
+                  <div class="card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer opacity-90">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-5">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center text-white shadow-lg">
+                          <span class="material-symbols-outlined fill-icon text-xl">storefront</span>
+                        </div>
+                        <div>
+                          <h4 class="font-semibold" style="color: var(--color-on-surface);">数码专营店</h4>
+                          <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">订单号: #ORD20240118002</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <span class="badge badge-warning">
+                          <span class="material-symbols-outlined text-[14px]">pending</span>
+                          处理中
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="flex gap-4 p-4 rounded-2xl mb-4" style="background: rgba(0,0,0,0.02);">
+                      <!-- Product Image -->
+                      <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-3xl text-white">watch</span>
+                      </div>
+                      <!-- Product Details -->
+                      <div class="flex-1 min-w-0">
+                        <h5 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">智能手环 Pro Max</h5>
+                        <p class="font-body-md text-sm mb-2 truncate" style="color: var(--color-on-surface-variant);">健康监测、心率血氧、NFC支付、GPS定位</p>
+                        <div class="flex items-center gap-4 text-sm">
+                          <span class="font-label-md" style="color: var(--color-on-surface-variant);">单价: <span class="font-semibold" style="color: var(--color-on-surface);">¥399</span></span>
+                          <span class="font-label-md" style="color: var(--color-on-surface-variant);">x <span class="font-semibold" style="color: var(--color-on-surface);">2</span></span>
+                        </div>
+                      </div>
+                      <!-- Total Points -->
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">¥798</p>
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[12px]">stars</span>
+                          +798积分
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Express Info - Not Shipped Yet -->
+                    <div class="flex items-center gap-6 p-3 rounded-xl mb-4" style="background: rgba(245,158,11,0.08);">
+                      <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg" style="color: #F59E0B;">inventory_2</span>
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">等待商家发货</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">预计发货:</span>
+                        <span class="font-semibold text-sm" style="color: var(--color-on-surface);">2024-01-19</span>
+                      </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between pt-4 border-t border-black/5">
+                      <div class="flex items-center gap-4">
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">
+                          <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
+                          2024-01-18 09:15
+                        </span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <button class="btn btn-secondary btn-sm">
+                          <span class="material-symbols-outlined text-sm">edit</span>
+                          修改地址
+                        </button>
+                        <button class="btn btn-primary btn-sm">
+                          <span class="material-symbols-outlined text-sm">visibility</span>
+                          查看详情
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Order Card 3: Shipped -->
+                  <div class="card p-6 hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-5">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white shadow-lg">
+                          <span class="material-symbols-outlined fill-icon text-xl">storefront</span>
+                        </div>
+                        <div>
+                          <h4 class="font-semibold" style="color: var(--color-on-surface);">生活超市</h4>
+                          <p class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">订单号: #ORD20240120003</p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-3">
+                        <span class="badge badge-primary">
+                          <span class="material-symbols-outlined text-[14px]">local_shipping</span>
+                          运输中
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="flex gap-4 p-4 rounded-2xl mb-4" style="background: rgba(0,0,0,0.02);">
+                      <!-- Product Image -->
+                      <div class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-3xl text-white">coffee</span>
+                      </div>
+                      <!-- Product Details -->
+                      <div class="flex-1 min-w-0">
+                        <h5 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">星巴克礼品卡</h5>
+                        <p class="font-body-md text-sm mb-2 truncate" style="color: var(--color-on-surface-variant);">电子兑换券、多种面值可选、即时到账</p>
+                        <div class="flex items-center gap-4 text-sm">
+                          <span class="font-label-md" style="color: var(--color-on-surface-variant);">单价: <span class="font-semibold" style="color: var(--color-on-surface);">¥100</span></span>
+                          <span class="font-label-md" style="color: var(--color-on-surface-variant);">x <span class="font-semibold" style="color: var(--color-on-surface);">1</span></span>
+                        </div>
+                      </div>
+                      <!-- Total Points -->
+                      <div class="text-right flex-shrink-0">
+                        <p class="font-points-display text-xl mb-1" style="color: var(--color-on-surface);">¥100</p>
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[12px]">stars</span>
+                          +100积分
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Express Info -->
+                    <div class="flex items-center gap-6 p-3 rounded-xl mb-4" style="background: rgba(102,126,234,0.08);">
+                      <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-lg" style="color: #667eea;">local_shipping</span>
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">中通快递</span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">运单号:</span>
+                        <span class="font-semibold text-sm" style="color: var(--color-on-surface);">ZTO20240120001</span>
+                        <button class="p-1 rounded hover:bg-black/5 transition-colors">
+                          <span class="material-symbols-outlined text-sm" style="color: var(--theme-primary);">content_copy</span>
+                        </button>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-label-md" style="color: #667eea;">物流详情</span>
+                        <span class="material-symbols-outlined text-sm" style="color: #667eea;">chevron_right</span>
+                      </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between pt-4 border-t border-black/5">
+                      <div class="flex items-center gap-4">
+                        <span class="font-label-md" style="color: var(--color-on-surface-variant);">
+                          <span class="material-symbols-outlined text-sm align-middle mr-1">schedule</span>
+                          2024-01-20 16:45
+                        </span>
+                      </div>
+                      <button class="btn btn-primary btn-sm">
+                        <span class="material-symbols-outlined text-sm">visibility</span>
+                        查看详情
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Code Example -->
+              <div class="code-block relative">
+                <button class="copy-btn" @click="copyCode('ordercard')">复制</button>
+                <code>&lt;!-- 订单卡片组件 --&gt;<br>&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"card p-6"</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 头部: 店铺 + 订单号 + 状态 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"flex items-center justify-between mb-5"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"flex items-center gap-4"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669]"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined fill-icon text-xl text-white"</span>&gt;storefront&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;div</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;h4</span> <span class="attr">class</span>=<span class="string">"font-semibold"</span>&gt;优选旗舰店&lt;/<span class="tag">h4</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;p</span> <span class="attr">class</span>=<span class="string">"font-label-md text-xs"</span>&gt;订单号: #ORD20240115001&lt;/<span class="tag">p</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"badge badge-success"</span>&gt;已完成&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 商品信息 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"flex gap-4 p-4 rounded-2xl mb-4"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="string">"product.jpg"</span> <span class="attr">class</span>=<span class="string">"w-20 h-20 rounded-xl"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"flex-1"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;h5</span> <span class="attr">class</span>=<span class="string">"font-semibold"</span>&gt;Premium会员年卡&lt;/<span class="tag">h5</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;p</span> <span class="attr">class</span>=<span class="string">"font-body-md text-sm"</span>&gt;尊享12个月会员权益&lt;/<span class="tag">p</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 快递信息 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"flex items-center gap-6 p-3 rounded-xl"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined"</span>&gt;local_shipping&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span>&gt;顺丰快递&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span>&gt;SF1234567890&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn btn-primary btn-sm"</span>&gt;查看详情&lt;/<span class="tag">button</span>&gt;<br>&lt;<span class="tag">/div</span>&gt;</code>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 14. Order Process Section -->
+        <section class="card" id="order-process">
+          <div class="collapse-header" @click="sections.orderProcess = !sections.orderProcess">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">timeline</span>
+              订单流程组件 Order Process
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.orderProcess }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.orderProcess">
+            <div class="p-6 space-y-8">
+
+              <!-- Order Status Timeline -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">订单状态流程 Order Status Timeline</h3>
+                <div class="card py-6 px-8">
+                  <!-- Timeline -->
+                  <div class="relative">
+                    <!-- Progress Line -->
+                    <div class="absolute top-6 left-6 right-6 h-0.5" style="background: var(--color-glass-border);"></div>
+                    <div class="absolute top-6 left-6 w-4/5 h-0.5" style="background: linear-gradient(to right, var(--theme-primary), var(--theme-secondary));"></div>
+
+                    <!-- Steps -->
+                    <div class="relative flex justify-between">
+                      <!-- Step 1: Paid -->
+                      <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center z-10" style="background: var(--theme-primary);">
+                          <span class="material-symbols-outlined fill-icon text-white">check</span>
+                        </div>
+                        <div class="mt-3 text-center">
+                          <p class="font-semibold text-sm" style="color: var(--color-on-surface);">已支付</p>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">01-15 14:30</p>
+                        </div>
+                      </div>
+
+                      <!-- Step 2: Processing -->
+                      <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center z-10" style="background: var(--theme-primary);">
+                          <span class="material-symbols-outlined fill-icon text-white">inventory_2</span>
+                        </div>
+                        <div class="mt-3 text-center">
+                          <p class="font-semibold text-sm" style="color: var(--color-on-surface);">配货中</p>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">01-15 15:00</p>
+                        </div>
+                      </div>
+
+                      <!-- Step 3: Shipped -->
+                      <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center z-10" style="background: var(--theme-primary);">
+                          <span class="material-symbols-outlined fill-icon text-white">local_shipping</span>
+                        </div>
+                        <div class="mt-3 text-center">
+                          <p class="font-semibold text-sm" style="color: var(--color-on-surface);">运输中</p>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">01-16 09:30</p>
+                        </div>
+                      </div>
+
+                      <!-- Step 4: Delivered -->
+                      <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 border-2" style="background: white; border-color: var(--theme-primary);">
+                          <span class="material-symbols-outlined" style="color: var(--theme-primary);">home</span>
+                        </div>
+                        <div class="mt-3 text-center">
+                          <p class="font-semibold text-sm" style="color: var(--color-on-surface);">已签收</p>
+                          <p class="font-label-md" style="color: var(--color-on-surface-variant);">预计01-17</p>
+                        </div>
+                      </div>
+
+                      <!-- Step 5: Completed -->
+                      <div class="flex flex-col items-center">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center z-10 border-2" style="background: white; border-color: var(--color-outline);">
+                          <span class="material-symbols-outlined" style="color: var(--color-outline);">task_alt</span>
+                        </div>
+                        <div class="mt-3 text-center">
+                          <p class="font-semibold text-sm" style="color: var(--color-outline);">已完成</p>
+                          <p class="font-label-md" style="color: var(--color-outline);">-</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 15. Product Card Section -->
+        <section class="card" id="product-card">
+          <div class="collapse-header" @click="sections.productCard = !sections.productCard">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">shopping_bag</span>
+              商品卡片组件 Product Card
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.productCard }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.productCard">
+            <div class="p-6 space-y-8">
+
+              <!-- Product Card Grid -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">商品卡片 Product Card</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                  <!-- Product Card 1: Featured -->
+                  <div class="card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                    <!-- Image Area -->
+                    <div class="relative aspect-square overflow-hidden rounded-t-2xl">
+                      <div class="w-full h-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-6xl text-white/80">watch</span>
+                      </div>
+                      <!-- Featured Badge -->
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+                          <span class="material-symbols-outlined text-[12px]">star</span>
+                          精选
+                        </span>
+                      </div>
+                      <!-- Discount Badge -->
+                      <div class="absolute top-3 right-3">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold text-white bg-[#EF4444]">
+                          -20%
+                        </span>
+                      </div>
+                      <!-- Hover Overlay -->
+                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">favorite</span>
+                        </button>
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">shopping_cart</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-4">
+                      <h4 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">智能手环 Pro Max</h4>
+                      <p class="font-label-md text-xs mb-3 truncate" style="color: var(--color-on-surface-variant);">健康监测 | 心率血氧 | NFC支付</p>
+
+                      <!-- Points Price -->
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-bold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[14px]">stars</span>
+                          3,980
+                        </span>
+                        <span class="font-label-md text-xs line-through" style="color: var(--color-on-surface-variant);">¥499</span>
+                      </div>
+
+                      <!-- Shop Info -->
+                      <div class="flex items-center justify-between pt-3 border-t border-black/5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-5 h-5 rounded bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[10px] text-white">storefront</span>
+                          </div>
+                          <span class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">数码专营店</span>
+                        </div>
+                        <span class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">已售 1.2k</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Product Card 2: Standard -->
+                  <div class="card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                    <!-- Image Area -->
+                    <div class="relative aspect-square overflow-hidden rounded-t-2xl">
+                      <div class="w-full h-full bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-6xl text-white/80">coffee</span>
+                      </div>
+                      <!-- Hover Overlay -->
+                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">favorite_border</span>
+                        </button>
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">shopping_cart</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-4">
+                      <h4 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">星巴克礼品卡</h4>
+                      <p class="font-label-md text-xs mb-3 truncate" style="color: var(--color-on-surface-variant);">电子兑换券 | 多种面值</p>
+
+                      <!-- Points Price -->
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-bold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[14px]">stars</span>
+                          500
+                        </span>
+                      </div>
+
+                      <!-- Shop Info -->
+                      <div class="flex items-center justify-between pt-3 border-t border-black/5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-5 h-5 rounded bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[10px] text-white">storefront</span>
+                          </div>
+                          <span class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">生活超市</span>
+                        </div>
+                        <span class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">已售 856</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Product Card 3: New Arrival -->
+                  <div class="card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                    <!-- Image Area -->
+                    <div class="relative aspect-square overflow-hidden rounded-t-2xl">
+                      <div class="w-full h-full bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-6xl text-white/80">inventory_2</span>
+                      </div>
+                      <!-- New Badge -->
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                          <span class="material-symbols-outlined text-[12px]">new_releases</span>
+                          新品
+                        </span>
+                      </div>
+                      <!-- Hover Overlay -->
+                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">favorite_border</span>
+                        </button>
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">shopping_cart</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-4">
+                      <h4 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">Premium会员年卡</h4>
+                      <p class="font-label-md text-xs mb-3 truncate" style="color: var(--color-on-surface-variant);">12个月会员权益 | 专属折扣</p>
+
+                      <!-- Points Price -->
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-bold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[14px]">stars</span>
+                          5,000
+                        </span>
+                        <span class="font-label-md text-xs line-through" style="color: var(--color-on-surface-variant);">¥399</span>
+                      </div>
+
+                      <!-- Shop Info -->
+                      <div class="flex items-center justify-between pt-3 border-t border-black/5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-5 h-5 rounded bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[10px] text-white">storefront</span>
+                          </div>
+                          <span class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">优选旗舰店</span>
+                        </div>
+                        <span class="font-label-md text-xs" style="color: var(--color-on-surface-variant);">已售 328</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Product Card 4: Low Stock -->
+                  <div class="card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group relative">
+                    <!-- Image Area -->
+                    <div class="relative aspect-square overflow-hidden rounded-t-2xl">
+                      <div class="w-full h-full bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-6xl text-white/80">headphones</span>
+                      </div>
+                      <!-- Low Stock Badge -->
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white bg-[#EF4444]">
+                          <span class="material-symbols-outlined text-[12px]">warning</span>
+                          库存紧张
+                        </span>
+                      </div>
+                      <!-- Hover Overlay -->
+                      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">favorite_border</span>
+                        </button>
+                        <button class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-gray-100 transition-colors">
+                          <span class="material-symbols-outlined text-gray-800">shopping_cart</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-4">
+                      <h4 class="font-semibold mb-1 truncate" style="color: var(--color-on-surface);">无线蓝牙耳机</h4>
+                      <p class="font-label-md text-xs mb-3 truncate" style="color: var(--color-on-surface-variant);">降噪 | 防水 | 长续航</p>
+
+                      <!-- Points Price -->
+                      <div class="flex items-center gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-bold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                          <span class="material-symbols-outlined text-[14px]">stars</span>
+                          2,180
+                        </span>
+                      </div>
+
+                      <!-- Shop Info -->
+                      <div class="flex items-center justify-between pt-3 border-t border-black/5">
+                        <div class="flex items-center gap-2">
+                          <div class="w-5 h-5 rounded bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[10px] text-white">storefront</span>
+                          </div>
+                          <span class="font-label-md text-xs truncate" style="color: var(--color-on-surface-variant);">数码专营店</span>
+                        </div>
+                        <span class="font-label-md text-xs" style="color: #EF4444;">仅剩 5 件</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Horizontal Product Card -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">横向商品卡片 Horizontal Product Card</h3>
+                <div class="card overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group">
+                  <div class="flex flex-col md:flex-row">
+                    <!-- Image -->
+                    <div class="relative w-full md:w-48 aspect-square md:aspect-auto">
+                      <div class="w-full h-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center">
+                        <span class="material-symbols-outlined fill-icon text-5xl text-white/80">devices</span>
+                      </div>
+                      <div class="absolute top-3 left-3">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-white" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                          <span class="material-symbols-outlined text-[12px]">star</span>
+                          精品推荐
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="flex-1 p-5 flex flex-col justify-between">
+                      <div>
+                        <h4 class="font-semibold text-lg mb-2" style="color: var(--color-on-surface);">Apple iPad Pro 2024款</h4>
+                        <p class="font-body-md mb-3" style="color: var(--color-on-surface-variant);">M3芯片 | 12.9英寸Liquid视网膜XDR显示屏 | 256GB WiFi版</p>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                          <span class="badge badge-primary">正品保障</span>
+                          <span class="badge badge-success">包邮</span>
+                          <span class="badge badge-warning">限时优惠</span>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                          <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-lg font-bold" style="background: rgba(245,158,11,0.15); color: #F59E0B;">
+                            <span class="material-symbols-outlined text-lg">stars</span>
+                            88,000
+                          </span>
+                          <span class="font-label-md line-through" style="color: var(--color-on-surface-variant);">¥9,999</span>
+                        </div>
+                        <button class="btn btn-primary btn-md">
+                          <span class="material-symbols-outlined text-sm">shopping_cart</span>
+                          立即兑换
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Code Example -->
+              <div class="code-block relative">
+                <button class="copy-btn" @click="copyCode('productcard')">复制</button>
+                <code>&lt;!-- 商品卡片组件 --&gt;<br>&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"card overflow-hidden hover:shadow-xl transition-all"</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 商品图片 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;div</span> <span class="attr">class</span>=<span class="string">"aspect-square"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;img</span> <span class="attr">src</span>=<span class="string">"product.jpg"</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/div</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 商品信息 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;h4</span> <span class="attr">class</span>=<span class="string">"font-semibold"</span>&gt;商品名称&lt;/<span class="tag">h4</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;p</span> <span class="attr">class</span>=<span class="string">"font-label-md"</span>&gt;商品描述&lt;/<span class="tag">p</span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;!-- 积分价格 --&gt;</span><br>&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"inline-flex items-center gap-1"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined"</span>&gt;stars&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;3,980<br>&nbsp;&nbsp;<span class="tag">&lt;/span>&gt;<br><br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"btn btn-primary btn-sm"</span>&gt;查看详情&lt;/<span class="tag">button</span>&gt;<br>&lt;<span class="tag">/div</span>&gt;</code>
               </div>
 
             </div>
@@ -1106,8 +2351,52 @@
           nav: true,
           tables: true,
           dialogs: true,
-          themes: true
+          themes: true,
+          storeCard: true,
+          storeDetail: true,
+          userCard: true,
+          pointsDisplay: true,
+          orderCard: true,
+          orderProcess: true,
+          productCard: true
         })
+
+        const navItems = reactive([
+          { id: 'buttons', name: '按钮组件', icon: 'smart_button', active: false },
+          { id: 'inputs', name: '输入框', icon: 'text_fields', active: false },
+          { id: 'cards', name: '卡片组件', icon: 'dashboard', active: false },
+          { id: 'badges', name: '标签徽章', icon: 'label', active: false },
+          { id: 'nav', name: '导航组件', icon: 'navigation', active: false },
+          { id: 'tables', name: '表格组件', icon: 'table', active: false },
+          { id: 'dialogs', name: '弹窗组件', icon: 'picture_in_picture', active: false },
+          { id: 'themes', name: '主题切换', icon: 'palette', active: false },
+          { id: 'store-card', name: '店铺卡片', icon: 'storefront', active: false },
+          { id: 'store-detail', name: '店铺详情', icon: 'store', active: false },
+          { id: 'user-card', name: '用户卡片', icon: 'group', active: false },
+          { id: 'points-display', name: '积分展示', icon: 'stars', active: false },
+          { id: 'order-card', name: '订单卡片', icon: 'receipt_long', active: false },
+          { id: 'order-process', name: '订单流程', icon: 'timeline', active: false },
+          { id: 'product-card', name: '商品卡片', icon: 'shopping_bag', active: false }
+        ])
+
+        // Points History Modal Functions
+        const showPointsHistory = (userId) => {
+          console.log('Show points history for:', userId)
+          // In real implementation, this would open a modal with points history
+        }
+
+        const closePointsHistory = () => {
+          console.log('Close points history modal')
+          // In real implementation, this would close the modal
+        }
+
+        const scrollToSection = (id) => {
+          const element = document.getElementById(id)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            navItems.forEach(item => item.active = item.id === id)
+          }
+        }
 
         const themes = [
           { id: 'tech-blue', name: '科技蓝', color: '#004ac6' },
@@ -1226,6 +2515,7 @@
 
         return {
           sections,
+          navItems,
           themes,
           currentTheme,
           isDark,
@@ -1233,7 +2523,8 @@
           toast,
           setTheme,
           toggleDark,
-          copyCode
+          copyCode,
+          scrollToSection
         }
       }
     }).mount('#app')

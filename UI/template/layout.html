@@ -71,83 +71,57 @@
     }
 
     [data-mode="dark"] .glass {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(30, 30, 45, 0.85);
       border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     [data-mode="dark"] .glass-strong {
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(40, 40, 60, 0.9);
       border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(30, 30, 45, 0.95);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(30, 30, 45, 0.95);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(35, 35, 55, 0.9);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 
     .glass {
-      background: var(--color-glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--color-glass-border);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     }
 
     .glass-strong {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .glass-content {
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.4);
-    }
-
-    .glass-content {
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid var(--color-glass-border);
-    }
-
-    .bg-mesh {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-
-    .bg-mesh::before {
-      content: '';
-      position: absolute;
-      top: -20%;
-      left: -10%;
-      width: 50vw;
-      height: 50vw;
-      border-radius: 50%;
-      background: var(--theme-primary);
-      opacity: 0.1;
-      blur: 100px;
-      mix-blend-mode: multiply;
-    }
-
-    .bg-mesh::after {
-      content: '';
-      position: absolute;
-      top: 30%;
-      right: -20%;
-      width: 60vw;
-      height: 60vw;
-      border-radius: 50%;
-      background: var(--theme-secondary);
-      opacity: 0.1;
-      blur: 120px;
-      mix-blend-mode: multiply;
-    }
-
-    .bg-mesh-secondary {
-      position: absolute;
-      bottom: -20%;
-      left: 20%;
-      width: 70vw;
-      height: 70vw;
-      border-radius: 50%;
-      background: var(--color-success);
-      opacity: 0.05;
-      blur: 150px;
-      mix-blend-mode: multiply;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
     }
 
     .material-symbols-outlined {
@@ -221,33 +195,34 @@
       margin: 16px;
       width: 256px;
       height: calc(100vh - 32px);
-      background: var(--color-glass-bg);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--color-glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.8);
       border-radius: 40px;
-      box-shadow: var(--shadow-glass-strong);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 1);
     }
 
     .topbar-float {
       margin: 16px;
       height: 80px;
-      background: var(--color-glass-bg);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      border: 1px solid var(--color-glass-border);
+      border: 1px solid rgba(255, 255, 255, 0.8);
       border-radius: 40px;
-      box-shadow: var(--shadow-glass);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1);
     }
 
     .content-area {
       margin: 16px;
       margin-left: 0;
-      background: rgba(255, 255, 255, 0.4);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid var(--color-glass-border);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: 40px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
     }
 
     .theme-btn {
@@ -295,29 +270,37 @@
       gap: 12px;
       padding: 12px 16px;
       border-radius: 16px;
-      color: #737686;
-      transition: all 0.2s ease;
+      color: #4b5563;
+      transition: all 0.25s ease;
       cursor: pointer;
       font-family: var(--font-body);
       font-weight: 500;
       font-size: 14px;
+      border: 1px solid transparent;
     }
 
     .nav-item:hover {
-      background: rgba(255, 255, 255, 0.8);
-      color: var(--color-on-surface);
+      background: rgba(102, 126, 234, 0.1);
+      color: var(--theme-primary);
       transform: translateX(4px);
+      border-color: rgba(102, 126, 234, 0.2);
     }
 
     .nav-item.active {
-      background: var(--theme-primary);
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
       color: white;
-      box-shadow: 0 8px 32px rgba(var(--theme-rgb-primary), 0.3);
+      box-shadow: 0 8px 32px rgba(var(--theme-rgb-primary), 0.35);
+      border-color: transparent;
+    }
+
+    [data-mode="dark"] .nav-item {
+      color: #9ca3af;
     }
 
     [data-mode="dark"] .nav-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--color-on-surface);
+      background: rgba(102, 126, 234, 0.15);
+      color: #a5b4fc;
+      border-color: rgba(102, 126, 234, 0.3);
     }
 
     .nav-item-icon {
@@ -397,11 +380,12 @@
     };
   </script>
 </head>
-<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+<body class="bg-gradient-to-br from-slate-100 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-slate-900 min-h-screen flex overflow-hidden relative font-body antialiased">
   <div id="app">
     <!-- Background Decoration Mesh -->
     <div class="bg-mesh">
       <div class="bg-mesh-secondary"></div>
+      <div class="bg-mesh-tertiary"></div>
     </div>
 
     <!-- Sidebar -->
@@ -439,9 +423,9 @@
     </aside>
 
     <!-- Main Content Wrapper -->
-    <div class="flex-1 flex flex-col relative z-10 ml-72">
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
       <!-- Top Navigation Bar -->
-      <header class="topbar-float flex items-center justify-between px-6">
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100vw - 352px);">
         <!-- Left Side -->
         <div class="flex items-center gap-4">
           <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">ShopAdmin</span>
@@ -482,7 +466,7 @@
       </header>
 
       <!-- Content Area -->
-      <main class="content-area flex-1 overflow-y-auto p-8">
+      <main class="content-area overflow-y-auto p-8" style="flex: 1;">
         <!-- Page Header -->
         <div class="mb-8">
           <h1 class="font-headline-md text-headline-md text-[#191b23] dark:text-white mb-2">欢迎回来</h1>
@@ -491,18 +475,18 @@
 
         <!-- Example Content Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div class="glass-strong rounded-xl p-6 hover:-translate-y-1 transition-all duration-300">
+          <div class="glass-strong rounded-2xl p-6 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <div class="flex justify-between items-start mb-4">
               <div>
                 <p class="font-label-md text-label-md text-[#434655] dark:text-[#a0a4b8] mb-1">店铺总数</p>
                 <h3 class="font-points-display text-points-display text-[#191b23] dark:text-white">128</h3>
               </div>
-              <div class="w-12 h-12 rounded-full bg-[#004ac6]/10 flex items-center justify-center text-[#004ac6]">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white shadow-lg">
                 <span class="material-symbols-outlined fill-icon text-2xl">storefront</span>
               </div>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <span class="flex items-center text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full font-medium">
+              <span class="flex items-center text-[#10B981] bg-[#10B981]/10 px-3 py-1 rounded-full font-semibold">
                 <span class="material-symbols-outlined text-[16px] mr-1">trending_up</span>
                 +12%
               </span>
@@ -510,18 +494,18 @@
             </div>
           </div>
 
-          <div class="glass-strong rounded-xl p-6 hover:-translate-y-1 transition-all duration-300">
+          <div class="glass-strong rounded-2xl p-6 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <div class="flex justify-between items-start mb-4">
               <div>
                 <p class="font-label-md text-label-md text-[#434655] dark:text-[#a0a4b8] mb-1">用户总数</p>
                 <h3 class="font-points-display text-points-display text-[#191b23] dark:text-white">45.2k</h3>
               </div>
-              <div class="w-12 h-12 rounded-full bg-[#712ae2]/10 flex items-center justify-center text-[#712ae2]">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#f093fb] to-[#f5576c] flex items-center justify-center text-white shadow-lg">
                 <span class="material-symbols-outlined fill-icon text-2xl">group</span>
               </div>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <span class="flex items-center text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full font-medium">
+              <span class="flex items-center text-[#10B981] bg-[#10B981]/10 px-3 py-1 rounded-full font-semibold">
                 <span class="material-symbols-outlined text-[16px] mr-1">trending_up</span>
                 +8.5%
               </span>
@@ -529,22 +513,62 @@
             </div>
           </div>
 
-          <div class="glass-strong rounded-xl p-6 hover:-translate-y-1 transition-all duration-300">
+          <div class="glass-strong rounded-2xl p-6 hover:-translate-y-2 hover:shadow-xl transition-all duration-300 cursor-pointer">
             <div class="flex justify-between items-start mb-4">
               <div>
                 <p class="font-label-md text-label-md text-[#434655] dark:text-[#a0a4b8] mb-1">订单总量</p>
                 <h3 class="font-points-display text-points-display text-[#191b23] dark:text-white">12.5k</h3>
               </div>
-              <div class="w-12 h-12 rounded-full bg-[#F59E0B]/10 flex items-center justify-center text-[#F59E0B]">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4facfe] to-[#00f2fe] flex items-center justify-center text-white shadow-lg">
                 <span class="material-symbols-outlined fill-icon text-2xl">receipt_long</span>
               </div>
             </div>
             <div class="flex items-center gap-2 text-sm">
-              <span class="flex items-center text-[#EF4444] bg-[#EF4444]/10 px-2 py-0.5 rounded-full font-medium">
+              <span class="flex items-center text-[#EF4444] bg-[#EF4444]/10 px-3 py-1 rounded-full font-semibold">
                 <span class="material-symbols-outlined text-[16px] mr-1">trending_down</span>
                 -2.1%
               </span>
               <span class="text-[#737686] text-xs">较上月</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+          <div class="glass rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center text-white">
+              <span class="material-symbols-outlined text-lg">stars</span>
+            </div>
+            <div>
+              <p class="text-xs text-[#737686]">积分总量</p>
+              <p class="font-semibold text-[#191b23]">1.28M</p>
+            </div>
+          </div>
+          <div class="glass rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center text-white">
+              <span class="material-symbols-outlined text-lg">pending_actions</span>
+            </div>
+            <div>
+              <p class="text-xs text-[#737686]">待处理</p>
+              <p class="font-semibold text-[#191b23]">23</p>
+            </div>
+          </div>
+          <div class="glass rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EC4899] to-[#DB2777] flex items-center justify-center text-white">
+              <span class="material-symbols-outlined text-lg">notifications_active</span>
+            </div>
+            <div>
+              <p class="text-xs text-[#737686]">新消息</p>
+              <p class="font-semibold text-[#191b23]">5</p>
+            </div>
+          </div>
+          <div class="glass rounded-xl p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#7C3AED] flex items-center justify-center text-white">
+              <span class="material-symbols-outlined text-lg">warning</span>
+            </div>
+            <div>
+              <p class="text-xs text-[#737686]">预警</p>
+              <p class="font-semibold text-[#191b23]">2</p>
             </div>
           </div>
         </div>
