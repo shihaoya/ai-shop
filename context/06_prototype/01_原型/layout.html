@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>管理系统布局 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="common/common.js"></script>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <!-- Base gradient orbs -->
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <!-- Floating bubbles -->
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <!-- Logo Area -->
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">系统管理</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <!-- Bottom Logout -->
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <!-- Left Side -->
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">ShopAdmin</span>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex items-center gap-4">
+          <!-- Search Box -->
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索..."
+              type="text"
+            />
+          </div>
+
+          <!-- Action Buttons Group -->
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <!-- Theme Toggle Button -->
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+
+            <!-- Notification Button -->
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+
+            <!-- User Avatar -->
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area - 页面内容放在这里 -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!--
+          ========== 页面内容区域 ==========
+          在此处添加页面特定内容
+
+          示例结构：
+          <div class="glass rounded-2xl p-6">
+            <h1 class="font-headline-md mb-4">页面标题</h1>
+            <p class="font-body-md">页面内容...</p>
+          </div>
+        -->
+        <slot name="content">
+          <!-- 默认占位内容 -->
+          <div class="glass rounded-2xl p-10 min-h-[calc(100vh-180px)] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white mb-5 shadow-lg opacity-90">
+              <span class="material-symbols-outlined fill-icon text-3xl">dashboard</span>
+            </div>
+            <h2 class="font-headline-sm text-[#191b23] dark:text-white/90 mb-2">内容区域</h2>
+            <p class="font-body-md text-sm text-[#737686] dark:text-white/60 text-center max-w-sm">
+              选择左侧菜单开始，或在设置中自定义主题
+            </p>
+          </div>
+        </slot>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <!-- Color Theme Selection -->
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+            <button
+              @click="setTheme('pure-white')"
+              class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="纯净白"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    // 使用公共的 ThemeApp 初始化主题应用
+    const app = window.ThemeApp.init({
+      navItems: window.DEFAULT_NAV_ITEMS,
+      onNavChange: (index, item) => {
+        console.log('导航切换:', index, item.name);
+        // 在此处添加导航切换的处理逻辑
+        // 例如：加载对应的页面内容
+      }
+    });
+
+    // 恢复保存的主题状态
+    app.mount('#app');
+
+    // 页面加载完成后恢复主题状态
+    document.addEventListener('DOMContentLoaded', () => {
+      // 触发恢复（如果需要）
+    });
+  </script>
+
+  <!--
+    ========== 使用说明 ==========
+
+    1. 布局结构：
+       - 左侧：浮动侧边栏 (sidebar-float)
+       - 右上：浮动顶部栏 (topbar-float)
+       - 右下：内容区域 (content-area)
+       - 右下角：主题切换按钮
+
+    2. 添加页面内容：
+       在 <main class="content-area"> 内添加内容
+
+    3. 导航菜单：
+       修改 window.DEFAULT_NAV_ITEMS 来自定义菜单项
+
+    4. 主题切换：
+       使用 setTheme(themeName) 或 toggleDarkMode()
+       可用主题：'', 'fresh-green', 'romantic-purple', 'vibrant-pink', 'pure-white'
+
+    5. 工具函数：
+       - Utils.showToast(message, duration) 显示提示
+       - Utils.copyToClipboard(text) 复制到剪贴板
+  -->
+
+  <style>
+    /* 浮动气泡动画 */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    [data-mode="dark"] .bubble {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    /* 暗色模式样式 */
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</body>
+</html>

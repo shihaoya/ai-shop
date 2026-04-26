@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>我的店铺 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="../common/common.js"></script>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">系统管理</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">ShopAdmin</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索..."
+              type="text"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!-- Page Header -->
+        <div class="mb-6">
+          <h1 class="font-headline-md text-[#191b23] dark:text-white mb-1">我的店铺</h1>
+          <p class="font-body-md text-[#737686] dark:text-[#a0a4b8]">管理您的店铺信息与状态</p>
+        </div>
+
+        <!-- Not Registered State - Show Apply Button -->
+        <div v-if="shopStatus === 'not_registered'" class="flex flex-col items-center justify-center py-20">
+          <div class="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#004ac6]/10 to-[#712ae2]/10 flex items-center justify-center mb-6 shadow-lg">
+            <span class="material-symbols-outlined text-6xl text-[#004ac6]/40">storefront</span>
+          </div>
+          <h2 class="font-headline-md text-[#191b23] dark:text-white mb-2">还没有店铺</h2>
+          <p class="font-body-md text-[#737686] dark:text-[#a0a4b8] mb-8 text-center max-w-md">
+            开设您的专属店铺，在积分商城展示和销售商品，开启创业之旅
+          </p>
+          <button @click="showApplyModal = true" class="btn btn-primary btn-lg">
+            <span class="material-symbols-outlined text-xl">add_business</span>
+            申请开店
+          </button>
+        </div>
+
+        <!-- Pending Review State -->
+        <div v-if="shopStatus === 'pending'" class="space-y-6">
+          <div class="glass rounded-2xl p-6 border-l-4 border-[#F59E0B]">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center shadow-lg animate-pulse">
+                <span class="material-symbols-outlined fill-icon text-white text-2xl">schedule</span>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-1">等待审核</h3>
+                <p class="font-body-md text-sm text-[#737686] dark:text-[#a0a4b8]">您的店铺申请正在审核中，请耐心等待，预计 1-3 个工作日完成</p>
+              </div>
+              <div class="badge badge-warning">审核中</div>
+            </div>
+          </div>
+
+          <!-- Preview Submitted Info -->
+          <div class="glass rounded-2xl p-6">
+            <h4 class="font-headline-sm text-[#191b23] dark:text-white mb-4">您提交的信息</h4>
+            <div class="flex items-start gap-6">
+              <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#004ac6]/10 to-[#712ae2]/10 border border-white/30 flex items-center justify-center overflow-hidden">
+                <img v-if="shop.logo" :src="shop.logo" alt="Logo" class="w-full h-full object-cover"/>
+                <span v-else class="material-symbols-outlined text-4xl text-[#004ac6]/40">storefront</span>
+              </div>
+              <div>
+                <h5 class="font-semibold text-[#191b23] dark:text-white mb-1">{{ shop.name }}</h5>
+                <p class="font-body-md text-sm text-[#737686] dark:text-[#a0a4b8] line-clamp-2">{{ shop.description }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rejected State -->
+        <div v-if="shopStatus === 'rejected'" class="space-y-6">
+          <div class="glass rounded-2xl p-6 border-l-4 border-[#EF4444]">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EF4444] to-[#DC2626] flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined fill-icon text-white text-2xl">cancel</span>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-1">申请被拒绝</h3>
+                <p class="font-body-md text-sm text-[#737686] dark:text-[#a0a4b8]">拒绝原因：{{ rejectReason || '信息填写不完整或不符合规范' }}</p>
+              </div>
+              <button @click="showApplyModal = true" class="btn btn-primary btn-md">
+                <span class="material-symbols-outlined text-lg">refresh</span>
+                重新申请
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Approved Shop State -->
+        <div v-if="shopStatus === 'approved'" class="space-y-6">
+          <!-- Status Banner -->
+          <div class="glass rounded-2xl p-5 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center shadow-lg">
+                <span class="material-symbols-outlined fill-icon text-white text-xl">verified</span>
+              </div>
+              <div>
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white">店铺已认证</h3>
+                <p class="font-body-md text-sm text-[#737686] dark:text-[#a0a4b8]">您的店铺已通过平台审核，正在正常运营中</p>
+              </div>
+            </div>
+            <div class="badge badge-success">
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+              已认证
+            </div>
+          </div>
+
+          <!-- Shop Info Card -->
+          <div class="glass-strong rounded-2xl p-6">
+            <div class="flex items-start gap-6">
+              <!-- Logo -->
+              <div class="flex-shrink-0">
+                <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-[#004ac6]/10 to-[#712ae2]/10 border border-white/30 flex items-center justify-center overflow-hidden shadow-lg">
+                  <img v-if="shop.logo" :src="shop.logo" :alt="shop.name" class="w-full h-full object-cover"/>
+                  <span v-else class="material-symbols-outlined text-5xl text-[#004ac6]/40">storefront</span>
+                </div>
+              </div>
+
+              <!-- Shop Details -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-3 mb-4">
+                  <h2 class="font-headline-md text-[#191b23] dark:text-white truncate">{{ shop.name }}</h2>
+                  <span class="badge badge-success">
+                    <span class="material-symbols-outlined text-xs">check</span>
+                    营业中
+                  </span>
+                </div>
+
+                <p class="font-body-md text-[#434655] dark:text-[#a0a4b8] mb-4 leading-relaxed">
+                  {{ shop.description }}
+                </p>
+
+                <div class="flex flex-wrap gap-4 text-sm">
+                  <div class="flex items-center gap-2 text-[#737686] dark:text-[#a0a4b8]">
+                    <span class="material-symbols-outlined text-lg">calendar_today</span>
+                    创建于 {{ shop.createdAt }}
+                  </div>
+                  <div class="flex items-center gap-2 text-[#737686] dark:text-[#a0a4b8]">
+                    <span class="material-symbols-outlined text-lg">inventory_2</span>
+                    {{ shop.productCount }} 个商品
+                  </div>
+                  <div class="flex items-center gap-2 text-[#737686] dark:text-[#a0a4b8]">
+                    <span class="material-symbols-outlined text-lg">point_of_sale</span>
+                    {{ shop.orderCount }} 笔订单
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Button -->
+              <div class="flex-shrink-0">
+                <button @click="openEditModal" class="btn btn-secondary btn-md">
+                  <span class="material-symbols-outlined text-lg">edit</span>
+                  编辑店铺
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="grid grid-cols-4 gap-4">
+            <div class="glass rounded-2xl p-5 card-stat">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#004ac6] to-[#2563eb] flex items-center justify-center">
+                  <span class="material-symbols-outlined fill-icon text-white text-lg">point_of_sale</span>
+                </div>
+                <span class="font-label-md text-[#737686]">本月订单</span>
+              </div>
+              <p class="font-points-display bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb]">{{ shop.monthlyOrders }}</p>
+            </div>
+
+            <div class="glass rounded-2xl p-5 card-stat">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center">
+                  <span class="material-symbols-outlined fill-icon text-white text-lg">payments</span>
+                </div>
+                <span class="font-label-md text-[#737686]">本月收入</span>
+              </div>
+              <p class="font-points-display bg-clip-text text-transparent bg-gradient-to-r from-[#10B981] to-[#059669]">¥{{ shop.monthlyRevenue }}</p>
+            </div>
+
+            <div class="glass rounded-2xl p-5 card-stat">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center">
+                  <span class="material-symbols-outlined fill-icon text-white text-lg">inventory_2</span>
+                </div>
+                <span class="font-label-md text-[#737686]">商品数量</span>
+              </div>
+              <p class="font-points-display bg-clip-text text-transparent bg-gradient-to-r from-[#F59E0B] to-[#D97706]">{{ shop.productCount }}</p>
+            </div>
+
+            <div class="glass rounded-2xl p-5 card-stat">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EC4899] to-[#DB2777] flex items-center justify-center">
+                  <span class="material-symbols-outlined fill-icon text-white text-lg">grade</span>
+                </div>
+                <span class="font-label-md text-[#737686]">店铺评分</span>
+              </div>
+              <p class="font-points-display bg-clip-text text-transparent bg-gradient-to-r from-[#EC4899] to-[#DB2777]">{{ shop.rating }}</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button @click="showThemePanel = !showThemePanel" class="theme-btn group">
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button @click="setTheme('')" class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all" title="科技蓝"></button>
+            <button @click="setTheme('fresh-green')" class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all" title="清新绿"></button>
+            <button @click="setTheme('romantic-purple')" class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all" title="浪漫紫"></button>
+            <button @click="setTheme('vibrant-pink')" class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all" title="活力粉"></button>
+            <button @click="setTheme('pure-white')" class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all" title="纯净白"></button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button @click="toggleDarkMode" :class="['w-12 h-6 rounded-full relative transition-all duration-200', isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]']">
+            <span :class="['absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200', isDark ? 'left-7' : 'left-1']"></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Apply Shop Modal -->
+    <transition name="fade">
+      <div v-if="showApplyModal" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="showApplyModal = false"></div>
+        <div class="relative glass-strong rounded-3xl p-8 w-full max-w-lg mx-4 animate-scale-in">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-headline-md text-[#191b23] dark:text-white">申请开通店铺</h3>
+            <button @click="showApplyModal = false" class="w-10 h-10 rounded-full hover:bg-white/50 flex items-center justify-center transition-all">
+              <span class="material-symbols-outlined text-[#737686]">close</span>
+            </button>
+          </div>
+
+          <form @submit.prevent="submitApplication" class="space-y-5">
+            <!-- Logo Upload -->
+            <div>
+              <label class="font-label-md text-[#434655] dark:text-[#a0a4b8] mb-2 block">店铺Logo</label>
+              <div class="flex items-center gap-4">
+                <div
+                  @click="triggerLogoUpload"
+                  class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#004ac6]/10 to-[#712ae2]/10 border border-white/30 flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#004ac6]/50 transition-all"
+                >
+                  <img v-if="applyForm.logo" :src="applyForm.logo" alt="Logo" class="w-full h-full object-cover"/>
+                  <span v-else class="material-symbols-outlined text-3xl text-[#004ac6]/40">add_photo_alternate</span>
+                </div>
+                <input type="file" ref="logoInput" @change="handleLogoUpload" accept="image/*" class="hidden"/>
+                <div>
+                  <p class="font-body-md text-sm text-[#434655] dark:text-[#a0a4b8]">点击上传店铺Logo</p>
+                  <p class="text-xs text-[#737686]">建议尺寸 200x200，支持 JPG、PNG</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shop Name -->
+            <div>
+              <label class="font-label-md text-[#434655] dark:text-[#a0a4b8] mb-2 block">店铺名称 *</label>
+              <input v-model="applyForm.name" type="text" class="input" placeholder="请输入店铺名称（2-20个字符）" required minlength="2" maxlength="20"/>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="font-label-md text-[#434655] dark:text-[#a0a4b8] mb-2 block">店铺描述 *</label>
+              <textarea v-model="applyForm.description" rows="3" class="input py-3 resize-none" placeholder="请简单描述您的店铺特色和经营范围（10-200个字符）" required minlength="10" maxlength="200"></textarea>
+              <p class="text-xs text-[#737686] mt-1">{{ applyForm.description.length }}/200</p>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" @click="showApplyModal = false" class="btn btn-ghost btn-md">取消</button>
+              <button type="submit" class="btn btn-primary btn-md" :disabled="!isApplyFormValid">
+                <span class="material-symbols-outlined text-lg">send</span>
+                提交申请
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Edit Modal -->
+    <transition name="fade">
+      <div v-if="showEditModal" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" @click="showEditModal = false"></div>
+        <div class="relative glass-strong rounded-3xl p-8 w-full max-w-lg mx-4 animate-scale-in">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-headline-md text-[#191b23] dark:text-white">编辑店铺信息</h3>
+            <button @click="showEditModal = false" class="w-10 h-10 rounded-full hover:bg-white/50 flex items-center justify-center transition-all">
+              <span class="material-symbols-outlined text-[#737686]">close</span>
+            </button>
+          </div>
+
+          <form @submit.prevent="saveShop" class="space-y-5">
+            <!-- Logo Upload -->
+            <div>
+              <label class="font-label-md text-[#434655] dark:text-[#a0a4b8] mb-2 block">店铺Logo</label>
+              <div class="flex items-center gap-4">
+                <div
+                  @click="triggerEditLogoUpload"
+                  class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#004ac6]/10 to-[#712ae2]/10 border border-white/30 flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#004ac6]/50 transition-all"
+                >
+                  <img v-if="editForm.logo" :src="editForm.logo" alt="Logo" class="w-full h-full object-cover"/>
+                  <span v-else class="material-symbols-outlined text-3xl text-[#004ac6]/40">add_photo_alternate</span>
+                </div>
+                <input type="file" ref="editLogoInput" @change="handleEditLogoUpload" accept="image/*" class="hidden"/>
+                <div>
+                  <p class="font-body-md text-sm text-[#434655] dark:text-[#a0a4b8]">点击更换Logo</p>
+                  <p class="text-xs text-[#737686]">建议尺寸 200x200</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shop Name -->
+            <div>
+              <label class="font-label-md text-[#434655] dark:text-[#a0a4b8] mb-2 block">店铺名称</label>
+              <input v-model="editForm.name" type="text" class="input" placeholder="请输入店铺名称" required/>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="font-label-md text-[#434655] dark:text-[#a0a4b8] mb-2 block">店铺描述</label>
+              <textarea v-model="editForm.description" rows="3" class="input py-3 resize-none" placeholder="请输入店铺描述" required></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" @click="showEditModal = false" class="btn btn-ghost btn-md">取消</button>
+              <button type="submit" class="btn btn-primary btn-md">
+                <span class="material-symbols-outlined text-lg">check</span>
+                保存修改
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { ref, reactive, computed } = Vue;
+
+    const app = Vue.createApp({
+      setup() {
+        // ThemeApp 状态
+        const isDark = ref(false);
+        const showThemePanel = ref(false);
+
+        // 导航数据
+        const navItems = reactive([
+          { name: 'Dashboard', icon: 'dashboard', active: false },
+          { name: '店铺管理', icon: 'storefront', active: true },
+          { name: '用户管理', icon: 'group', active: false },
+          { name: '订单管理', icon: 'receipt_long', active: false },
+          { name: '消息通知', icon: 'notifications', active: false },
+          { name: '个人中心', icon: 'person', active: false }
+        ]);
+
+        // 导航切换
+        const setActive = (index) => {
+          navItems.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        // 主题设置
+        const setTheme = (theme) => {
+          console.log('主题切换:', theme);
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          document.documentElement.setAttribute('data-mode', isDark.value ? 'dark' : 'light');
+        };
+
+        // ========== 店铺状态管理 ==========
+        // shopStatus: 'not_registered' | 'pending' | 'rejected' | 'approved'
+        const shopStatus = ref('not_registered'); // 默认未注册状态
+        const rejectReason = ref(''); // 拒绝原因
+
+        // 店铺信息
+        const shop = reactive({
+          name: '',
+          logo: '',
+          description: '',
+          createdAt: '',
+          productCount: 0,
+          orderCount: 0,
+          monthlyOrders: 0,
+          monthlyRevenue: '0',
+          rating: '0.0'
+        });
+
+        // 申请表单
+        const showApplyModal = ref(false);
+        const applyForm = reactive({
+          name: '',
+          logo: '',
+          description: ''
+        });
+        const logoInput = ref(null);
+
+        // 编辑表单
+        const showEditModal = ref(false);
+        const editForm = reactive({
+          name: '',
+          logo: '',
+          description: ''
+        });
+        const editLogoInput = ref(null);
+
+        // 验证申请表单
+        const isApplyFormValid = computed(() => {
+          return applyForm.name.trim().length >= 2 &&
+            applyForm.name.trim().length <= 20 &&
+            applyForm.logo.trim() !== '' &&
+            applyForm.description.trim().length >= 10 &&
+            applyForm.description.trim().length <= 200;
+        });
+
+        // 上传 Logo 触发
+        const triggerLogoUpload = () => {
+          logoInput.value?.click();
+        };
+
+        // 处理 Logo 上传
+        const handleLogoUpload = (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              applyForm.logo = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        // 上传编辑 Logo 触发
+        const triggerEditLogoUpload = () => {
+          editLogoInput.value?.click();
+        };
+
+        // 处理编辑 Logo 上传
+        const handleEditLogoUpload = (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              editForm.logo = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        // 提交申请
+        const submitApplication = () => {
+          if (!isApplyFormValid.value) return;
+
+          // 更新店铺信息
+          shop.name = applyForm.name;
+          shop.logo = applyForm.logo;
+          shop.description = applyForm.description;
+
+          // 切换到待审核状态
+          shopStatus.value = 'pending';
+
+          // 关闭弹窗
+          showApplyModal.value = false;
+
+          // 清空表单
+          applyForm.name = '';
+          applyForm.logo = '';
+          applyForm.description = '';
+
+          // 显示提示
+          window.Utils?.showToast('申请已提交，请等待审核');
+
+          // 模拟审核流程（3秒后自动通过，仅用于演示）
+          setTimeout(() => {
+            if (shopStatus.value === 'pending') {
+              shopStatus.value = 'approved';
+              shop.createdAt = new Date().toISOString().split('T')[0];
+              shop.productCount = 0;
+              shop.orderCount = 0;
+              shop.monthlyOrders = 0;
+              shop.monthlyRevenue = '0';
+              shop.rating = '5.0';
+              window.Utils?.showToast('恭喜！您的店铺已通过审核');
+            }
+          }, 3000);
+        };
+
+        // 打开编辑弹窗
+        const openEditModal = () => {
+          editForm.name = shop.name;
+          editForm.logo = shop.logo;
+          editForm.description = shop.description;
+          showEditModal.value = true;
+        };
+
+        // 保存店铺信息
+        const saveShop = () => {
+          shop.name = editForm.name;
+          shop.logo = editForm.logo;
+          shop.description = editForm.description;
+          showEditModal.value = false;
+          window.Utils?.showToast('店铺信息已保存');
+        };
+
+        return {
+          isDark,
+          showThemePanel,
+          navItems,
+          searchQuery: ref(''),
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          shopStatus,
+          rejectReason,
+          shop,
+          showApplyModal,
+          applyForm,
+          isApplyFormValid,
+          logoInput,
+          triggerLogoUpload,
+          handleLogoUpload,
+          showEditModal,
+          editForm,
+          editLogoInput,
+          triggerEditLogoUpload,
+          handleEditLogoUpload,
+          submitApplication,
+          openEditModal,
+          saveShop
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+
+  <style>
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    [data-mode="dark"] .bubble {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Modal textarea styles */
+    textarea.input {
+      height: auto;
+      min-height: 100px;
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>用户管理 - 店铺用户管理</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <link rel="stylesheet" href="../common/common.css"/>
+  <script src="../common/common.js"></script>
+
+  <style>
+    .tab-btn.active {
+      background: var(--theme-gradient);
+      color: white;
+      box-shadow: 0 8px 32px rgba(var(--theme-rgb-primary), 0.35);
+    }
+
+    .modal-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .avatar-gradient {
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+    }
+
+    .toggle-btn.active {
+      background: var(--theme-gradient);
+      color: white;
+    }
+
+    .points-increase { color: var(--color-success); }
+    .points-decrease { color: var(--color-danger); }
+
+    .user-row:hover {
+      background: rgba(var(--theme-rgb-primary), 0.05);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f5 25%, #e8e8f0 50%, #f0f0f5 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .action-btn {
+      transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+      transform: scale(1.05);
+    }
+    .action-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">店铺管理</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">店铺用户管理</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索用户..."
+              type="text"
+            />
+          </div>
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="font-headline-md text-[#191b23] dark:text-white mb-1">用户管理</h1>
+            <p class="font-body-md text-sm text-[#737686]">管理店铺用户信息与积分</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/50 backdrop-blur-sm border border-white/50">
+              <span class="material-symbols-outlined text-[#737686]">group</span>
+              <span class="font-body-md text-sm text-[#191b23]">共 {{ filteredUsers.length }} 位用户</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex gap-2 mb-6">
+          <button @click="activeTab = 'users'"
+                  :class="['tab-btn px-6 py-3 rounded-xl font-semibold text-sm transition-all', activeTab === 'users' ? 'active' : 'bg-white/40 text-[#737686] hover:bg-white/60']">
+            <span class="material-symbols-outlined text-lg align-middle mr-2">people</span>
+            用户列表
+          </button>
+          <button @click="activeTab = 'history'"
+                  :class="['tab-btn px-6 py-3 rounded-xl font-semibold text-sm transition-all', activeTab === 'history' ? 'active' : 'bg-white/40 text-[#737686] hover:bg-white/60']">
+            <span class="material-symbols-outlined text-lg align-middle mr-2">history</span>
+            积分历史
+          </button>
+        </div>
+
+        <!-- User List Panel -->
+        <div v-if="activeTab === 'users'" class="glass rounded-2xl p-6">
+          <div class="overflow-x-auto">
+            <table class="table">
+              <thead>
+                <tr class="border-b border-white/30">
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">用户</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">积分余额</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">注册方式</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">状态</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="user in filteredUsers" :key="user.id" class="user-row border-b border-white/20 transition-all">
+                  <!-- User Info -->
+                  <td class="py-4 px-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-full avatar-gradient flex items-center justify-center text-white font-bold text-lg">
+                        {{ user.username.charAt(0).toUpperCase() }}
+                      </div>
+                      <div>
+                        <div class="font-semibold text-[#191b23] dark:text-white">{{ user.username }}</div>
+                        <div class="text-sm text-[#737686]">{{ user.nickname }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <!-- Points Balance -->
+                  <td class="py-4 px-4">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[#F59E0B] text-lg">stars</span>
+                      <span class="font-bold text-lg text-[#191b23] dark:text-white">{{ user.points.toLocaleString() }}</span>
+                    </div>
+                  </td>
+                  <!-- Register Type -->
+                  <td class="py-4 px-4">
+                    <span :class="['badge', user.registerType === '手机号' ? 'badge-primary' : 'badge-success']">
+                      {{ user.registerType }}
+                    </span>
+                  </td>
+                  <!-- Status -->
+                  <td class="py-4 px-4">
+                    <span :class="['badge', user.status === '正常' ? 'badge-success' : 'badge-danger']">
+                      <span class="w-2 h-2 rounded-full mr-1" :class="user.status === '正常' ? 'bg-green-500' : 'bg-red-500'"></span>
+                      {{ user.status }}
+                    </span>
+                  </td>
+                  <!-- Actions -->
+                  <td class="py-4 px-4">
+                    <div class="flex items-center gap-2">
+                      <button @click="openPointsModal(user)"
+                              class="action-btn px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 hover:bg-blue-100 transition-all text-sm font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">tune</span>
+                        积分
+                      </button>
+                      <button @click="viewHistory(user)"
+                              class="action-btn px-3 py-2 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 hover:bg-purple-100 transition-all text-sm font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">history</span>
+                        历史
+                      </button>
+                      <button @click="resetPassword(user)"
+                              class="action-btn px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-600 hover:bg-amber-100 transition-all text-sm font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">key</span>
+                        重置
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex items-center justify-between mt-6 pt-4 border-t border-white/30">
+            <div class="text-sm text-[#737686]">
+              显示 {{ filteredUsers.length }} 位用户
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all disabled:opacity-50" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button class="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center shadow-lg">1</button>
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all">2</button>
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all">3</button>
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Points History Panel -->
+        <div v-if="activeTab === 'history'" class="glass rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="font-headline-sm text-[#191b23] dark:text-white">积分变动历史</h2>
+            <select v-model="historyFilter" class="px-4 py-2 rounded-xl bg-white/50 border border-white/50 text-sm text-[#191b23] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20">
+              <option value="all">全部类型</option>
+              <option value="increase">增加</option>
+              <option value="decrease">减少</option>
+              <option value="order">订单</option>
+            </select>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="table">
+              <thead>
+                <tr class="border-b border-white/30">
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">类型</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">变动金额</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">变动后余额</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">原因</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">操作人</th>
+                  <th class="text-left py-4 px-4 font-semibold text-xs uppercase tracking-wider text-[#737686]">时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="record in filteredHistory" :key="record.id" class="user-row border-b border-white/20">
+                  <td class="py-4 px-4">
+                    <span :class="['badge', record.type === '增加' ? 'badge-success' : record.type === '减少' ? 'badge-danger' : 'badge-primary']">
+                      <span class="material-symbols-outlined text-sm mr-1">
+                        {{ record.type === '增加' ? 'add' : record.type === '减少' ? 'remove' : 'shopping_cart' }}
+                      </span>
+                      {{ record.type }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span :class="['font-bold text-lg', record.type === '增加' ? 'points-increase' : record.type === '减少' ? 'points-decrease' : 'text-[#191b23]']">
+                      {{ record.type === '增加' ? '+' : record.type === '减少' ? '-' : '' }}{{ record.amount.toLocaleString() }}
+                    </span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="flex items-center gap-2">
+                      <span class="material-symbols-outlined text-[#F59E0B] text-base">stars</span>
+                      <span class="font-semibold text-[#191b23]">{{ record.balanceAfter.toLocaleString() }}</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span class="text-sm text-[#434655]">{{ record.reason }}</span>
+                  </td>
+                  <td class="py-4 px-4">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded-full bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white text-xs font-bold">
+                        {{ record.operator.charAt(0) }}
+                      </div>
+                      <span class="text-sm text-[#191b23]">{{ record.operator }}</span>
+                    </div>
+                  </td>
+                  <td class="py-4 px-4">
+                    <span class="text-sm text-[#737686]">{{ record.time }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex items-center justify-between mt-6 pt-4 border-t border-white/30">
+            <div class="text-sm text-[#737686]">
+              显示 {{ filteredHistory.length }} 条记录
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all disabled:opacity-50" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button class="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center shadow-lg">1</button>
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all">2</button>
+              <button class="w-10 h-10 rounded-xl bg-white/50 border border-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button @click="showThemePanel = !showThemePanel" class="theme-btn group">
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button @click="setTheme('')" class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all" title="科技蓝"></button>
+            <button @click="setTheme('fresh-green')" class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all" title="清新绿"></button>
+            <button @click="setTheme('romantic-purple')" class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all" title="浪漫紫"></button>
+            <button @click="setTheme('vibrant-pink')" class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all" title="活力粉"></button>
+            <button @click="setTheme('pure-white')" class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all" title="纯净白"></button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button @click="toggleDarkMode" :class="['w-12 h-6 rounded-full relative transition-all duration-200', isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]']">
+            <span :class="['absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200', isDark ? 'left-7' : 'left-1']"></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Points Adjustment Modal -->
+    <transition name="fade">
+      <div v-if="showPointsModal" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="modal-overlay absolute inset-0" @click="closePointsModal"></div>
+        <div class="relative glass-strong rounded-3xl p-8 w-full max-w-md mx-4 animate-scale-in">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white">调整用户积分</h3>
+            <button @click="closePointsModal" class="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center text-[#737686] hover:bg-white transition-all">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- User Info -->
+          <div class="flex items-center gap-3 mb-6 p-4 rounded-xl bg-white/50">
+            <div class="w-12 h-12 rounded-full avatar-gradient flex items-center justify-center text-white font-bold text-lg">
+              {{ selectedUser?.username?.charAt(0).toUpperCase() || 'U' }}
+            </div>
+            <div>
+              <div class="font-semibold text-[#191b23]">{{ selectedUser?.username }}</div>
+              <div class="text-sm text-[#737686]">当前积分: {{ selectedUser?.points?.toLocaleString() }}</div>
+            </div>
+          </div>
+
+          <!-- Toggle Increase/Decrease -->
+          <div class="flex gap-2 mb-6">
+            <button @click="pointsAction = 'increase'"
+                    :class="['toggle-btn flex-1 py-3 rounded-xl font-semibold text-sm transition-all', pointsAction === 'increase' ? 'active' : 'bg-white/50 text-[#737686] hover:bg-white/70']">
+              <span class="material-symbols-outlined text-lg align-middle mr-1">add</span>
+              增加积分
+            </button>
+            <button @click="pointsAction = 'decrease'"
+                    :class="['toggle-btn flex-1 py-3 rounded-xl font-semibold text-sm transition-all', pointsAction === 'decrease' ? 'active' : 'bg-white/50 text-[#737686] hover:bg-white/70']">
+              <span class="material-symbols-outlined text-lg align-middle mr-1">remove</span>
+              减少积分
+            </button>
+          </div>
+
+          <!-- Points Amount -->
+          <div class="mb-6">
+            <label class="block font-label-md text-sm text-[#737686] mb-2">积分数量</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#F59E0B]">stars</span>
+              <input v-model.number="pointsAmount"
+                     type="number"
+                     min="1"
+                     class="input pl-12 text-lg font-bold"
+                     placeholder="请输入积分数量" />
+            </div>
+          </div>
+
+          <!-- Reason -->
+          <div class="mb-6">
+            <label class="block font-label-md text-sm text-[#737686] mb-2">调整原因 <span class="text-red-500">*</span></label>
+            <textarea v-model="pointsReason"
+                      rows="3"
+                      class="w-full p-4 rounded-xl bg-white/50 border border-white/50 text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 resize-none"
+                      placeholder="请输入调整原因（必填）"></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button @click="closePointsModal"
+                    class="flex-1 py-3 rounded-xl bg-white/50 text-[#737686] font-semibold hover:bg-white transition-all">
+              取消
+            </button>
+            <button @click="submitPointsAdjustment"
+                    :disabled="!pointsAmount || !pointsReason"
+                    class="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#004ac6] to-[#2563eb] text-white font-semibold shadow-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              确认调整
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Reset Password Modal -->
+    <transition name="fade">
+      <div v-if="showResetModal" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="modal-overlay absolute inset-0" @click="showResetModal = false"></div>
+        <div class="relative glass-strong rounded-3xl p-8 w-full max-w-md mx-4 animate-scale-in">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 mx-auto mb-4 flex items-center justify-center">
+              <span class="material-symbols-outlined text-3xl text-amber-600">key</span>
+            </div>
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-2">重置用户密码</h3>
+            <p class="text-sm text-[#737686]">确认后将重置 <strong>{{ selectedUser?.username }}</strong> 的登录密码</p>
+          </div>
+
+          <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 mb-6">
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-amber-600">info</span>
+              <p class="text-sm text-amber-800 dark:text-amber-200">新密码将通过短信发送给用户绑定的手机号</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button @click="showResetModal = false"
+                    class="flex-1 py-3 rounded-xl bg-white/50 text-[#737686] font-semibold hover:bg-white transition-all">
+              取消
+            </button>
+            <button @click="confirmResetPassword"
+                    class="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#F59E0B] to-[#D97706] text-white font-semibold shadow-lg hover:opacity-90 transition-all">
+              确认重置
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { createApp, ref, computed } = Vue;
+
+    const app = createApp({
+      setup() {
+        const navItems = ref([
+          { name: 'Dashboard', icon: 'dashboard', active: false },
+          { name: '店铺管理', icon: 'storefront', active: false },
+          { name: '用户管理', icon: 'group', active: true },
+          { name: '订单管理', icon: 'receipt_long', active: false },
+          { name: '消息通知', icon: 'notifications', active: false },
+          { name: '个人中心', icon: 'person', active: false }
+        ]);
+
+        const searchQuery = ref('');
+        const showThemePanel = ref(false);
+        const isDark = ref(false);
+        const activeTab = ref('users');
+        const historyFilter = ref('all');
+
+        // Demo users data
+        const users = ref([
+          { id: 1, username: 'zhangwei', nickname: '张伟', points: 12580, registerType: '手机号', status: '正常' },
+          { id: 2, username: 'lily_chen', nickname: '陈丽丽', points: 8900, registerType: '微信', status: '正常' },
+          { id: 3, username: 'wangfang', nickname: '王芳', points: 3200, registerType: '手机号', status: '正常' },
+          { id: 4, username: 'mike_liu', nickname: '刘海', points: 15800, registerType: '微信', status: '冻结' },
+          { id: 5, username: 'sunny_zhao', nickname: '赵晴', points: 5600, registerType: '手机号', status: '正常' },
+          { id: 6, username: 'alice_wang', nickname: '王爱丽丝', points: 21000, registerType: '微信', status: '正常' },
+          { id: 7, username: 'zhangming', nickname: '张明', points: 780, registerType: '手机号', status: '正常' },
+          { id: 8, username: 'emma_zhou', nickname: '周emma', points: 45600, registerType: '微信', status: '正常' }
+        ]);
+
+        // Demo points history
+        const pointsHistory = ref([
+          { id: 1, userId: 1, type: '增加', amount: 500, balanceAfter: 12580, reason: '新用户注册奖励', operator: '系统', time: '2026-04-26 10:30' },
+          { id: 2, userId: 1, type: '订单', amount: -200, balanceAfter: 12080, reason: '兑换商品-马克杯', operator: 'zhangwei', time: '2026-04-25 15:22' },
+          { id: 3, userId: 2, type: '增加', amount: 1000, balanceAfter: 8900, reason: '活动奖励-限时翻倍', operator: 'admin', time: '2026-04-26 09:15' },
+          { id: 4, userId: 3, type: '减少', amount: 500, balanceAfter: 3200, reason: '积分退款-订单取消', operator: 'admin', time: '2026-04-24 18:45' },
+          { id: 5, userId: 4, type: '订单', amount: -800, balanceAfter: 15800, reason: '兑换商品-时尚背包', operator: 'mike_liu', time: '2026-04-25 12:30' },
+          { id: 6, userId: 5, type: '增加', amount: 200, balanceAfter: 5600, reason: '签到奖励', operator: '系统', time: '2026-04-26 08:00' },
+          { id: 7, userId: 6, type: '增加', amount: 5000, balanceAfter: 21000, reason: 'VIP会员积分赠送', operator: 'admin', time: '2026-04-23 14:20' },
+          { id: 8, userId: 7, type: '订单', amount: -300, balanceAfter: 780, reason: '兑换商品-手机支架', operator: 'zhangming', time: '2026-04-22 20:15' },
+          { id: 9, userId: 8, type: '增加', amount: 10000, balanceAfter: 45600, reason: '年度会员积分奖励', operator: '系统', time: '2026-04-21 10:00' },
+          { id: 10, userId: 1, type: '减少', amount: 1000, balanceAfter: 11080, reason: '积分兑换-优惠券', operator: 'zhangwei', time: '2026-04-20 16:30' }
+        ]);
+
+        const filteredUsers = computed(() => {
+          if (!searchQuery.value) return users.value;
+          const query = searchQuery.value.toLowerCase();
+          return users.value.filter(u =>
+            u.username.toLowerCase().includes(query) ||
+            u.nickname.toLowerCase().includes(query)
+          );
+        });
+
+        const filteredHistory = computed(() => {
+          if (historyFilter.value === 'all') return pointsHistory.value;
+          return pointsHistory.value.filter(r => {
+            if (historyFilter.value === 'increase') return r.type === '增加';
+            if (historyFilter.value === 'decrease') return r.type === '减少';
+            if (historyFilter.value === 'order') return r.type === '订单';
+            return true;
+          });
+        });
+
+        const showPointsModal = ref(false);
+        const showResetModal = ref(false);
+        const selectedUser = ref(null);
+        const pointsAction = ref('increase');
+        const pointsAmount = ref(null);
+        const pointsReason = ref('');
+
+        const setActive = (index) => {
+          navItems.value.forEach((item, i) => item.active = i === index);
+        };
+
+        const setTheme = (theme) => {
+          if (theme) document.documentElement.setAttribute('data-theme', theme);
+          else document.documentElement.removeAttribute('data-theme');
+          saveThemeState();
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          if (isDark.value) document.documentElement.setAttribute('data-mode', 'dark');
+          else document.documentElement.removeAttribute('data-mode');
+          saveThemeState();
+        };
+
+        const saveThemeState = () => {
+          localStorage.setItem('theme-color', document.documentElement.getAttribute('data-theme') || '');
+          localStorage.setItem('theme-dark', isDark.value.toString());
+        };
+
+        const restoreThemeState = () => {
+          const savedTheme = localStorage.getItem('theme-color');
+          const savedDark = localStorage.getItem('theme-dark');
+          if (savedTheme) setTheme(savedTheme);
+          if (savedDark === 'true') {
+            isDark.value = true;
+            document.documentElement.setAttribute('data-mode', 'dark');
+          }
+        };
+
+        const openPointsModal = (user) => {
+          selectedUser.value = user;
+          pointsAction.value = 'increase';
+          pointsAmount.value = null;
+          pointsReason.value = '';
+          showPointsModal.value = true;
+        };
+
+        const closePointsModal = () => {
+          showPointsModal.value = false;
+          selectedUser.value = null;
+        };
+
+        const submitPointsAdjustment = () => {
+          if (!pointsAmount.value || !pointsReason.value) return;
+
+          const adjustment = pointsAction.value === 'increase' ? pointsAmount.value : -pointsAmount.value;
+          const newBalance = selectedUser.value.points + adjustment;
+
+          // Update user's points
+          selectedUser.value.points = newBalance;
+
+          // Add to history
+          const newRecord = {
+            id: pointsHistory.value.length + 1,
+            userId: selectedUser.value.id,
+            type: pointsAction.value === 'increase' ? '增加' : '减少',
+            amount: pointsAmount.value,
+            balanceAfter: newBalance,
+            reason: pointsReason.value,
+            operator: 'admin',
+            time: new Date().toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(/\//g, '-')
+          };
+          pointsHistory.value.unshift(newRecord);
+
+          Utils.showToast(`积分${pointsAction.value === 'increase' ? '增加' : '减少'}成功`);
+          closePointsModal();
+        };
+
+        const viewHistory = (user) => {
+          activeTab.value = 'history';
+        };
+
+        const resetPassword = (user) => {
+          selectedUser.value = user;
+          showResetModal.value = true;
+        };
+
+        const confirmResetPassword = () => {
+          Utils.showToast(`密码已重置并将短信发送给 ${selectedUser.value.username}`);
+          showResetModal.value = false;
+          selectedUser.value = null;
+        };
+
+        restoreThemeState();
+
+        return {
+          navItems,
+          searchQuery,
+          showThemePanel,
+          isDark,
+          activeTab,
+          historyFilter,
+          users,
+          pointsHistory,
+          filteredUsers,
+          filteredHistory,
+          showPointsModal,
+          showResetModal,
+          selectedUser,
+          pointsAction,
+          pointsAmount,
+          pointsReason,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          openPointsModal,
+          closePointsModal,
+          submitPointsAdjustment,
+          viewHistory,
+          resetPassword,
+          confirmResetPassword
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+
+  <style>
+    .bubble { position: absolute; border-radius: 50%; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); animation: floatBubble linear infinite; }
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+    [data-mode="dark"] .bubble { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-color: rgba(255, 255, 255, 0.1); }
+    @keyframes floatBubble { 0%, 100% { transform: translate(0, 0) scale(1); } 25% { transform: translate(20px, -30px) scale(1.05); } 50% { transform: translate(-10px, -50px) scale(0.95); } 75% { transform: translate(15px, -20px) scale(1.02); } }
+    [data-mode="dark"] .sidebar-float { background: rgba(20, 20, 35, 0.5); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); }
+    [data-mode="dark"] .topbar-float { background: rgba(25, 25, 45, 0.5); border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3); }
+    [data-mode="dark"] .content-area { background: rgba(25, 25, 50, 0.35); border-color: rgba(255, 255, 255, 0.06); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); }
+  </style>
+</body>
+</html>

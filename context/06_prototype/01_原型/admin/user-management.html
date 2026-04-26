@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>用户管理 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="../common/common.js"></script>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">系统管理</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">ShopAdmin</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索..."
+              type="text"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!-- Page Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+                <span class="material-symbols-outlined fill-icon text-2xl">group</span>
+              </div>
+              <div>
+                <h1 class="font-headline-md text-[#191b23] dark:text-white">用户管理</h1>
+                <p class="font-body-md text-sm text-[#737686] dark:text-white/60 mt-1">管理系统所有用户，包括店铺用户和普通用户</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right mr-4">
+                <p class="text-2xl font-bold text-[#004ac6]">{{ filteredUsers.length }}</p>
+                <p class="text-xs text-[#737686]">当前显示</p>
+              </div>
+              <button @click="refreshUsers" class="btn btn-md btn-ghost">
+                <span class="material-symbols-outlined text-lg">refresh</span>
+                <span>刷新</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="glass rounded-2xl p-4 mb-6">
+          <div class="flex items-center gap-2">
+            <button
+              v-for="tab in filterTabs"
+              :key="tab.key"
+              @click="activeTab = tab.key"
+              :class="[
+                'px-6 py-3 rounded-xl font-semibold transition-all duration-300',
+                activeTab === tab.key
+                  ? 'bg-gradient-to-r from-[#004ac6] to-[#2563eb] text-white shadow-lg shadow-blue-500/30'
+                  : 'text-[#737686] hover:bg-white/50 hover:text-[#191b23]'
+              ]"
+            >
+              <span class="material-symbols-outlined text-lg mr-2 align-middle">{{ tab.icon }}</span>
+              {{ tab.name }}
+              <span v-if="tab.count !== undefined" class="ml-2 px-2 py-0.5 rounded-full text-xs" :class="activeTab === tab.key ? 'bg-white/20' : 'bg-gray-200/50'">
+                {{ tab.count }}
+              </span>
+            </button>
+
+            <div class="ml-auto flex items-center gap-3">
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+                <input
+                  v-model="tableSearch"
+                  class="bg-white/40 border border-white/50 rounded-xl py-2.5 pl-12 pr-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-56"
+                  placeholder="搜索用户名/昵称..."
+                  type="text"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="glass rounded-2xl overflow-hidden">
+          <table class="table">
+            <thead>
+              <tr class="bg-gradient-to-r from-[#f8f7ff] to-[#f0f0ff] dark:from-[#1a1a2e] dark:to-[#16162a]">
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">
+                  <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">person</span>
+                    用户名
+                  </span>
+                </th>
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">昵称</th>
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">
+                  <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">badge</span>
+                    角色
+                  </span>
+                </th>
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">
+                  <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">store</span>
+                    店铺
+                  </span>
+                </th>
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">
+                  <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">.circle</span>
+                    状态
+                  </span>
+                </th>
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">
+                  <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-base">calendar_today</span>
+                    创建日期
+                  </span>
+                </th>
+                <th class="py-4 px-6 text-left font-semibold text-[#737686] uppercase text-xs tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(user, index) in filteredUsers"
+                :key="user.id"
+                class="border-b border-white/10 hover:bg-white/30 transition-all duration-200"
+                :style="{ animationDelay: (index * 50) + 'ms' }"
+              >
+                <td class="py-4 px-6">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white font-bold text-sm">
+                      {{ user.username.charAt(0).toUpperCase() }}
+                    </div>
+                    <div>
+                      <p class="font-semibold text-[#191b23] dark:text-white">{{ user.username }}</p>
+                      <p class="text-xs text-[#737686] dark:text-white/50">ID: {{ user.id }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-4 px-6">
+                  <span class="text-[#191b23] dark:text-white font-medium">{{ user.nickname }}</span>
+                </td>
+                <td class="py-4 px-6">
+                  <span
+                    :class="[
+                      'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
+                      user.role === 'shop_admin'
+                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                        : user.role === 'shop_staff'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-300'
+                    ]"
+                  >
+                    <span class="material-symbols-outlined text-sm">{{ user.role === 'shop_admin' ? 'admin_panel_settings' : user.role === 'shop_staff' ? 'support_agent' : 'person' }}</span>
+                    {{ user.roleName }}
+                  </span>
+                </td>
+                <td class="py-4 px-6">
+                  <span v-if="user.shopName" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                    <span class="material-symbols-outlined text-sm">storefront</span>
+                    {{ user.shopName }}
+                  </span>
+                  <span v-else class="text-[#737686] text-sm">—</span>
+                </td>
+                <td class="py-4 px-6">
+                  <span
+                    :class="[
+                      'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold',
+                      user.status === 'active'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                        : user.status === 'inactive'
+                        ? 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                    ]"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" :class="user.status === 'active' ? 'bg-green-500' : user.status === 'inactive' ? 'bg-gray-400' : 'bg-red-500'"></span>
+                    {{ user.statusName }}
+                  </span>
+                </td>
+                <td class="py-4 px-6">
+                  <span class="text-[#737686] text-sm">{{ user.createdAt }}</span>
+                </td>
+                <td class="py-4 px-6">
+                  <div class="flex items-center gap-2">
+                    <button
+                      @click="openResetModal(user)"
+                      class="p-2 rounded-xl hover:bg-blue-50 text-[#737686] hover:text-[#004ac6] transition-all duration-200 group"
+                      title="重置密码"
+                    >
+                      <span class="material-symbols-outlined text-lg group-hover:rotate-45 transition-transform duration-300">key</span>
+                    </button>
+                    <button
+                      @click="toggleUserStatus(user)"
+                      :class="[
+                        'p-2 rounded-xl transition-all duration-200',
+                        user.status === 'active'
+                          ? 'hover:bg-orange-50 text-[#737686] hover:text-orange-500'
+                          : 'hover:bg-green-50 text-[#737686] hover:text-green-500'
+                      ]"
+                      :title="user.status === 'active' ? '禁用用户' : '启用用户'"
+                    >
+                      <span class="material-symbols-outlined text-lg">{{ user.status === 'active' ? 'person_off' : 'person_add' }}</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Empty State -->
+          <div v-if="filteredUsers.length === 0" class="py-16 text-center">
+            <div class="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+              <span class="material-symbols-outlined text-4xl text-[#737686]">search_off</span>
+            </div>
+            <p class="text-[#737686] font-medium">没有找到匹配的用户</p>
+            <p class="text-sm text-[#737686]/60 mt-1">尝试调整搜索条件或筛选选项</p>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex items-center justify-between px-6 py-4 border-t border-white/10">
+            <p class="text-sm text-[#737686]">
+              显示 {{ filteredUsers.length }} 条中的 {{ filteredUsers.length }} 条
+            </p>
+            <div class="flex items-center gap-2">
+              <button class="p-2 rounded-xl hover:bg-white/50 text-[#737686] transition-all disabled:opacity-50" disabled>
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button class="w-10 h-10 rounded-xl bg-gradient-to-r from-[#004ac6] to-[#2563eb] text-white font-semibold shadow-lg shadow-blue-500/30">1</button>
+              <button class="w-10 h-10 rounded-xl hover:bg-white/50 text-[#737686] transition-all">2</button>
+              <button class="w-10 h-10 rounded-xl hover:bg-white/50 text-[#737686] transition-all">3</button>
+              <button class="p-2 rounded-xl hover:bg-white/50 text-[#737686] transition-all">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Password Reset Modal -->
+    <transition name="fade">
+      <div v-if="showResetModal" class="fixed inset-0 z-50 flex items-center justify-center">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeResetModal"></div>
+
+        <!-- Modal Content -->
+        <div class="relative glass-strong rounded-3xl p-8 w-full max-w-md mx-4 animate-scale-in">
+          <!-- Close Button -->
+          <button @click="closeResetModal" class="absolute top-4 right-4 p-2 rounded-xl hover:bg-white/50 text-[#737686] transition-all">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+
+          <!-- Header -->
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#F59E0B] to-[#EF4444] flex items-center justify-center text-white shadow-lg">
+              <span class="material-symbols-outlined fill-icon text-2xl">key</span>
+            </div>
+            <div>
+              <h2 class="font-headline-md text-[#191b23] dark:text-white">重置密码</h2>
+              <p class="text-sm text-[#737686] mt-1">为用户 {{ selectedUser?.username }} 重置密码</p>
+            </div>
+          </div>
+
+          <!-- User Info -->
+          <div class="bg-white/30 rounded-2xl p-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white font-bold">
+                {{ selectedUser?.username?.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <p class="font-semibold text-[#191b23] dark:text-white">{{ selectedUser?.username }}</p>
+                <p class="text-sm text-[#737686]">{{ selectedUser?.nickname }} · {{ selectedUser?.roleName }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Password Input -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-[#191b23] dark:text-white mb-2">新密码</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686]">lock</span>
+              <input
+                v-model="newPassword"
+                :type="showPassword ? 'text' : 'password'"
+                class="input pl-12 pr-12"
+                placeholder="输入新密码（至少8位）"
+              />
+              <button
+                @click="showPassword = !showPassword"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-[#737686] hover:text-[#004ac6] transition-all"
+              >
+                <span class="material-symbols-outlined">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            <p class="text-xs text-[#737686] mt-2">密码长度至少8位，建议包含字母、数字和特殊字符</p>
+          </div>
+
+          <!-- Password Strength -->
+          <div class="mb-6">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs text-[#737686]">密码强度：</span>
+              <span :class="passwordStrength.class">{{ passwordStrength.text }}</span>
+            </div>
+            <div class="flex gap-1">
+              <div
+                v-for="i in 4"
+                :key="i"
+                :class="[
+                  'h-1.5 flex-1 rounded-full transition-all duration-300',
+                  i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-200'
+                ]"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-3">
+            <button @click="closeResetModal" class="btn btn-md btn-secondary flex-1">
+              取消
+            </button>
+            <button @click="confirmResetPassword" class="btn btn-md btn-primary flex-1">
+              <span class="material-symbols-outlined">check</span>
+              确认重置
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, watch } = Vue;
+
+    const app = createApp({
+      setup() {
+        const navItems = ref([
+          { name: 'Dashboard', icon: 'dashboard', active: false },
+          { name: '店铺管理', icon: 'storefront', active: false },
+          { name: '用户管理', icon: 'group', active: true },
+          { name: '订单管理', icon: 'receipt_long', active: false },
+          { name: '消息通知', icon: 'notifications', active: false },
+          { name: '个人中心', icon: 'person', active: false }
+        ]);
+
+        const searchQuery = ref('');
+        const showThemePanel = ref(false);
+        const isDark = ref(false);
+        const activeTab = ref('all');
+        const tableSearch = ref('');
+
+        const showResetModal = ref(false);
+        const selectedUser = ref(null);
+        const newPassword = ref('');
+        const showPassword = ref(false);
+
+        // Demo data
+        const users = ref([
+          { id: 1, username: 'admin001', nickname: '超级管理员', role: 'admin', roleName: '超级管理员', shopName: null, status: 'active', statusName: '正常', createdAt: '2024-01-15' },
+          { id: 2, username: 'shop_mgr_zhang', nickname: '张明', role: 'shop_admin', roleName: '店铺管理员', shopName: '优品数码专营店', status: 'active', statusName: '正常', createdAt: '2024-03-08' },
+          { id: 3, username: 'shop_staff_li', nickname: '李晓华', role: 'shop_staff', roleName: '店铺员工', shopName: '优品数码专营店', status: 'active', statusName: '正常', createdAt: '2024-03-12' },
+          { id: 4, username: 'shop_mgr_wang', nickname: '王芳', role: 'shop_admin', roleName: '店铺管理员', shopName: '潮流服饰旗舰店', status: 'active', statusName: '正常', createdAt: '2024-02-20' },
+          { id: 5, username: 'user_zhao', nickname: '赵伟', role: 'user', roleName: '普通用户', shopName: null, status: 'active', statusName: '正常', createdAt: '2024-04-01' },
+          { id: 6, username: 'user_qian', nickname: '钱婷', role: 'user', roleName: '普通用户', shopName: null, status: 'inactive', statusName: '已禁用', createdAt: '2024-03-25' },
+          { id: 7, username: 'shop_staff_sun', nickname: '孙丽', role: 'shop_staff', roleName: '店铺员工', shopName: '家居生活馆', status: 'active', statusName: '正常', createdAt: '2024-04-10' },
+          { id: 8, username: 'user_zhou', nickname: '周杰', role: 'user', roleName: '普通用户', shopName: null, status: 'active', statusName: '正常', createdAt: '2024-04-15' },
+          { id: 9, username: 'shop_mgr_wu', nickname: '吴静', role: 'shop_admin', roleName: '店铺管理员', shopName: '美妆护肤专营店', status: 'active', statusName: '正常', createdAt: '2024-01-28' },
+          { id: 10, username: 'user_zheng', nickname: '郑浩', role: 'user', roleName: '普通用户', shopName: null, status: 'locked', statusName: '已锁定', createdAt: '2024-02-14' },
+          { id: 11, username: 'shop_staff_zhang', nickname: '张红', role: 'shop_staff', roleName: '店铺员工', shopName: '美食天地', status: 'active', statusName: '正常', createdAt: '2024-04-18' },
+          { id: 12, username: 'user_lin', nickname: '林美', role: 'user', roleName: '普通用户', shopName: null, status: 'active', statusName: '正常', createdAt: '2024-04-20' }
+        ]);
+
+        const filterTabs = computed(() => [
+          { key: 'all', name: '全部', icon: 'group', count: users.value.length },
+          { key: 'shop', name: '店铺用户', icon: 'storefront', count: users.value.filter(u => u.role === 'shop_admin' || u.role === 'shop_staff').length },
+          { key: 'regular', name: '普通用户', icon: 'person', count: users.value.filter(u => u.role === 'user').length }
+        ]);
+
+        const filteredUsers = computed(() => {
+          let result = users.value;
+
+          // Filter by tab
+          if (activeTab.value === 'shop') {
+            result = result.filter(u => u.role === 'shop_admin' || u.role === 'shop_staff');
+          } else if (activeTab.value === 'regular') {
+            result = result.filter(u => u.role === 'user');
+          }
+
+          // Filter by search
+          if (tableSearch.value) {
+            const search = tableSearch.value.toLowerCase();
+            result = result.filter(u =>
+              u.username.toLowerCase().includes(search) ||
+              u.nickname.toLowerCase().includes(search)
+            );
+          }
+
+          return result;
+        });
+
+        const passwordStrength = computed(() => {
+          const pwd = newPassword.value;
+          let score = 0;
+          let text = '未输入';
+          let className = 'text-[#737686]';
+          let color = 'bg-gray-200';
+
+          if (!pwd) {
+            return { score: 0, text, class: className, color };
+          }
+
+          if (pwd.length >= 8) score++;
+          if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) score++;
+          if (/\d/.test(pwd)) score++;
+          if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) score++;
+
+          const levels = [
+            { text: '弱', class: 'text-red-500', color: 'bg-red-500' },
+            { text: '较弱', class: 'text-orange-500', color: 'bg-orange-500' },
+            { text: '中等', class: 'text-yellow-500', color: 'bg-yellow-500' },
+            { text: '强', class: 'text-green-500', color: 'bg-green-500' }
+          ];
+
+          const level = levels[Math.min(score - 1, 3)];
+          return { score, ...level };
+        });
+
+        const setActive = (index) => {
+          navItems.value.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        const setTheme = (theme) => {
+          if (theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          if (isDark.value) {
+            document.documentElement.setAttribute('data-mode', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-mode');
+          }
+        };
+
+        const refreshUsers = () => {
+          window.Utils.showToast('用户列表已刷新');
+        };
+
+        const openResetModal = (user) => {
+          selectedUser.value = user;
+          newPassword.value = '';
+          showResetModal.value = true;
+        };
+
+        const closeResetModal = () => {
+          showResetModal.value = false;
+          selectedUser.value = null;
+          newPassword.value = '';
+        };
+
+        const confirmResetPassword = () => {
+          if (newPassword.value.length < 8) {
+            window.Utils.showToast('密码长度至少8位', 3000);
+            return;
+          }
+          window.Utils.showToast(`密码已重置给用户 ${selectedUser.value.username}`);
+          closeResetModal();
+        };
+
+        const toggleUserStatus = (user) => {
+          const actions = {
+            active: { next: 'inactive', msg: '已禁用用户' },
+            inactive: { next: 'active', msg: '已启用用户' },
+            locked: { next: 'active', msg: '已解锁用户' }
+          };
+          const action = actions[user.status];
+          user.status = action.next;
+          window.Utils.showToast(action.msg);
+        };
+
+        return {
+          navItems,
+          searchQuery,
+          showThemePanel,
+          isDark,
+          activeTab,
+          tableSearch,
+          showResetModal,
+          selectedUser,
+          newPassword,
+          showPassword,
+          users,
+          filterTabs,
+          filteredUsers,
+          passwordStrength,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          refreshUsers,
+          openResetModal,
+          closeResetModal,
+          confirmResetPassword,
+          toggleUserStatus
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+
+  <style>
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    [data-mode="dark"] .bubble {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .glass {
+      background: rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-mode="dark"] .glass-strong {
+      background: rgba(30, 30, 50, 0.8);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .table tbody tr {
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+  </style>
+</body>
+</html>

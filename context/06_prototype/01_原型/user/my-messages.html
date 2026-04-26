@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>我的消息 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="../common/common.js"></script>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">shopping_bag</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">用户中心</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">积分商城</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">我的消息</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索..."
+              type="text"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span v-if="unreadCount > 0" class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="font-headline-md text-[#191b23] dark:text-white mb-1">消息中心</h1>
+            <p class="font-body-md text-sm text-[#737686] dark:text-white/60">查看所有消息通知</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button v-if="unreadCount > 0" @click="markAllAsRead" class="btn btn-md btn-ghost">
+              <span class="material-symbols-outlined text-lg">done_all</span>
+              全部已读
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="glass rounded-2xl p-2 mb-6 flex gap-2">
+          <button
+            v-for="tab in tabs"
+            :key="tab.key"
+            @click="activeTab = tab.key"
+            :class="[
+              'flex items-center gap-2 px-5 py-2.5 rounded-xl font-body-md text-sm font-medium transition-all',
+              activeTab === tab.key
+                ? 'bg-gradient-to-r from-[#004ac6] to-[#2563eb] text-white shadow-lg shadow-[#004ac6]/20'
+                : 'text-[#737686] hover:text-[#191b23] dark:hover:text-white hover:bg-white/50'
+            ]"
+          >
+            <span>{{ tab.name }}</span>
+            <span v-if="tab.count > 0" :class="[
+              'px-2 py-0.5 rounded-full text-xs font-semibold',
+              activeTab === tab.key ? 'bg-white/20' : 'bg-[#004ac6]/10 text-[#004ac6]'
+            ]">{{ tab.count }}</span>
+          </button>
+        </div>
+
+        <!-- Message List -->
+        <div class="flex flex-col gap-4">
+          <div
+            v-for="(message, index) in filteredMessages"
+            :key="message.id"
+            :class="[
+              'glass rounded-2xl p-5 transition-all duration-300 animate-slide-up cursor-pointer',
+              message.unread ? 'border-l-4 border-[#004ac6]' : 'border-l-4 border-transparent hover:border-[#004ac6]/30'
+            ]"
+            :style="{ animationDelay: (index * 0.05) + 's' }"
+            @click="openMessage(message)"
+          >
+            <div class="flex items-start gap-4">
+              <!-- Icon -->
+              <div :class="[
+                'w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
+                message.type === 'system' ? 'bg-gradient-to-br from-[#8B5CF6] to-[#712ae2] shadow-lg shadow-[#8B5CF6]/20' :
+                message.type === 'order' ? 'bg-gradient-to-br from-[#10B981] to-[#059669] shadow-lg shadow-[#10B981]/20' :
+                'bg-gradient-to-br from-[#004ac6] to-[#2563eb] shadow-lg shadow-[#004ac6]/20'
+              ]">
+                <span class="material-symbols-outlined text-white text-xl">{{ message.icon }}</span>
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-4 mb-2">
+                  <div class="flex items-center gap-2">
+                    <h3 :class="[
+                      'font-headline-sm truncate',
+                      message.unread ? 'text-[#191b23] dark:text-white' : 'text-[#737686] dark:text-white/70'
+                    ]">{{ message.title }}</h3>
+                    <span v-if="message.unread" class="w-2 h-2 rounded-full bg-[#004ac6] flex-shrink-0"></span>
+                  </div>
+                  <span class="text-xs text-[#737686] dark:text-white/50 flex-shrink-0">{{ message.time }}</span>
+                </div>
+                <p class="font-body-md text-sm text-[#737686] dark:text-white/60 line-clamp-2 mb-3">{{ message.content }}</p>
+                <div class="flex items-center justify-between">
+                  <span :class="[
+                    'badge',
+                    message.type === 'system' ? 'badge-primary' :
+                    message.type === 'order' ? 'badge-success' : 'badge-warning'
+                  ]">
+                    <span class="material-symbols-outlined text-xs">{{ message.type === 'system' ? 'settings' : message.type === 'order' ? 'receipt_long' : 'info' }}</span>
+                    {{ message.typeName }}
+                  </span>
+                  <div class="flex items-center gap-2" @click.stop>
+                    <button
+                      v-if="message.unread"
+                      @click="markAsRead(message.id)"
+                      class="text-xs text-[#004ac6] hover:text-[#2563eb] font-medium flex items-center gap-1"
+                    >
+                      <span class="material-symbols-outlined text-sm">check</span>
+                      标记已读
+                    </button>
+                    <button
+                      @click="deleteMessage(message.id)"
+                      class="text-xs text-[#737686] hover:text-[#EF4444] font-medium flex items-center gap-1"
+                    >
+                      <span class="material-symbols-outlined text-sm">delete</span>
+                      删除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="filteredMessages.length === 0" class="glass rounded-2xl p-10 flex flex-col items-center justify-center">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#e1e2ed] to-[#c3c6d7] dark:from-[#2e2e3a] dark:to-[#262630] flex items-center justify-center mb-5">
+              <span class="material-symbols-outlined text-[#737686] text-3xl">inbox</span>
+            </div>
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white/90 mb-2">暂无消息</h3>
+            <p class="font-body-md text-sm text-[#737686] dark:text-white/60 text-center">
+              {{ activeTab === 'all' ? '当前没有消息通知' : activeTab === 'system' ? '暂无系统通知' : '暂无订单通知' }}
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+            <button
+              @click="setTheme('pure-white')"
+              class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="纯净白"
+            ></button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Message Detail Modal -->
+    <transition name="fade">
+      <div v-if="showMessageModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeMessage">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+        <div class="relative glass-dark rounded-3xl p-6 w-full max-w-lg animate-scale-in">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-headline-md text-[#191b23] dark:text-white">消息详情</h2>
+            <button @click="closeMessage" class="p-2 rounded-xl hover:bg-white/10 transition-all text-[#737686]">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div v-if="currentMessage" class="space-y-4">
+            <div class="flex items-center gap-3 pb-4 border-b border-white/10">
+              <div :class="[
+                'w-10 h-10 rounded-xl flex items-center justify-center',
+                currentMessage.type === 'system' ? 'bg-gradient-to-br from-[#8B5CF6] to-[#712ae2]' :
+                currentMessage.type === 'order' ? 'bg-gradient-to-br from-[#10B981] to-[#059669]' :
+                'bg-gradient-to-br from-[#004ac6] to-[#2563eb]'
+              ]">
+                <span class="material-symbols-outlined text-white">{{ currentMessage.icon }}</span>
+              </div>
+              <div>
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white">{{ currentMessage.title }}</h3>
+                <span class="text-xs text-[#737686]">{{ currentMessage.time }}</span>
+              </div>
+            </div>
+            <div class="py-4">
+              <p class="font-body-md text-[#434655] dark:text-white/80 leading-relaxed whitespace-pre-wrap">{{ currentMessage.fullContent }}</p>
+            </div>
+            <div class="flex items-center justify-between pt-4 border-t border-white/10">
+              <span :class="[
+                'badge',
+                currentMessage.type === 'system' ? 'badge-primary' :
+                currentMessage.type === 'order' ? 'badge-success' : 'badge-warning'
+              ]">
+                {{ currentMessage.typeName }}
+              </span>
+              <div class="flex gap-2">
+                <button
+                  v-if="currentMessage.unread"
+                  @click="markAsRead(currentMessage.id); closeMessage();"
+                  class="btn btn-sm btn-ghost"
+                >
+                  <span class="material-symbols-outlined text-sm">check</span>
+                  标记已读
+                </button>
+                <button
+                  @click="deleteMessage(currentMessage.id); closeMessage();"
+                  class="btn btn-sm btn-danger"
+                >
+                  <span class="material-symbols-outlined text-sm">delete</span>
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, onMounted } = Vue;
+
+    const app = createApp({
+      setup() {
+        // Navigation items
+        const navItems = ref([
+          { name: '商品列表', icon: 'shopping_bag', active: false },
+          { name: '我的订单', icon: 'receipt_long', active: false },
+          { name: '个人中心', icon: 'person', active: false },
+          { name: '我的消息', icon: 'notifications', active: true }
+        ]);
+
+        const searchQuery = ref('');
+        const showThemePanel = ref(false);
+        const isDark = ref(false);
+        const activeTab = ref('all');
+        const showMessageModal = ref(false);
+        const currentMessage = ref(null);
+
+        // Messages data
+        const messages = ref([
+          {
+            id: 1,
+            type: 'system',
+            typeName: '系统通知',
+            icon: 'settings',
+            title: '系统升级通知',
+            content: '积分商城系统将于本周日凌晨2:00-6:00进行升级维护，届时部分功能将暂停使用，请提前做好准备...',
+            fullContent: '尊敬的用户：\n\n积分商城系统将于本周日（4月28日）凌晨2:00-6:00进行升级维护，届时部分功能将暂停使用。\n\n升级内容：\n1. 优化商品搜索算法\n2. 新增积分兑换优惠券功能\n3. 修复已知问题\n\n请提前做好相关准备，如有紧急问题请联系客服。\n\n给您带来的不便敬请谅解！',
+            time: '10分钟前',
+            unread: true
+          },
+          {
+            id: 2,
+            type: 'order',
+            typeName: '订单通知',
+            icon: 'local_shipping',
+            title: '订单已发货',
+            content: '您的订单 #ORDER20260426001 已发货，快递单号：SF1234567890，预计3天内送达...',
+            fullContent: '订单编号：#ORDER20260426001\n\n商品信息：\n- 智能手环 Pro版 x1\n- 积分兑换商品\n\n快递公司：顺丰速运\n快递单号：SF1234567890\n\n预计送达时间：3天内\n\n点击查看物流详情',
+            time: '30分钟前',
+            unread: true
+          },
+          {
+            id: 3,
+            type: 'order',
+            typeName: '订单通知',
+            icon: 'verified',
+            title: '订单已完成',
+            content: '您的订单 #ORDER20260425003 已确认收货，订单已完成，感谢您的购买！',
+            fullContent: '订单编号：#ORDER20260425003\n\n商品信息：\n- 运动蓝牙耳机 x1\n- 支付积分：5000\n\n订单状态：已完成\n收货时间：2026-04-26 10:30\n\n感谢您的购买，欢迎再次光临！',
+            time: '2小时前',
+            unread: false
+          },
+          {
+            id: 4,
+            type: 'system',
+            typeName: '系统通知',
+            icon: 'card_giftcard',
+            title: '恭喜获得优惠券',
+            content: '恭喜您获得一张新人专享优惠券，满100积分减20积分，有效期至2026年5月31日...',
+            fullContent: '恭喜您获得一张新人专享优惠券！\n\n优惠券信息：\n- 优惠券名称：新人专享券\n- 优惠力度：满100积分减20积分\n- 有效期：2026-04-26 至 2026-05-31\n- 使用范围：全平台通用\n\n快去使用吧！',
+            time: '昨天',
+            unread: true
+          },
+          {
+            id: 5,
+            type: 'order',
+            typeName: '订单通知',
+            icon: 'inventory',
+            title: '商品库存提醒',
+            content: '您关注的商品「智能手表S5」库存不足，仅剩3件，喜欢的赶紧下单哦！',
+            fullContent: '商品库存提醒\n\n商品名称：智能手表S5\n关注价格：2999积分\n\n当前状态：库存不足\n剩余数量：3件\n\n温馨提示：库存有限，先购先得！',
+            time: '昨天',
+            unread: false
+          },
+          {
+            id: 6,
+            type: 'system',
+            typeName: '系统通知',
+            icon: 'stars',
+            title: '恭喜晋升等级',
+            content: '恭喜您已晋升为「金牌会员」，享受更多专属特权和折扣优惠！',
+            fullContent: '恭喜您晋升为「金牌会员」！\n\n等级权益：\n1. 购物享受9折优惠\n2. 专属客服通道\n3. 每月额外赠送500积分\n4. 优先参与限时活动\n\n感谢您一直以来的支持！',
+            time: '3天前',
+            unread: false
+          },
+          {
+            id: 7,
+            type: 'system',
+            typeName: '系统通知',
+            icon: 'campaign',
+            title: '五一活动公告',
+            content: '五一劳动节期间（5月1日-5月5日），全场商品积分兑换享8折优惠，更多好礼等你来拿！',
+            fullContent: '五一劳动节特别活动\n\n活动时间：2026年5月1日-5月5日\n\n活动内容：\n1. 全场商品积分兑换享8折优惠\n2. 每日签到双倍积分\n3. 订单满500积分返50积分\n4. 会员专享限时秒杀\n\n更多活动详情请关注商城首页！',
+            time: '1周前',
+            unread: false
+          }
+        ]);
+
+        // Tabs with counts
+        const tabs = computed(() => [
+          { key: 'all', name: '全部', count: messages.value.length },
+          { key: 'system', name: '系统通知', count: messages.value.filter(m => m.type === 'system').length },
+          { key: 'order', name: '订单通知', count: messages.value.filter(m => m.type === 'order').length }
+        ]);
+
+        // Filtered messages
+        const filteredMessages = computed(() => {
+          let filtered = messages.value;
+          if (activeTab.value !== 'all') {
+            filtered = filtered.filter(m => m.type === activeTab.value);
+          }
+          if (searchQuery.value) {
+            const query = searchQuery.value.toLowerCase();
+            filtered = filtered.filter(m =>
+              m.title.toLowerCase().includes(query) ||
+              m.content.toLowerCase().includes(query)
+            );
+          }
+          return filtered;
+        });
+
+        // Unread count
+        const unreadCount = computed(() => messages.value.filter(m => m.unread).length);
+
+        // Set active nav
+        const setActive = (index) => {
+          navItems.value.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        // Theme functions
+        const setTheme = (theme) => {
+          if (theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          if (isDark.value) {
+            document.documentElement.setAttribute('data-mode', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-mode');
+          }
+        };
+
+        // Message functions
+        const markAsRead = (id) => {
+          const message = messages.value.find(m => m.id === id);
+          if (message) {
+            message.unread = false;
+          }
+        };
+
+        const markAllAsRead = () => {
+          messages.value.forEach(m => {
+            m.unread = false;
+          });
+        };
+
+        const deleteMessage = (id) => {
+          const index = messages.value.findIndex(m => m.id === id);
+          if (index > -1) {
+            messages.value.splice(index, 1);
+          }
+        };
+
+        const openMessage = (message) => {
+          currentMessage.value = message;
+          showMessageModal.value = true;
+          if (message.unread) {
+            markAsRead(message.id);
+          }
+        };
+
+        const closeMessage = () => {
+          showMessageModal.value = false;
+          currentMessage.value = null;
+        };
+
+        // Restore theme state on mount
+        onMounted(() => {
+          const savedTheme = localStorage.getItem('theme-color');
+          const savedDark = localStorage.getItem('theme-dark');
+          if (savedTheme) {
+            setTheme(savedTheme);
+          }
+          if (savedDark === 'true') {
+            isDark.value = true;
+            document.documentElement.setAttribute('data-mode', 'dark');
+          }
+        });
+
+        return {
+          navItems,
+          searchQuery,
+          showThemePanel,
+          isDark,
+          activeTab,
+          tabs,
+          messages,
+          filteredMessages,
+          unreadCount,
+          showMessageModal,
+          currentMessage,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          markAsRead,
+          markAllAsRead,
+          deleteMessage,
+          openMessage,
+          closeMessage
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+
+  <style>
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    [data-mode="dark"] .bubble {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</body>
+</html>

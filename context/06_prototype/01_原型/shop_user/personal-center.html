@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>个人中心 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="../common/common.js"></script>
+
+  <style>
+    /* 页面特定样式 */
+    .avatar-ring {
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+      padding: 4px;
+    }
+
+    .avatar-inner {
+      background: var(--color-surface-container-lowest);
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.25s ease;
+    }
+
+    .info-item:hover {
+      background: rgba(255, 255, 255, 0.8);
+      transform: translateX(4px);
+    }
+
+    .section-card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 32px;
+      padding: 32px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .section-card:hover {
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .form-input {
+      width: 100%;
+      height: 52px;
+      padding: 0 20px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 16px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--color-on-surface);
+      transition: all 0.25s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.95);
+      border-color: var(--theme-primary);
+      box-shadow: 0 0 0 4px rgba(var(--theme-rgb-primary), 0.15);
+    }
+
+    .form-input::placeholder {
+      color: var(--color-outline);
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(var(--theme-rgb-primary), 0.3);
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(var(--theme-rgb-primary), 0.03);
+    }
+
+    .upload-zone:hover {
+      border-color: var(--theme-primary);
+      background: rgba(var(--theme-rgb-primary), 0.08);
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: var(--color-outline);
+      transition: color 0.2s ease;
+    }
+
+    .password-toggle:hover {
+      color: var(--theme-primary);
+    }
+
+    /* 浮动气泡动画 */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    /* 暗色模式 */
+    [data-mode="dark"] .section-card {
+      background: rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-mode="dark"] .info-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-mode="dark"] .info-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-mode="dark"] .form-input {
+      background: rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--color-on-surface);
+    }
+
+    [data-mode="dark"] .form-input:focus {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+    }
+
+    /* 动画 */
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+      color: white;
+      box-shadow: 0 8px 32px rgba(var(--theme-rgb-primary), 0.35);
+      border: none;
+      padding: 14px 32px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(var(--theme-rgb-primary), 0.45);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--theme-primary);
+      color: var(--theme-primary);
+      padding: 12px 28px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(var(--theme-rgb-primary), 0.08);
+    }
+  </style>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">店铺管理系统</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">个人中心</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索..."
+              type="text"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <div class="max-w-4xl mx-auto">
+          <!-- Page Header -->
+          <div class="mb-8">
+            <h1 class="font-headline-md text-[#191b23] dark:text-white mb-2">个人中心</h1>
+            <p class="font-body-md text-sm text-[#737686] dark:text-white/60">管理您的个人信息和账户设置</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column: Avatar & Account Info -->
+            <div class="lg:col-span-1 space-y-6">
+              <!-- Avatar Card -->
+              <div class="section-card text-center">
+                <div class="avatar-ring rounded-full w-32 h-32 mx-auto mb-4">
+                  <div class="avatar-inner rounded-full w-full h-full flex items-center justify-center overflow-hidden">
+                    <img v-if="user.avatar" :src="user.avatar" alt="用户头像" class="w-full h-full object-cover"/>
+                    <span v-else class="material-symbols-outlined text-5xl text-[#737686]">account_circle</span>
+                  </div>
+                </div>
+                <h2 class="font-headline-sm text-[#191b23] dark:text-white mb-1">{{ user.nickname || user.username }}</h2>
+                <p class="font-body-md text-sm text-[#737686] dark:text-white/60 mb-4">&#64;{{ user.username }}</p>
+                <label class="btn-secondary inline-flex items-center gap-2 cursor-pointer">
+                  <span class="material-symbols-outlined text-lg">camera_alt</span>
+                  <span>更换头像</span>
+                  <input type="file" accept="image/*" class="hidden" @change="handleAvatarChange"/>
+                </label>
+              </div>
+
+              <!-- Account Info Card -->
+              <div class="section-card">
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-4 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#004ac6]">info</span>
+                  账户信息
+                </h3>
+                <div class="space-y-3">
+                  <div class="info-item">
+                    <span class="material-symbols-outlined text-[#737686] mr-3">badge</span>
+                    <div class="flex-1">
+                      <p class="font-label-md text-[#737686] text-xs mb-0.5">角色</p>
+                      <p class="font-body-md text-[#191b23] dark:text-white font-medium">{{ user.role }}</p>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <span class="material-symbols-outlined text-[#737686] mr-3">store</span>
+                    <div class="flex-1">
+                      <p class="font-label-md text-[#737686] text-xs mb-0.5">店铺名称</p>
+                      <p class="font-body-md text-[#191b23] dark:text-white font-medium">{{ user.shopName }}</p>
+                    </div>
+                  </div>
+                  <div class="info-item">
+                    <span class="material-symbols-outlined text-[#737686] mr-3">calendar_today</span>
+                    <div class="flex-1">
+                      <p class="font-label-md text-[#737686] text-xs mb-0.5">加入日期</p>
+                      <p class="font-body-md text-[#191b23] dark:text-white font-medium">{{ user.joinDate }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Edit Profile & Change Password -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Edit Profile Card -->
+              <div class="section-card">
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-6 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#004ac6]">edit</span>
+                  编辑资料
+                </h3>
+                <form @submit.prevent="saveProfile">
+                  <div class="space-y-5">
+                    <div>
+                      <label class="font-label-md text-[#737686] block mb-2">用户名</label>
+                      <input
+                        type="text"
+                        class="form-input"
+                        v-model="editForm.username"
+                        disabled
+                        placeholder="用户名不可修改"
+                      />
+                    </div>
+                    <div>
+                      <label class="font-label-md text-[#737686] block mb-2">昵称</label>
+                      <input
+                        type="text"
+                        class="form-input"
+                        v-model="editForm.nickname"
+                        :placeholder="'请输入昵称，当前：' + user.nickname"
+                      />
+                    </div>
+                    <div>
+                      <label class="font-label-md text-[#737686] block mb-2">邮箱</label>
+                      <input
+                        type="email"
+                        class="form-input"
+                        v-model="editForm.email"
+                        placeholder="请输入邮箱"
+                      />
+                    </div>
+                    <div>
+                      <label class="font-label-md text-[#737686] block mb-2">手机号</label>
+                      <input
+                        type="tel"
+                        class="form-input"
+                        v-model="editForm.phone"
+                        placeholder="请输入手机号"
+                      />
+                    </div>
+                  </div>
+                  <div class="mt-6 flex gap-3">
+                    <button type="submit" class="btn-primary">保存修改</button>
+                    <button type="button" class="btn-secondary" @click="resetForm">重置</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Change Password Card -->
+              <div class="section-card">
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-6 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#004ac6]">lock</span>
+                  修改密码
+                </h3>
+                <form @submit.prevent="changePassword">
+                  <div class="space-y-5">
+                    <div class="relative">
+                      <label class="font-label-md text-[#737686] block mb-2">当前密码</label>
+                      <input
+                        :type="showCurrentPassword ? 'text' : 'password'"
+                        class="form-input pr-12"
+                        v-model="passwordForm.currentPassword"
+                        placeholder="请输入当前密码"
+                      />
+                      <span class="password-toggle" @click="showCurrentPassword = !showCurrentPassword">
+                        <span class="material-symbols-outlined">{{ showCurrentPassword ? 'visibility_off' : 'visibility' }}</span>
+                      </span>
+                    </div>
+                    <div class="relative">
+                      <label class="font-label-md text-[#737686] block mb-2">新密码</label>
+                      <input
+                        :type="showNewPassword ? 'text' : 'password'"
+                        class="form-input pr-12"
+                        v-model="passwordForm.newPassword"
+                        placeholder="请输入新密码（至少8位）"
+                      />
+                      <span class="password-toggle" @click="showNewPassword = !showNewPassword">
+                        <span class="material-symbols-outlined">{{ showNewPassword ? 'visibility_off' : 'visibility' }}</span>
+                      </span>
+                    </div>
+                    <div class="relative">
+                      <label class="font-label-md text-[#737686] block mb-2">确认新密码</label>
+                      <input
+                        :type="showConfirmPassword ? 'text' : 'password'"
+                        class="form-input pr-12"
+                        v-model="passwordForm.confirmPassword"
+                        placeholder="请再次输入新密码"
+                      />
+                      <span class="password-toggle" @click="showConfirmPassword = !showConfirmPassword">
+                        <span class="material-symbols-outlined">{{ showConfirmPassword ? 'visibility_off' : 'visibility' }}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="mt-6">
+                    <button type="submit" class="btn-primary">修改密码</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Avatar Upload Card -->
+              <div class="section-card">
+                <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-6 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#004ac6]">photo_library</span>
+                  头像上传
+                </h3>
+                <div class="upload-zone" @click="$refs.avatarInput.click()" @dragover.prevent @drop.prevent="handleDrop">
+                  <input type="file" ref="avatarInput" accept="image/*" class="hidden" @change="handleAvatarUpload"/>
+                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined fill-icon text-3xl text-white">cloud_upload</span>
+                  </div>
+                  <p class="font-body-md text-[#191b23] dark:text-white mb-1">点击或拖拽图片到此处上传</p>
+                  <p class="font-label-md text-[#737686] text-xs">支持 JPG、PNG、GIF 格式，文件大小不超过 2MB</p>
+                </div>
+                <div v-if="uploadPreview" class="mt-4 flex items-center gap-4 p-4 bg-white/50 rounded-xl">
+                  <img :src="uploadPreview" alt="预览" class="w-20 h-20 rounded-xl object-cover"/>
+                  <div class="flex-1">
+                    <p class="font-body-md text-[#191b23] dark:text-white font-medium">{{ uploadFileName }}</p>
+                    <p class="font-label-md text-[#737686] text-xs">{{ uploadFileSize }}</p>
+                  </div>
+                  <button @click="confirmUpload" class="btn-primary py-2 px-4 text-sm">确认上传</button>
+                  <button @click="cancelUpload" class="btn-secondary py-2 px-4 text-sm">取消</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+            <button
+              @click="setTheme('pure-white')"
+              class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="纯净白"
+            ></button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive } = Vue;
+
+    const app = createApp({
+      setup() {
+        const navItems = ref([
+          { name: 'Dashboard', icon: 'dashboard', active: false },
+          { name: '店铺管理', icon: 'storefront', active: false },
+          { name: '用户管理', icon: 'group', active: false },
+          { name: '订单管理', icon: 'receipt_long', active: false },
+          { name: '消息通知', icon: 'notifications', active: false },
+          { name: '个人中心', icon: 'person', active: true }
+        ]);
+
+        const searchQuery = ref('');
+        const showThemePanel = ref(false);
+        const isDark = ref(false);
+
+        // 用户信息
+        const user = reactive({
+          username: 'shop_manager',
+          nickname: '李明',
+          email: 'liming@example.com',
+          phone: '138****8888',
+          avatar: '',
+          role: '店铺用户',
+          shopName: '优品生活馆',
+          joinDate: '2024-03-15'
+        });
+
+        // 编辑表单
+        const editForm = reactive({
+          username: user.username,
+          nickname: user.nickname,
+          email: user.email,
+          phone: user.phone
+        });
+
+        // 密码表单
+        const passwordForm = reactive({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+
+        // 密码可见性
+        const showCurrentPassword = ref(false);
+        const showNewPassword = ref(false);
+        const showConfirmPassword = ref(false);
+
+        // 上传预览
+        const uploadPreview = ref('');
+        const uploadFileName = ref('');
+        const uploadFileSize = ref('');
+
+        const setActive = (index) => {
+          navItems.value.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        const setTheme = (theme) => {
+          if (theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          if (isDark.value) {
+            document.documentElement.setAttribute('data-mode', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-mode');
+          }
+        };
+
+        const saveProfile = () => {
+          user.nickname = editForm.nickname;
+          user.email = editForm.email;
+          user.phone = editForm.phone;
+          if (window.Utils) {
+            window.Utils.showToast('个人信息已保存');
+          }
+        };
+
+        const resetForm = () => {
+          editForm.nickname = user.nickname;
+          editForm.email = user.email;
+          editForm.phone = user.phone;
+        };
+
+        const changePassword = () => {
+          if (!passwordForm.currentPassword) {
+            if (window.Utils) window.Utils.showToast('请输入当前密码');
+            return;
+          }
+          if (!passwordForm.newPassword) {
+            if (window.Utils) window.Utils.showToast('请输入新密码');
+            return;
+          }
+          if (passwordForm.newPassword.length < 8) {
+            if (window.Utils) window.Utils.showToast('新密码至少8位');
+            return;
+          }
+          if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            if (window.Utils) window.Utils.showToast('两次密码输入不一致');
+            return;
+          }
+          if (window.Utils) {
+            window.Utils.showToast('密码修改成功');
+          }
+          passwordForm.currentPassword = '';
+          passwordForm.newPassword = '';
+          passwordForm.confirmPassword = '';
+        };
+
+        const handleAvatarChange = (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+              if (window.Utils) window.Utils.showToast('图片大小不能超过2MB');
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              user.avatar = event.target.result;
+              if (window.Utils) window.Utils.showToast('头像已更新');
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        const handleAvatarUpload = (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            previewFile(file);
+          }
+        };
+
+        const handleDrop = (e) => {
+          const file = e.dataTransfer.files[0];
+          if (file && file.type.startsWith('image/')) {
+            previewFile(file);
+          }
+        };
+
+        const previewFile = (file) => {
+          if (file.size > 2 * 1024 * 1024) {
+            if (window.Utils) window.Utils.showToast('图片大小不能超过2MB');
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            uploadPreview.value = event.target.result;
+            uploadFileName.value = file.name;
+            uploadFileSize.value = (file.size / 1024).toFixed(1) + ' KB';
+          };
+          reader.readAsDataURL(file);
+        };
+
+        const confirmUpload = () => {
+          user.avatar = uploadPreview.value;
+          if (window.Utils) window.Utils.showToast('头像上传成功');
+          cancelUpload();
+        };
+
+        const cancelUpload = () => {
+          uploadPreview.value = '';
+          uploadFileName.value = '';
+          uploadFileSize.value = '';
+        };
+
+        return {
+          navItems,
+          searchQuery,
+          showThemePanel,
+          isDark,
+          user,
+          editForm,
+          passwordForm,
+          showCurrentPassword,
+          showNewPassword,
+          showConfirmPassword,
+          uploadPreview,
+          uploadFileName,
+          uploadFileSize,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          saveProfile,
+          resetForm,
+          changePassword,
+          handleAvatarChange,
+          handleAvatarUpload,
+          handleDrop,
+          confirmUpload,
+          cancelUpload
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>

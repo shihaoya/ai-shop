@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>个人中心 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <!-- Logo Area -->
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">person</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">个人中心</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">User Center</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <!-- Bottom Logout -->
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <!-- Left Side -->
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">个人中心</span>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex items-center gap-4">
+          <!-- Search Box -->
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索..."
+              type="text"
+            />
+          </div>
+
+          <!-- Action Buttons Group -->
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <!-- Theme Toggle Button -->
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+
+            <!-- Notification Button -->
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span v-if="unreadCount > 0" class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+
+            <!-- User Avatar -->
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!-- User Profile Header -->
+        <div class="glass rounded-2xl p-6 mb-6 animate-slide-up">
+          <div class="flex items-center gap-6">
+            <!-- Avatar -->
+            <div class="relative">
+              <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                {{ user.avatarText }}
+              </div>
+              <button class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white dark:bg-[#2a2a3c] border border-white shadow-lg flex items-center justify-center hover:bg-gray-50 transition-all">
+                <span class="material-symbols-outlined text-sm text-[#737686]">camera</span>
+              </button>
+            </div>
+
+            <!-- User Info -->
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <h1 class="text-2xl font-bold text-[#191b23] dark:text-white">{{ user.name }}</h1>
+                <span :class="['badge', membershipBadgeClass]">
+                  <span class="material-symbols-outlined text-xs">{{ membershipIcon }}</span>
+                  {{ user.membershipLevel }}
+                </span>
+              </div>
+              <p class="text-sm text-[#737686] dark:text-[#a0a4b8] mb-4">{{ user.email }}</p>
+              <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#004ac6]">stars</span>
+                  <span class="text-sm text-[#737686]">积分：</span>
+                  <span class="font-bold text-[#004ac6]">{{ user.points.toLocaleString() }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#10B981]">shopping_bag</span>
+                  <span class="text-sm text-[#737686]">订单：</span>
+                  <span class="font-bold text-[#10B981]">{{ user.orderCount }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#F59E0B]">favorite</span>
+                  <span class="text-sm text-[#737686]">收藏：</span>
+                  <span class="font-bold text-[#F59E0B]">{{ user.favoriteCount }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="flex flex-col gap-2">
+              <button class="btn btn-md bg-[#004ac6] text-white hover:brightness-110 shadow-lg shadow-[#004ac6]/20">
+                <span class="material-symbols-outlined text-lg">edit</span>
+                编辑资料
+              </button>
+              <button class="btn btn-md bg-white/80 text-[#191b23] hover:bg-white border border-white/50 shadow-lg">
+                <span class="material-symbols-outlined text-lg">qr_code</span>
+                二维码
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Sections -->
+        <div class="grid grid-cols-3 gap-6">
+          <!-- Profile Settings -->
+          <div class="glass rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#004ac6] to-[#2563eb] flex items-center justify-center shadow-lg shadow-[#004ac6]/20">
+                <span class="material-symbols-outlined text-white text-lg">person</span>
+              </div>
+              <h2 class="font-headline-sm text-[#191b23] dark:text-white">个人信息</h2>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">用户名</label>
+                <input
+                  v-model="profileForm.username"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 transition-all"
+                  type="text"
+                />
+              </div>
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">昵称</label>
+                <input
+                  v-model="profileForm.nickname"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 transition-all"
+                  type="text"
+                />
+              </div>
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">手机号</label>
+                <input
+                  v-model="profileForm.phone"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 transition-all"
+                  type="text"
+                />
+              </div>
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">个人简介</label>
+                <textarea
+                  v-model="profileForm.bio"
+                  rows="3"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 transition-all resize-none"
+                ></textarea>
+              </div>
+              <button @click="saveProfile" class="btn btn-sm bg-[#004ac6] text-white hover:brightness-110 shadow-lg w-full">
+                <span class="material-symbols-outlined text-lg">save</span>
+                保存修改
+              </button>
+            </div>
+          </div>
+
+          <!-- Password Settings -->
+          <div class="glass rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.15s;">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#712ae2] to-[#8b5cf6] flex items-center justify-center shadow-lg shadow-[#712ae2]/20">
+                <span class="material-symbols-outlined text-white text-lg">lock</span>
+              </div>
+              <h2 class="font-headline-sm text-[#191b23] dark:text-white">修改密码</h2>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">当前密码</label>
+                <input
+                  v-model="passwordForm.current"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#712ae2]/20 transition-all"
+                  type="password"
+                  placeholder="请输入当前密码"
+                />
+              </div>
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">新密码</label>
+                <input
+                  v-model="passwordForm.new"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#712ae2]/20 transition-all"
+                  type="password"
+                  placeholder="请输入新密码"
+                />
+              </div>
+              <div>
+                <label class="font-label-md text-label-md text-[#737686] mb-1.5 block">确认新密码</label>
+                <input
+                  v-model="passwordForm.confirm"
+                  class="w-full bg-white/60 border border-white/50 rounded-xl py-2.5 px-4 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#712ae2]/20 transition-all"
+                  type="password"
+                  placeholder="请再次输入新密码"
+                />
+              </div>
+              <button @click="changePassword" class="btn btn-sm bg-[#712ae2] text-white hover:brightness-110 shadow-lg w-full">
+                <span class="material-symbols-outlined text-lg">key</span>
+                修改密码
+              </button>
+            </div>
+          </div>
+
+          <!-- Notification Settings -->
+          <div class="glass rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.2s;">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center shadow-lg shadow-[#10B981]/20">
+                <span class="material-symbols-outlined text-white text-lg">notifications</span>
+              </div>
+              <h2 class="font-headline-sm text-[#191b23] dark:text-white">通知设置</h2>
+            </div>
+
+            <div class="space-y-4">
+              <div v-for="(item, index) in notificationSettings" :key="index" class="flex items-center justify-between py-2">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-[#737686]">{{ item.icon }}</span>
+                  <div>
+                    <div class="text-sm font-medium text-[#191b23] dark:text-white">{{ item.name }}</div>
+                    <div class="text-xs text-[#737686]">{{ item.desc }}</div>
+                  </div>
+                </div>
+                <button
+                  @click="toggleNotification(index)"
+                  :class="[
+                    'w-12 h-6 rounded-full relative transition-all duration-200',
+                    item.enabled ? 'bg-[#10B981]' : 'bg-[#e7e7f3]'
+                  ]"
+                >
+                  <span
+                    :class="[
+                      'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                      item.enabled ? 'left-7' : 'left-1'
+                    ]"
+                  ></span>
+                </button>
+              </div>
+
+              <div class="pt-4 border-t border-white/30">
+                <button @click="saveNotifications" class="btn btn-sm bg-[#10B981] text-white hover:brightness-110 shadow-lg w-full">
+                  <span class="material-symbols-outlined text-lg">save</span>
+                  保存设置
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Settings Row -->
+        <div class="grid grid-cols-2 gap-6 mt-6">
+          <!-- Security Settings -->
+          <div class="glass rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.25s;">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#F59E0B] to-[#D97706] flex items-center justify-center shadow-lg shadow-[#F59E0B]/20">
+                <span class="material-symbols-outlined text-white text-lg">security</span>
+              </div>
+              <h2 class="font-headline-sm text-[#191b23] dark:text-white">安全设置</h2>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 bg-white/40 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-[#F59E0B]">verified_user</span>
+                  <div>
+                    <div class="text-sm font-medium text-[#191b23] dark:text-white">邮箱验证</div>
+                    <div class="text-xs text-[#737686]">{{ user.emailVerified ? '已验证' : '未验证' }}</div>
+                  </div>
+                </div>
+                <span :class="['badge', user.emailVerified ? 'badge-success' : 'badge-warning']">
+                  {{ user.emailVerified ? '已验证' : '未验证' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-white/40 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-[#10B981]">phone</span>
+                  <div>
+                    <div class="text-sm font-medium text-[#191b23] dark:text-white">手机绑定</div>
+                    <div class="text-xs text-[#737686]">{{ user.phoneBound ? '已绑定 ' + user.phoneMasked : '未绑定' }}</div>
+                  </div>
+                </div>
+                <button class="btn btn-xs bg-[#10B981] text-white hover:brightness-110">
+                  {{ user.phoneBound ? '更换' : '绑定' }}
+                </button>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-white/40 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-[#004ac6]">password</span>
+                  <div>
+                    <div class="text-sm font-medium text-[#191b23] dark:text-white">支付密码</div>
+                    <div class="text-xs text-[#737686]">{{ user.hasPayPassword ? '已设置' : '未设置' }}</div>
+                  </div>
+                </div>
+                <button class="btn btn-xs bg-[#004ac6] text-white hover:brightness-110">
+                  {{ user.hasPayPassword ? '修改' : '设置' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Membership Info -->
+          <div class="glass rounded-2xl p-6 animate-slide-up" style="animation-delay: 0.3s;">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EC4899] to-[#F472B6] flex items-center justify-center shadow-lg shadow-[#EC4899]/20">
+                <span class="material-symbols-outlined text-white text-lg">workspace_premium</span>
+              </div>
+              <h2 class="font-headline-sm text-[#191b23] dark:text-white">会员中心</h2>
+            </div>
+
+            <div class="bg-gradient-to-r from-[#004ac6]/10 to-[#712ae2]/10 rounded-xl p-4 mb-4">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[#712ae2]">workspace_premium</span>
+                  <span class="font-bold text-[#712ae2]">{{ user.membershipLevel }}</span>
+                </div>
+                <span class="text-xs text-[#737686]">有效期至：{{ user.membershipExpire }}</span>
+              </div>
+              <div class="w-full bg-white/50 rounded-full h-2 mb-2">
+                <div class="bg-gradient-to-r from-[#004ac6] to-[#712ae2] h-2 rounded-full" :style="{ width: membershipProgress + '%' }"></div>
+              </div>
+              <div class="flex justify-between text-xs text-[#737686]">
+                <span>当前：{{ user.points.toLocaleString() }} 积分</span>
+                <span>升级需：{{ user.nextLevelPoints.toLocaleString() }} 积分</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div class="text-center p-3 bg-white/40 rounded-xl">
+                <div class="text-lg font-bold text-[#004ac6]">{{ user.accumulatedPoints.toLocaleString() }}</div>
+                <div class="text-xs text-[#737686]">累计积分</div>
+              </div>
+              <div class="text-center p-3 bg-white/40 rounded-xl">
+                <div class="text-lg font-bold text-[#10B981]">{{ user.usedPoints.toLocaleString() }}</div>
+                <div class="text-xs text-[#737686]">已用积分</div>
+              </div>
+              <div class="text-center p-3 bg-white/40 rounded-xl">
+                <div class="text-lg font-bold text-[#F59E0B]">{{ user.availablePoints.toLocaleString() }}</div>
+                <div class="text-xs text-[#737686]">可用积分</div>
+              </div>
+            </div>
+
+            <button class="btn btn-sm bg-gradient-to-r from-[#004ac6] to-[#712ae2] text-white hover:brightness-110 shadow-lg w-full mt-4">
+              <span class="material-symbols-outlined text-lg">card_membership</span>
+              了解更多会员权益
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <!-- Color Theme Selection -->
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+            <button
+              @click="setTheme('pure-white')"
+              class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="纯净白"
+            ></button>
+          </div>
+        </div>
+
+        <!-- Dark Mode Toggle -->
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { createApp, ref, computed, reactive } = Vue;
+
+    createApp({
+      setup() {
+        // Navigation items
+        const navItems = ref([
+          { name: '商品列表', icon: 'shopping_bag', active: false },
+          { name: '我的订单', icon: 'receipt_long', active: false },
+          { name: '个人中心', icon: 'person', active: true },
+          { name: '我的消息', icon: 'mail', active: false }
+        ]);
+
+        // Search query
+        const searchQuery = ref('');
+
+        // Theme panel
+        const showThemePanel = ref(false);
+        const isDark = ref(false);
+
+        // User data
+        const user = ref({
+          name: '张小明',
+          email: 'zhangxiaoming@example.com',
+          avatarText: '张',
+          points: 2580,
+          orderCount: 12,
+          favoriteCount: 36,
+          membershipLevel: '黄金会员',
+          emailVerified: true,
+          phoneBound: true,
+          phoneMasked: '138****5678',
+          hasPayPassword: true,
+          membershipExpire: '2027-06-15',
+          accumulatedPoints: 15880,
+          usedPoints: 13300,
+          availablePoints: 2580,
+          nextLevelPoints: 5000
+        });
+
+        // Profile form
+        const profileForm = reactive({
+          username: 'zhangxiaoming',
+          nickname: '小明同学',
+          phone: '13812345678',
+          bio: '热爱购物，享受积分带来的乐趣！'
+        });
+
+        // Password form
+        const passwordForm = reactive({
+          current: '',
+          new: '',
+          confirm: ''
+        });
+
+        // Notification settings
+        const notificationSettings = ref([
+          { name: '订单通知', desc: '订单状态变更时通知', icon: 'shopping_cart', enabled: true },
+          { name: '活动通知', desc: '平台活动促销信息', icon: 'campaign', enabled: true },
+          { name: '系统通知', desc: '系统安全相关通知', icon: 'settings', enabled: true },
+          { name: '消息推送', desc: '应用内消息推送', icon: 'notifications', enabled: false }
+        ]);
+
+        // Unread count
+        const unreadCount = ref(3);
+
+        // Membership
+        const membershipBadgeClass = computed(() => {
+          const level = user.value.membershipLevel;
+          if (level.includes('黄金')) return 'badge-warning';
+          if (level.includes('铂金')) return 'badge-primary';
+          if (level.includes('钻石')) return 'badge-success';
+          return 'badge-secondary';
+        });
+
+        const membershipIcon = computed(() => {
+          const level = user.value.membershipLevel;
+          if (level.includes('黄金')) return 'workspace_premium';
+          if (level.includes('铂金')) return 'diamond';
+          if (level.includes('钻石')) return 'stars';
+          return 'verified';
+        });
+
+        const membershipProgress = computed(() => {
+          const current = user.value.points;
+          const next = user.value.nextLevelPoints;
+          return Math.min((current / next) * 100, 100);
+        });
+
+        // Methods
+        const setActive = (index) => {
+          navItems.value.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        const setTheme = (theme) => {
+          document.documentElement.setAttribute('data-theme', theme);
+          localStorage.setItem('theme', theme);
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          document.documentElement.setAttribute('data-mode', isDark.value ? 'dark' : 'light');
+          localStorage.setItem('darkMode', isDark.value);
+        };
+
+        const saveProfile = () => {
+          console.log('保存个人信息:', profileForm);
+          alert('个人信息保存成功！');
+        };
+
+        const changePassword = () => {
+          if (!passwordForm.current) {
+            alert('请输入当前密码');
+            return;
+          }
+          if (!passwordForm.new) {
+            alert('请输入新密码');
+            return;
+          }
+          if (passwordForm.new !== passwordForm.confirm) {
+            alert('两次输入的密码不一致');
+            return;
+          }
+          if (passwordForm.new.length < 6) {
+            alert('密码长度不能少于6位');
+            return;
+          }
+          console.log('修改密码');
+          alert('密码修改成功！');
+          passwordForm.current = '';
+          passwordForm.new = '';
+          passwordForm.confirm = '';
+        };
+
+        const toggleNotification = (index) => {
+          notificationSettings.value[index].enabled = !notificationSettings.value[index].enabled;
+        };
+
+        const saveNotifications = () => {
+          console.log('保存通知设置:', notificationSettings.value);
+          alert('通知设置保存成功！');
+        };
+
+        // Initialize dark mode from localStorage
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'true') {
+          isDark.value = true;
+          document.documentElement.setAttribute('data-mode', 'dark');
+        }
+
+        return {
+          navItems,
+          searchQuery,
+          showThemePanel,
+          isDark,
+          user,
+          profileForm,
+          passwordForm,
+          notificationSettings,
+          unreadCount,
+          membershipBadgeClass,
+          membershipIcon,
+          membershipProgress,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          saveProfile,
+          changePassword,
+          toggleNotification,
+          saveNotifications
+        };
+      }
+    }).mount('#app');
+  </script>
+
+  <style>
+    /* 浮动气泡动画 */
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    [data-mode="dark"] .bubble {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    /* 暗色模式样式 */
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .glass {
+      background: rgba(30, 30, 50, 0.5) !important;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-mode="dark"] input,
+    [data-mode="dark"] textarea {
+      background: rgba(40, 40, 60, 0.6) !important;
+      border-color: rgba(255, 255, 255, 0.1);
+      color: #e5e7eb !important;
+    }
+
+    [data-mode="dark"] input::placeholder,
+    [data-mode="dark"] textarea::placeholder {
+      color: #9ca3af !important;
+    }
+  </style>
+</body>
+</html>

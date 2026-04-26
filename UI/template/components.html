@@ -446,6 +446,89 @@
       border-radius: 2px;
       opacity: 0.5;
     }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pagination-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-on-surface-variant);
+      background: transparent;
+      border: 1px solid var(--color-glass-border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pagination-btn:hover {
+      background: rgba(var(--theme-rgb-primary), 0.08);
+      border-color: rgba(var(--theme-rgb-primary), 0.3);
+      color: var(--theme-primary);
+    }
+    .pagination-btn:active {
+      transform: scale(0.96);
+    }
+    .pagination-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .pagination-btn.active {
+      background: var(--theme-primary);
+      border-color: var(--theme-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(var(--theme-rgb-primary), 0.25);
+    }
+    .pagination-btn-icon {
+      min-width: 36px;
+      width: 36px;
+      padding: 0;
+    }
+    .pagination-ellipsis {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 36px;
+      color: var(--color-on-surface-variant);
+      font-size: 14px;
+    }
+    .pagination-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 16px;
+    }
+    .pagination-size-select {
+      height: 32px;
+      padding: 0 28px 0 12px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--color-on-surface);
+      background: rgba(255, 255, 255, 0.4);
+      border: 1px solid var(--color-glass-border);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23737686' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 6px center;
+    }
+    .pagination-size-select:focus {
+      outline: none;
+      border-color: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 0 2px rgba(var(--theme-rgb-primary), 0.15);
+    }
   </style>
 </head>
 <body class="bg-gradient-to-br from-slate-100 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-900/20 dark:to-slate-900 min-h-screen">
@@ -928,6 +1011,149 @@
               <div class="code-block relative">
                 <button class="copy-btn" @click="copyCode('table')">复制</button>
                 <code>&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"table-container"</span>&gt;<br>&nbsp;&nbsp;&lt;<span class="tag">table</span> <span class="attr">class</span>=<span class="string">"table"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">thead</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&lt;<span class="tag">tr</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">th</span>&gt;店铺名称&lt;/<span class="tag">th</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">...</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tag">tr</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tag">thead</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">tbody</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&lt;<span class="tag">tr</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span class="tag">td</span>&gt;...&lt;/<span class="tag">td</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tag">tr</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span class="tag">tbody</span>&gt;<br>&nbsp;&nbsp;&lt;/<span class="tag">table</span>&gt;<br>&lt;/<span class="tag">div</span>&gt;</code>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. Pagination Section -->
+        <section class="card" id="pagination">
+          <div class="collapse-header" @click="sections.pagination = !sections.pagination">
+            <h2 class="font-headline-md" style="color: var(--color-on-surface);">
+              <span class="material-symbols-outlined mr-3">filter_list</span>
+              分页器组件 Pagination
+            </h2>
+            <span class="material-symbols-outlined transition-transform" :class="{ 'rotate-180': sections.pagination }">
+              expand_more
+            </span>
+          </div>
+          <div class="collapse-content" v-show="sections.pagination">
+            <div class="p-6 space-y-8">
+
+              <!-- Basic Pagination -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">基础分页 Basic</h3>
+                <div class="flex items-center gap-2">
+                  <div class="pagination">
+                    <button class="pagination-btn pagination-btn-icon">
+                      <span class="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <button class="pagination-btn">1</button>
+                    <button class="pagination-btn active">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">4</button>
+                    <button class="pagination-btn">5</button>
+                    <button class="pagination-btn pagination-btn-icon">
+                      <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- With Ellipsis -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">带省略号 With Ellipsis</h3>
+                <div class="flex items-center gap-2">
+                  <div class="pagination">
+                    <button class="pagination-btn pagination-btn-icon">
+                      <span class="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <span class="pagination-ellipsis">...</span>
+                    <button class="pagination-btn">10</button>
+                    <button class="pagination-btn pagination-btn-icon">
+                      <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Full Pagination -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">完整分页 Full</h3>
+                <div class="flex items-center gap-2">
+                  <div class="pagination">
+                    <button class="pagination-btn pagination-btn-icon" disabled>
+                      <span class="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">4</button>
+                    <button class="pagination-btn">5</button>
+                    <span class="pagination-ellipsis">...</span>
+                    <button class="pagination-btn">10</button>
+                    <button class="pagination-btn pagination-btn-icon">
+                      <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                  </div>
+                  <div class="pagination-info">
+                    <span class="font-body-md" style="color: var(--color-on-surface-variant);">每页</span>
+                    <select class="pagination-size-select">
+                      <option>10</option>
+                      <option selected>20</option>
+                      <option>50</option>
+                      <option>100</option>
+                    </select>
+                    <span class="font-body-md" style="color: var(--color-on-surface-variant);">条，共 186 条</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Simple Pagination -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">简洁分页 Simple</h3>
+                <div class="flex items-center gap-4">
+                  <div class="pagination">
+                    <button class="pagination-btn" disabled>上一页</button>
+                    <button class="pagination-btn active">1</button>
+                    <button class="pagination-btn">2</button>
+                    <button class="pagination-btn">3</button>
+                    <button class="pagination-btn">4</button>
+                    <button class="pagination-btn">5</button>
+                    <button class="pagination-btn">下一页</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compact Size Selector -->
+              <div>
+                <h3 class="font-headline-sm mb-4" style="color: var(--color-on-surface);">尺寸变体 Sizes</h3>
+                <div class="space-y-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-label-md" style="color: var(--color-on-surface-variant);">Small:</span>
+                    <div class="pagination">
+                      <button class="pagination-btn" style="min-width: 28px; height: 28px; font-size: 12px;">1</button>
+                      <button class="pagination-btn active" style="min-width: 28px; height: 28px; font-size: 12px;">2</button>
+                      <button class="pagination-btn" style="min-width: 28px; height: 28px; font-size: 12px;">3</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-label-md" style="color: var(--color-on-surface-variant);">Medium:</span>
+                    <div class="pagination">
+                      <button class="pagination-btn" style="min-width: 36px; height: 36px;">1</button>
+                      <button class="pagination-btn active" style="min-width: 36px; height: 36px;">2</button>
+                      <button class="pagination-btn" style="min-width: 36px; height: 36px;">3</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-label-md" style="color: var(--color-on-surface-variant);">Large:</span>
+                    <div class="pagination">
+                      <button class="pagination-btn" style="min-width: 44px; height: 44px; font-size: 15px; border-radius: 16px;">1</button>
+                      <button class="pagination-btn active" style="min-width: 44px; height: 44px; font-size: 15px; border-radius: 16px;">2</button>
+                      <button class="pagination-btn" style="min-width: 44px; height: 44px; font-size: 15px; border-radius: 16px;">3</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Code Example -->
+              <div class="code-block relative">
+                <button class="copy-btn" @click="copyCode('pagination')">复制</button>
+                <code>&lt;!-- 基础分页器 --&gt;<br>&lt;<span class="tag">div</span> <span class="attr">class</span>=<span class="string">"pagination"</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"pagination-btn pagination-btn-icon"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined text-sm"</span>&gt;chevron_left&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/button</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"pagination-btn"</span>&gt;1&lt;/<span class="tag">button</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"pagination-btn active"</span>&gt;2&lt;/<span class="tag">button</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"pagination-btn"</span>&gt;3&lt;/<span class="tag">button</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"pagination-btn pagination-btn-icon"</span>&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;span</span> <span class="attr">class</span>=<span class="string">"material-symbols-outlined text-sm"</span>&gt;chevron_right&lt;/<span class="tag">span</span>&gt;<br>&nbsp;&nbsp;<span class="tag">&lt;/button</span>&gt;<br>&lt;/<span class="tag">div</span>&gt;</code>
               </div>
 
             </div>
@@ -3261,6 +3487,7 @@
           badges: true,
           nav: true,
           tables: true,
+          pagination: true,
           dialogs: true,
           themes: true,
           storeCard: true,
@@ -3280,6 +3507,7 @@
           { id: 'badges', name: '标签徽章', icon: 'label', active: false },
           { id: 'nav', name: '导航组件', icon: 'navigation', active: false },
           { id: 'tables', name: '表格组件', icon: 'table', active: false },
+          { id: 'pagination', name: '分页器', icon: 'filter_list', active: false },
           { id: 'dialogs', name: '弹窗组件', icon: 'picture_in_picture', active: false },
           { id: 'themes', name: '主题切换', icon: 'palette', active: false },
           { id: 'store-card', name: '店铺卡片', icon: 'storefront', active: false },
@@ -3421,6 +3649,53 @@
       </tr>
     </tbody>
   </table>
+</div>`,
+          pagination: `<div class="pagination">
+  <button class="pagination-btn pagination-btn-icon">
+    <span class="material-symbols-outlined text-sm">chevron_left</span>
+  </button>
+  <button class="pagination-btn">1</button>
+  <button class="pagination-btn active">2</button>
+  <button class="pagination-btn">3</button>
+  <button class="pagination-btn">4</button>
+  <button class="pagination-btn">5</button>
+  <button class="pagination-btn pagination-btn-icon">
+    <span class="material-symbols-outlined text-sm">chevron_right</span>
+  </button>
+</div>
+
+<!-- 带省略号 -->
+<div class="pagination">
+  <button class="pagination-btn pagination-btn-icon">...</button>
+  <button class="pagination-btn">1</button>
+  <button class="pagination-btn active">2</button>
+  <button class="pagination-btn">3</button>
+  <span class="pagination-ellipsis">...</span>
+  <button class="pagination-btn">10</button>
+  <button class="pagination-btn pagination-btn-icon">></button>
+</div>
+
+<!-- 完整分页 -->
+<div class="pagination">
+  <button class="pagination-btn pagination-btn-icon" disabled>
+    <span class="material-symbols-outlined text-sm">chevron_left</span>
+  </button>
+  <button class="pagination-btn active">1</button>
+  <button class="pagination-btn">2</button>
+  <button class="pagination-btn">3</button>
+  <span class="pagination-ellipsis">...</span>
+  <button class="pagination-btn">10</button>
+  <button class="pagination-btn pagination-btn-icon">
+    <span class="material-symbols-outlined text-sm">chevron_right</span>
+  </button>
+</div>
+<div class="pagination-info">
+  <select class="pagination-size-select">
+    <option>10</option>
+    <option selected>20</option>
+    <option>50</option>
+  </select>
+  <span>共 186 条</span>
 </div>`,
           dialog: `<div class="glass-strong rounded-3xl overflow-hidden">
   <div class="flex items-center justify-between px-8 py-6">

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>订单管理 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="../common/common.js"></script>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">系统管理</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">ShopAdmin</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索订单..."
+              type="text"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <!-- Page Header -->
+        <div class="glass rounded-2xl p-6 mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="font-headline-md text-[#191b23] dark:text-white mb-1">订单管理</h1>
+              <p class="font-body-md text-sm text-[#737686] dark:text-white/60">管理所有店铺订单，查看订单状态和处理操作</p>
+            </div>
+            <!-- View Toggle -->
+            <div class="flex items-center gap-2 bg-white/60 dark:bg-white/10 p-1.5 rounded-xl">
+              <button
+                @click="viewMode = 'card'"
+                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2', viewMode === 'card' ? 'bg-[#004ac6] text-white shadow-md' : 'text-[#737686] hover:bg-white/60']"
+              >
+                <span class="material-symbols-outlined text-lg">view_kanban</span>
+                卡片视图
+              </button>
+              <button
+                @click="viewMode = 'table'"
+                :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2', viewMode === 'table' ? 'bg-[#004ac6] text-white shadow-md' : 'text-[#737686] hover:bg-white/60']"
+              >
+                <span class="material-symbols-outlined text-lg">table_rows</span>
+                表格视图
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="glass rounded-2xl p-4 mb-6">
+          <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar">
+            <button
+              v-for="tab in filterTabs"
+              :key="tab.value"
+              @click="activeFilter = tab.value"
+              :class="['px-5 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2', activeFilter === tab.value ? 'bg-[#004ac6] text-white shadow-md' : 'text-[#737686] hover:bg-white/60']"
+            >
+              <span>{{ tab.name }}</span>
+              <span v-if="tab.count > 0" :class="['px-2 py-0.5 rounded-full text-xs', activeFilter === tab.value ? 'bg-white/20' : 'bg-[#e7e7f3] dark:bg-white/10']">{{ tab.count }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card View -->
+        <div v-if="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div
+            v-for="order in filteredOrders"
+            :key="order.id"
+            @click="openOrderDetail(order)"
+            class="glass rounded-2xl p-6 cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-[#004ac6]/30 group"
+          >
+            <!-- Order Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <p class="text-xs text-[#737686] dark:text-white/50 mb-1">订单号</p>
+                <p class="font-semibold text-[#191b23] dark:text-white text-sm">{{ order.orderNo }}</p>
+              </div>
+              <span :class="['badge', getStatusBadgeClass(order.status)]">
+                <span class="w-2 h-2 rounded-full" :class="getStatusDotClass(order.status)"></span>
+                {{ getStatusText(order.status) }}
+              </span>
+            </div>
+
+            <!-- Products Summary -->
+            <div class="mb-4">
+              <p class="text-xs text-[#737686] dark:text-white/50 mb-2">商品信息</p>
+              <div class="flex items-center gap-3">
+                <div class="flex -space-x-2">
+                  <div v-for="(product, idx) in order.products.slice(0, 3)" :key="idx" class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white text-xs font-bold shadow-md border-2 border-white/50">
+                    {{ product.name.charAt(0) }}
+                  </div>
+                  <div v-if="order.products.length > 3" class="w-10 h-10 rounded-xl bg-[#e7e7f3] dark:bg-white/20 flex items-center justify-center text-[#737686] dark:text-white/70 text-xs font-medium shadow-md border-2 border-white/50">
+                    +{{ order.products.length - 3 }}
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-[#191b23] dark:text-white font-medium truncate">{{ order.products[0].name }}</p>
+                  <p class="text-xs text-[#737686] dark:text-white/50" v-if="order.products.length > 1">等 {{ order.products.length }} 件商品</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- User & Points -->
+            <div class="flex items-center justify-between py-3 border-t border-white/30 dark:border-white/10">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white text-xs">
+                  {{ order.user.charAt(0) }}
+                </div>
+                <span class="text-sm text-[#191b23] dark:text-white/80">{{ order.user }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-lg text-[#004ac6] fill-icon">stars</span>
+                <span class="font-bold text-[#004ac6]">{{ order.points }}</span>
+              </div>
+            </div>
+
+            <!-- Time -->
+            <div class="flex items-center gap-2 text-xs text-[#737686] dark:text-white/50">
+              <span class="material-symbols-outlined text-sm">schedule</span>
+              {{ order.time }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Table View -->
+        <div v-else class="table-container rounded-2xl overflow-hidden">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>订单号</th>
+                <th>商品</th>
+                <th>用户</th>
+                <th>积分</th>
+                <th>状态</th>
+                <th>日期</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="order in filteredOrders"
+                :key="order.id"
+                @click="openOrderDetail(order)"
+                class="cursor-pointer"
+              >
+                <td class="font-medium text-[#191b23] dark:text-white">{{ order.orderNo }}</td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="flex -space-x-2">
+                      <div v-for="(product, idx) in order.products.slice(0, 2)" :key="idx" class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white text-xs font-bold shadow-sm border border-white/50">
+                        {{ product.name.charAt(0) }}
+                      </div>
+                    </div>
+                    <span class="text-sm text-[#737686] dark:text-white/60">{{ order.products.length }}件商品</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white text-xs">
+                      {{ order.user.charAt(0) }}
+                    </div>
+                    <span class="text-sm text-[#191b23] dark:text-white/80">{{ order.user }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm text-[#004ac6] fill-icon">stars</span>
+                    <span class="font-semibold text-[#004ac6]">{{ order.points }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span :class="['badge', getStatusBadgeClass(order.status)]">
+                    <span class="w-2 h-2 rounded-full" :class="getStatusDotClass(order.status)"></span>
+                    {{ getStatusText(order.status) }}
+                  </span>
+                </td>
+                <td class="text-sm text-[#737686] dark:text-white/50">{{ order.time }}</td>
+                <td>
+                  <button class="btn btn-sm btn-ghost text-[#004ac6]">
+                    <span class="material-symbols-outlined text-sm">visibility</span>
+                    查看
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div v-if="filteredOrders.length === 0" class="glass rounded-2xl p-12 text-center">
+          <div class="w-16 h-16 rounded-2xl bg-[#e7e7f3] dark:bg-white/10 flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-3xl text-[#737686]">receipt_long</span>
+          </div>
+          <p class="font-headline-sm text-[#191b23] dark:text-white mb-2">暂无订单</p>
+          <p class="text-sm text-[#737686] dark:text-white/50">当前筛选条件下没有订单数据</p>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+            <button
+              @click="setTheme('pure-white')"
+              class="w-10 h-10 rounded-full bg-[#1F2937] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="纯净白"
+            ></button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Order Detail Modal -->
+    <transition name="fade">
+      <div v-if="showOrderModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" @click.self="closeOrderDetail">
+        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+        <div class="relative glass-strong rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-scale-in">
+          <!-- Modal Header -->
+          <div class="flex items-start justify-between mb-6">
+            <div>
+              <h2 class="font-headline-md text-[#191b23] dark:text-white mb-1">订单详情</h2>
+              <p class="text-sm text-[#737686] dark:text-white/50">{{ selectedOrder?.orderNo }}</p>
+            </div>
+            <button @click="closeOrderDetail" class="p-2 rounded-xl hover:bg-white/50 transition-all">
+              <span class="material-symbols-outlined text-[#737686]">close</span>
+            </button>
+          </div>
+
+          <!-- Order Info -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-white/40 dark:bg-white/5 rounded-xl p-4">
+              <p class="text-xs text-[#737686] dark:text-white/50 mb-1">订单用户</p>
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white text-xs">
+                  {{ selectedOrder?.user.charAt(0) }}
+                </div>
+                <span class="font-medium text-[#191b23] dark:text-white">{{ selectedOrder?.user }}</span>
+              </div>
+            </div>
+            <div class="bg-white/40 dark:bg-white/5 rounded-xl p-4">
+              <p class="text-xs text-[#737686] dark:text-white/50 mb-1">订单积分</p>
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-lg text-[#004ac6] fill-icon">stars</span>
+                <span class="font-bold text-xl text-[#004ac6]">{{ selectedOrder?.points }}</span>
+              </div>
+            </div>
+            <div class="bg-white/40 dark:bg-white/5 rounded-xl p-4">
+              <p class="text-xs text-[#737686] dark:text-white/50 mb-1">订单状态</p>
+              <span :class="['badge mt-1', getStatusBadgeClass(selectedOrder?.status)]">
+                <span class="w-2 h-2 rounded-full" :class="getStatusDotClass(selectedOrder?.status)"></span>
+                {{ getStatusText(selectedOrder?.status) }}
+              </span>
+            </div>
+            <div class="bg-white/40 dark:bg-white/5 rounded-xl p-4">
+              <p class="text-xs text-[#737686] dark:text-white/50 mb-1">下单时间</p>
+              <p class="font-medium text-[#191b23] dark:text-white">{{ selectedOrder?.time }}</p>
+            </div>
+          </div>
+
+          <!-- Product List -->
+          <div class="mb-6">
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-3">商品列表</h3>
+            <div class="space-y-3">
+              <div v-for="(product, idx) in selectedOrder?.products" :key="idx" class="bg-white/40 dark:bg-white/5 rounded-xl p-4 flex items-center gap-4">
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white text-lg font-bold shadow-md">
+                  {{ product.name.charAt(0) }}
+                </div>
+                <div class="flex-1">
+                  <p class="font-medium text-[#191b23] dark:text-white mb-1">{{ product.name }}</p>
+                  <p class="text-xs text-[#737686] dark:text-white/50">{{ product.desc }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="font-semibold text-[#004ac6]">{{ product.price }}积分</p>
+                  <p class="text-xs text-[#737686] dark:text-white/50">x{{ product.quantity }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Form -->
+          <div class="mb-6">
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-3">物流信息</h3>
+            <div class="bg-white/40 dark:bg-white/5 rounded-xl p-4 space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-[#191b23] dark:text-white/80 mb-2">快递类型</label>
+                <select v-model="shippingForm.expressType" class="input">
+                  <option value="">选择快递类型</option>
+                  <option value="sf">顺丰速运</option>
+                  <option value="ems">EMS</option>
+                  <option value="yt">圆通速递</option>
+                  <option value="zt">中通快递</option>
+                  <option value="jd">京东物流</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-[#191b23] dark:text-white/80 mb-2">快递单号</label>
+                <input v-model="shippingForm.expressNo" type="text" class="input" placeholder="请输入快递单号"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Actions -->
+          <div>
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-3">订单操作</h3>
+            <div class="flex flex-wrap gap-3">
+              <button
+                v-if="selectedOrder?.status === 'placed'"
+                @click="updateOrderStatus('confirmed')"
+                class="btn btn-md btn-primary"
+              >
+                <span class="material-symbols-outlined text-lg">check</span>
+                确认订单
+              </button>
+              <button
+                v-if="selectedOrder?.status === 'confirmed'"
+                @click="updateOrderStatus('shipped')"
+                class="btn btn-md btn-primary"
+              >
+                <span class="material-symbols-outlined text-lg">local_shipping</span>
+                发货
+              </button>
+              <button
+                v-if="selectedOrder?.status === 'shipped'"
+                @click="updateOrderStatus('completed')"
+                class="btn btn-md btn-success"
+              >
+                <span class="material-symbols-outlined text-lg">task_alt</span>
+                完成订单
+              </button>
+              <button
+                v-if="['placed', 'confirmed'].includes(selectedOrder?.status)"
+                @click="updateOrderStatus('closed')"
+                class="btn btn-md btn-danger"
+              >
+                <span class="material-symbols-outlined text-lg">cancel</span>
+                关闭订单
+              </button>
+              <button
+                v-if="selectedOrder?.status === 'closed'"
+                @click="updateOrderStatus('placed')"
+                class="btn btn-md btn-secondary"
+              >
+                <span class="material-symbols-outlined text-lg">restore</span>
+                重新打开
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { ref, reactive, computed } = Vue;
+
+    const app = Vue.createApp({
+      setup() {
+        // ThemeApp 状态
+        const isDark = ref(false);
+        const showThemePanel = ref(false);
+        const searchQuery = ref('');
+
+        // 导航数据
+        const navItems = reactive([
+          { name: 'Dashboard', icon: 'dashboard', active: false },
+          { name: '店铺管理', icon: 'storefront', active: false },
+          { name: '用户管理', icon: 'group', active: false },
+          { name: '订单管理', icon: 'receipt_long', active: true },
+          { name: '消息通知', icon: 'notifications', active: false },
+          { name: '个人中心', icon: 'person', active: false }
+        ]);
+
+        // 导航切换
+        const setActive = (index) => {
+          navItems.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        // 主题设置
+        const setTheme = (theme) => {
+          console.log('主题切换:', theme);
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          document.documentElement.setAttribute('data-mode', isDark.value ? 'dark' : 'light');
+        };
+
+        // ========== 订单管理 ==========
+        const viewMode = ref('card');
+        const activeFilter = ref('all');
+        const showOrderModal = ref(false);
+        const selectedOrder = ref(null);
+
+        const shippingForm = reactive({
+          expressType: '',
+          expressNo: ''
+        });
+
+        // Demo orders data
+        const orders = ref([
+          {
+            id: 1,
+            orderNo: 'ORD-2026-0001',
+            user: '张伟',
+            points: 2500,
+            status: 'completed',
+            time: '2026-04-20 14:30',
+            products: [
+              { name: 'iPhone 15 Pro', desc: '256GB 深空黑', price: 1500, quantity: 1 },
+              { name: 'AirPods Pro', desc: '第二代', price: 500, quantity: 2 }
+            ]
+          },
+          {
+            id: 2,
+            orderNo: 'ORD-2026-0002',
+            user: '李娜',
+            points: 1800,
+            status: 'shipped',
+            time: '2026-04-21 09:15',
+            products: [
+              { name: '小米手环8', desc: ' NFC版', price: 300, quantity: 2 },
+              { name: '充电宝', desc: '20000mAh', price: 600, quantity: 2 }
+            ]
+          },
+          {
+            id: 3,
+            orderNo: 'ORD-2026-0003',
+            user: '王芳',
+            points: 3200,
+            status: 'confirmed',
+            time: '2026-04-22 16:45',
+            products: [
+              { name: '戴森吹风机', desc: 'HD03', price: 2200, quantity: 1 },
+              { name: '护发精油', desc: '100ml', price: 500, quantity: 2 }
+            ]
+          },
+          {
+            id: 4,
+            orderNo: 'ORD-2026-0004',
+            user: '刘洋',
+            points: 850,
+            status: 'placed',
+            time: '2026-04-23 11:20',
+            products: [
+              { name: '机械键盘', desc: '红轴', price: 450, quantity: 1 },
+              { name: '鼠标垫', desc: 'XL加大版', price: 80, quantity: 5 }
+            ]
+          },
+          {
+            id: 5,
+            orderNo: 'ORD-2026-0005',
+            user: '陈明',
+            points: 5200,
+            status: 'placed',
+            time: '2026-04-23 15:30',
+            products: [
+              { name: 'Apple Watch', desc: 'Series 9', price: 3200, quantity: 1 },
+              { name: '表带', desc: '运动型', price: 400, quantity: 5 }
+            ]
+          },
+          {
+            id: 6,
+            orderNo: 'ORD-2026-0006',
+            user: '赵雪',
+            points: 1200,
+            status: 'closed',
+            time: '2026-04-19 10:00',
+            products: [
+              { name: '蓝牙音箱', desc: 'JBL Flip 6', price: 800, quantity: 1 },
+              { name: '数据线', desc: 'Type-C', price: 100, quantity: 4 }
+            ]
+          },
+          {
+            id: 7,
+            orderNo: 'ORD-2026-0007',
+            user: '孙浩',
+            points: 680,
+            status: 'shipped',
+            time: '2026-04-22 08:45',
+            products: [
+              { name: '无线充电器', desc: '15W快充', price: 180, quantity: 2 },
+              { name: '手机壳', desc: '液态硅胶', price: 80, quantity: 4 }
+            ]
+          },
+          {
+            id: 8,
+            orderNo: 'ORD-2026-0008',
+            user: '周丽',
+            points: 3600,
+            status: 'confirmed',
+            time: '2026-04-24 13:20',
+            products: [
+              { name: 'iPad Air', desc: 'M1芯片', price: 2400, quantity: 1 },
+              { name: 'Apple Pencil', desc: '第二代', price: 600, quantity: 2 }
+            ]
+          },
+          {
+            id: 9,
+            orderNo: 'ORD-2026-0009',
+            user: '吴强',
+            points: 450,
+            status: 'closed',
+            time: '2026-04-18 17:30',
+            products: [
+              { name: '钢笔', desc: '凌美Safari', price: 250, quantity: 1 },
+              { name: '墨水', desc: '黑色', price: 50, quantity: 4 }
+            ]
+          },
+          {
+            id: 10,
+            orderNo: 'ORD-2026-0010',
+            user: '郑婷',
+            points: 2800,
+            status: 'completed',
+            time: '2026-04-21 19:00',
+            products: [
+              { name: 'SK-II 神仙水', desc: '230ml', price: 1800, quantity: 1 },
+              { name: '精华霜', desc: '50g', price: 500, quantity: 2 }
+            ]
+          }
+        ]);
+
+        const filterTabs = computed(() => [
+          { name: '全部', value: 'all', count: orders.value.length },
+          { name: '已下单', value: 'placed', count: orders.value.filter(o => o.status === 'placed').length },
+          { name: '已确认', value: 'confirmed', count: orders.value.filter(o => o.status === 'confirmed').length },
+          { name: '已发货', value: 'shipped', count: orders.value.filter(o => o.status === 'shipped').length },
+          { name: '已完成', value: 'completed', count: orders.value.filter(o => o.status === 'completed').length },
+          { name: '已关闭', value: 'closed', count: orders.value.filter(o => o.status === 'closed').length }
+        ]);
+
+        const filteredOrders = computed(() => {
+          let result = orders.value;
+
+          if (activeFilter.value !== 'all') {
+            result = result.filter(o => o.status === activeFilter.value);
+          }
+
+          if (searchQuery.value) {
+            const query = searchQuery.value.toLowerCase();
+            result = result.filter(o =>
+              o.orderNo.toLowerCase().includes(query) ||
+              o.user.toLowerCase().includes(query)
+            );
+          }
+
+          return result;
+        });
+
+        const getStatusBadgeClass = (status) => {
+          const classes = {
+            placed: 'badge-warning',
+            confirmed: 'badge-primary',
+            shipped: 'badge-secondary',
+            completed: 'badge-success',
+            closed: 'badge-danger'
+          };
+          return classes[status] || 'badge-primary';
+        };
+
+        const getStatusDotClass = (status) => {
+          const classes = {
+            placed: 'bg-[#F59E0B]',
+            confirmed: 'bg-[#004ac6]',
+            shipped: 'bg-[#712ae2]',
+            completed: 'bg-[#10B981]',
+            closed: 'bg-[#EF4444]'
+          };
+          return classes[status] || 'bg-[#737686]';
+        };
+
+        const getStatusText = (status) => {
+          const texts = {
+            placed: '已下单',
+            confirmed: '已确认',
+            shipped: '已发货',
+            completed: '已完成',
+            closed: '已关闭'
+          };
+          return texts[status] || status;
+        };
+
+        const openOrderDetail = (order) => {
+          selectedOrder.value = order;
+          shippingForm.expressType = '';
+          shippingForm.expressNo = '';
+          showOrderModal.value = true;
+        };
+
+        const closeOrderDetail = () => {
+          showOrderModal.value = false;
+          selectedOrder.value = null;
+        };
+
+        const updateOrderStatus = (newStatus) => {
+          if (selectedOrder.value) {
+            const order = orders.value.find(o => o.id === selectedOrder.value.id);
+            if (order) {
+              order.status = newStatus;
+              selectedOrder.value = { ...order };
+              window.Utils?.showToast(`订单状态已更新为：${getStatusText(newStatus)}`);
+            }
+          }
+        };
+
+        return {
+          isDark,
+          showThemePanel,
+          searchQuery,
+          navItems,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          viewMode,
+          activeFilter,
+          filterTabs,
+          filteredOrders,
+          showOrderModal,
+          selectedOrder,
+          shippingForm,
+          getStatusBadgeClass,
+          getStatusDotClass,
+          getStatusText,
+          openOrderDetail,
+          closeOrderDetail,
+          updateOrderStatus
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+
+  <style>
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: floatBubble linear infinite;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 18s; opacity: 0.6; }
+    .bubble-2 { width: 120px; height: 120px; top: 60%; left: 80%; animation-duration: 25s; opacity: 0.5; animation-delay: 3s; }
+    .bubble-3 { width: 60px; height: 60px; top: 70%; left: 15%; animation-duration: 20s; opacity: 0.7; animation-delay: 6s; }
+    .bubble-4 { width: 100px; height: 100px; top: 20%; left: 70%; animation-duration: 22s; opacity: 0.55; animation-delay: 9s; }
+    .bubble-5 { width: 50px; height: 50px; top: 45%; left: 45%; animation-duration: 15s; opacity: 0.65; animation-delay: 12s; }
+
+    [data-mode="dark"] .bubble {
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes floatBubble {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -30px) scale(1.05); }
+      50% { transform: translate(-10px, -50px) scale(0.95); }
+      75% { transform: translate(15px, -20px) scale(1.02); }
+    }
+
+    [data-mode="dark"] .sidebar-float {
+      background: rgba(20, 20, 35, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    [data-mode="dark"] .topbar-float {
+      background: rgba(25, 25, 45, 0.5);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .content-area {
+      background: rgba(25, 25, 50, 0.35);
+      border-color: rgba(255, 255, 255, 0.06);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-mode="dark"] .glass {
+      background: rgba(0, 0, 0, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    [data-mode="dark"] .glass-strong {
+      background: rgba(30, 30, 50, 0.7);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .badge-secondary {
+      background: rgba(113, 42, 226, 0.1);
+      color: #712ae2;
+    }
+  </style>
+</body>
+</html>

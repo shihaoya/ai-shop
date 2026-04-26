@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>商品管理 - 多店铺积分商城</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <!-- Material Symbols -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Vue3 CDN -->
+  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.js"></script>
+
+  <!-- 公共样式 -->
+  <link rel="stylesheet" href="../common/common.css"/>
+
+  <!-- 公共脚本 -->
+  <script src="../common/common.js"></script>
+
+  <style>
+    /* View Toggle Button Group */
+    .view-toggle-btn {
+      @apply px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200;
+    }
+    .view-toggle-btn.active {
+      @apply bg-gradient-to-r from-[#004ac6] to-[#2563eb] text-white shadow-lg shadow-blue-500/25;
+    }
+    .view-toggle-btn:not(.active) {
+      @apply bg-white/50 text-[#737686] hover:bg-white/70;
+    }
+
+    /* Product Card Hover Effects */
+    .product-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Status Badge Pulse */
+    .status-active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 6px;
+      background: #10B981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+      50% { opacity: 0.5; transform: translateY(-50%) scale(1.2); }
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+    }
+
+    /* Image Upload Zone */
+    .upload-zone {
+      border: 2px dashed var(--color-outline-variant);
+      transition: all 0.2s ease;
+    }
+    .upload-zone:hover {
+      border-color: var(--color-primary);
+      background: rgba(0, 74, 198, 0.05);
+    }
+    .upload-zone.dragover {
+      border-color: var(--color-primary);
+      background: rgba(0, 74, 198, 0.1);
+    }
+
+    /* Toggle Switch */
+    .toggle-switch {
+      width: 48px;
+      height: 26px;
+      border-radius: 13px;
+      background: var(--color-surface-container-high);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .toggle-switch.active {
+      background: var(--color-primary);
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease;
+    }
+    .toggle-switch.active::after {
+      transform: translateX(22px);
+    }
+
+    /* Table Row Hover */
+    .table-row {
+      transition: background 0.2s ease;
+    }
+    .table-row:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Card Image Aspect Ratio */
+    .product-image {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+
+    /* Detail Images Grid */
+    .detail-images-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .detail-image-item {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .detail-image-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .detail-image-item .remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .detail-image-item:hover .remove-btn {
+      opacity: 1;
+    }
+
+    /* Staggered Animation */
+    .card-appear {
+      animation: cardAppear 0.4s ease forwards;
+      opacity: 0;
+    }
+    @keyframes cardAppear {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#faf8ff] dark:bg-[#121218] min-h-screen flex overflow-hidden relative font-body antialiased">
+  <div id="app">
+    <!-- Atmospheric Background -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+      <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-200 dark:bg-slate-700 blur-[120px] opacity-40 mix-blend-multiply"></div>
+      <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-200 dark:bg-slate-800 blur-[150px] opacity-30 mix-blend-multiply"></div>
+      <div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] rounded-full bg-orange-200 dark:bg-slate-900 blur-[100px] opacity-20 mix-blend-multiply"></div>
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+      <div class="bubble bubble-4"></div>
+      <div class="bubble bubble-5"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar-float flex flex-col fixed left-0 top-0 z-40">
+      <div class="p-6 border-b border-white/30">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#004ac6] to-[#712ae2] flex items-center justify-center text-white shadow-lg">
+            <span class="material-symbols-outlined fill-icon text-2xl">generating_tokens</span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-bold text-[#191b23] dark:text-white leading-tight">ShopAdmin</span>
+            <span class="text-xs text-[#737686] dark:text-[#a0a4b8] uppercase tracking-wider font-semibold">系统管理</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        <div v-for="(item, index) in navItems" :key="index"
+             :class="['nav-item', { active: item.active }]"
+             @click="setActive(index)">
+          <span class="material-symbols-outlined nav-item-icon" :class="{ 'fill-icon': item.active }">{{ item.icon }}</span>
+          <span>{{ item.name }}</span>
+        </div>
+      </nav>
+
+      <div class="px-4 mt-auto border-t border-white/30 pt-4">
+        <div class="nav-item text-[#737686] hover:text-[#EF4444] hover:bg-red-50/50 dark:hover:bg-red-900/20">
+          <span class="material-symbols-outlined nav-item-icon">logout</span>
+          <span>退出登录</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="flex flex-col relative z-10 ml-72" style="width: calc(100vw - 288px); height: 100vh;">
+      <!-- Top Navigation Bar -->
+      <header class="topbar-float flex items-center justify-between px-6" style="width: calc(100% - 24px);">
+        <div class="flex items-center gap-4">
+          <span class="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#004ac6] to-[#2563eb] uppercase tracking-tight">ShopAdmin</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#737686] text-lg">search</span>
+            <input
+              v-model="searchQuery"
+              class="bg-white/40 border border-white/50 rounded-full py-2.5 pl-12 pr-6 text-sm text-[#191b23] placeholder-[#737686] focus:outline-none focus:ring-2 focus:ring-[#004ac6]/20 focus:bg-white/60 focus:border-white/70 transition-all w-48"
+              placeholder="搜索商品..."
+              type="text"
+            />
+          </div>
+
+          <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+            <button @click="showThemePanel = !showThemePanel" class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">palette</span>
+            </button>
+            <button class="p-2 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6] relative">
+              <span class="material-symbols-outlined">notifications</span>
+              <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full"></span>
+            </button>
+            <button class="p-1.5 rounded-xl hover:bg-white transition-all text-[#737686] hover:text-[#004ac6]">
+              <span class="material-symbols-outlined">account_circle</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area overflow-y-auto p-6" style="flex: 1;">
+        <div class="glass rounded-2xl p-6 min-h-[calc(100vh-180px)]">
+          <!-- Page Header -->
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h1 class="font-headline-md text-[#191b23] dark:text-white mb-1">商品管理</h1>
+              <p class="font-body-md text-sm text-[#737686]">管理您的积分商品，添加、编辑或删除商品信息</p>
+            </div>
+            <button
+              @click="openAddModal"
+              class="btn btn-primary btn-md flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-lg">add</span>
+              添加商品
+            </button>
+          </div>
+
+          <!-- View Toggle & Filters -->
+          <div class="flex items-center justify-between mb-6">
+            <!-- View Toggle Buttons -->
+            <div class="flex items-center gap-2 bg-white/50 p-1.5 rounded-2xl">
+              <button
+                @click="viewMode = 'card'"
+                :class="['view-toggle-btn flex items-center gap-2', { active: viewMode === 'card' }]"
+              >
+                <span class="material-symbols-outlined text-lg">grid_view</span>
+                卡片视图
+              </button>
+              <button
+                @click="viewMode = 'table'"
+                :class="['view-toggle-btn flex items-center gap-2', { active: viewMode === 'table' }]"
+              >
+                <span class="material-symbols-outlined text-lg">table_rows</span>
+                表格视图
+              </button>
+            </div>
+
+            <!-- Filter & Sort -->
+            <div class="flex items-center gap-3">
+              <select
+                v-model="filterCategory"
+                class="input h-10 px-4 text-sm w-40"
+              >
+                <option value="">全部分类</option>
+                <option value="digital">数码电子</option>
+                <option value="home">家居生活</option>
+                <option value="fashion">服饰配件</option>
+                <option value="food">美食饮品</option>
+                <option value="beauty">美妆护肤</option>
+              </select>
+              <select
+                v-model="filterStatus"
+                class="input h-10 px-4 text-sm w-32"
+              >
+                <option value="">全部状态</option>
+                <option value="active">上架中</option>
+                <option value="inactive">已下架</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- CARD VIEW -->
+          <div v-if="viewMode === 'card'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div
+              v-for="(product, index) in filteredProducts"
+              :key="product.id"
+              class="product-card card-appear bg-white/60 backdrop-blur-xl border border-white/30 rounded-2xl overflow-hidden shadow-lg"
+              :style="{ animationDelay: (index * 0.08) + 's' }"
+            >
+              <!-- Product Image -->
+              <div class="relative">
+                <img
+                  :src="product.image"
+                  :alt="product.name"
+                  class="w-full h-48 object-cover"
+                />
+                <div
+                  :class="[
+                    'absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold',
+                    product.status === 'active'
+                      ? 'bg-emerald-500/90 text-white'
+                      : 'bg-gray-500/90 text-white'
+                  ]"
+                >
+                  {{ product.status === 'active' ? '上架中' : '已下架' }}
+                </div>
+              </div>
+
+              <!-- Product Info -->
+              <div class="p-4">
+                <h3 class="font-semibold text-[#191b23] dark:text-white mb-2 truncate">{{ product.name }}</h3>
+                <p class="text-xs text-[#737686] mb-3">{{ product.categoryName }}</p>
+
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-lg text-amber-500 fill-icon">stars</span>
+                    <span class="font-bold text-lg text-[#191b23] dark:text-white">{{ product.points }}</span>
+                    <span class="text-xs text-[#737686]">积分</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-xs text-[#737686]">库存</span>
+                    <span :class="[
+                      'font-semibold ml-1',
+                      product.stock > 10 ? 'text-emerald-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-500'
+                    ]">{{ product.stock }}</span>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2 pt-3 border-t border-black/5">
+                  <button
+                    @click="openEditModal(product)"
+                    class="flex-1 btn btn-ghost btn-sm text-xs flex items-center justify-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-base">edit</span>
+                    编辑
+                  </button>
+                  <button
+                    @click="toggleStatus(product)"
+                    :class="[
+                      'flex-1 btn btn-sm text-xs flex items-center justify-center gap-1',
+                      product.status === 'active' ? 'btn-ghost text-amber-600' : 'btn-success text-white'
+                    ]"
+                  >
+                    <span class="material-symbols-outlined text-base">{{ product.status === 'active' ? 'pause' : 'play_arrow' }}</span>
+                    {{ product.status === 'active' ? '下架' : '上架' }}
+                  </button>
+                  <button
+                    @click="deleteProduct(product.id)"
+                    class="btn btn-ghost btn-sm text-red-500 hover:bg-red-50"
+                  >
+                    <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLE VIEW -->
+          <div v-if="viewMode === 'table'" class="table-container">
+            <table class="table">
+              <thead>
+                <tr class="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-800/50 dark:to-slate-800/50">
+                  <th class="w-24">图片</th>
+                  <th>商品名称</th>
+                  <th>分类</th>
+                  <th class="w-28">积分价格</th>
+                  <th class="w-24">库存</th>
+                  <th class="w-24">状态</th>
+                  <th class="w-48">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="product in filteredProducts"
+                  :key="product.id"
+                  class="table-row border-b border-black/5 last:border-0"
+                >
+                  <td class="py-3">
+                    <img
+                      :src="product.image"
+                      :alt="product.name"
+                      class="w-16 h-16 rounded-xl object-cover"
+                    />
+                  </td>
+                  <td>
+                    <div class="font-medium text-[#191b23] dark:text-white">{{ product.name }}</div>
+                    <div class="text-xs text-[#737686] mt-1">ID: {{ product.id }}</div>
+                  </td>
+                  <td class="text-[#737686]">{{ product.categoryName }}</td>
+                  <td>
+                    <div class="flex items-center gap-1">
+                      <span class="material-symbols-outlined text-amber-500 fill-icon text-sm">stars</span>
+                      <span class="font-semibold text-[#191b23] dark:text-white">{{ product.points }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span :class="[
+                      'font-semibold',
+                      product.stock > 10 ? 'text-emerald-600' : product.stock > 0 ? 'text-amber-600' : 'text-red-500'
+                    ]">{{ product.stock }}</span>
+                  </td>
+                  <td>
+                    <div class="relative flex items-center gap-2">
+                      <span
+                        v-if="product.status === 'active'"
+                        class="status-active relative pl-3 text-emerald-600 font-medium text-sm"
+                      >
+                        上架中
+                      </span>
+                      <span
+                        v-else
+                        class="text-gray-500 font-medium text-sm"
+                      >
+                        已下架
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-1">
+                      <button
+                        @click="openEditModal(product)"
+                        class="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 text-[#737686] hover:text-blue-600 transition-colors"
+                        title="编辑"
+                      >
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                      </button>
+                      <button
+                        @click="toggleStatus(product)"
+                        :class="[
+                          'p-2 rounded-lg transition-colors',
+                          product.status === 'active'
+                            ? 'hover:bg-amber-50 dark:hover:bg-amber-900/30 text-[#737686] hover:text-amber-600'
+                            : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-[#737686] hover:text-emerald-600'
+                        ]"
+                        :title="product.status === 'active' ? '下架' : '上架'"
+                      >
+                        <span class="material-symbols-outlined text-lg">{{ product.status === 'active' ? 'pause' : 'play_arrow' }}</span>
+                      </button>
+                      <button
+                        @click="deleteProduct(product.id)"
+                        class="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-[#737686] hover:text-red-500 transition-colors"
+                        title="删除"
+                      >
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="filteredProducts.length === 0" class="text-center py-16">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center text-white mx-auto mb-5 shadow-lg opacity-80">
+              <span class="material-symbols-outlined fill-icon text-4xl">inventory_2</span>
+            </div>
+            <h3 class="font-headline-sm text-[#191b23] dark:text-white mb-2">暂无商品</h3>
+            <p class="font-body-md text-sm text-[#737686] mb-6">点击上方按钮添加您的第一个商品</p>
+            <button @click="openAddModal" class="btn btn-primary btn-md">
+              <span class="material-symbols-outlined">add</span>
+              添加商品
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Theme Toggle Button -->
+    <button
+      @click="showThemePanel = !showThemePanel"
+      class="theme-btn group"
+    >
+      <span class="material-symbols-outlined text-2xl group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+    </button>
+
+    <!-- Theme Selection Panel -->
+    <transition name="fade">
+      <div v-if="showThemePanel" class="theme-panel animate-slide-up">
+        <div class="mb-6">
+          <p class="font-label-md text-label-md text-[#737686] mb-3">主题颜色</p>
+          <div class="flex gap-3">
+            <button
+              @click="setTheme('')"
+              class="w-10 h-10 rounded-full bg-[#004ac6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="科技蓝"
+            ></button>
+            <button
+              @click="setTheme('fresh-green')"
+              class="w-10 h-10 rounded-full bg-[#10B981] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="清新绿"
+            ></button>
+            <button
+              @click="setTheme('romantic-purple')"
+              class="w-10 h-10 rounded-full bg-[#8B5CF6] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="浪漫紫"
+            ></button>
+            <button
+              @click="setTheme('vibrant-pink')"
+              class="w-10 h-10 rounded-full bg-[#EC4899] border-2 border-white shadow-md hover:scale-110 transition-all"
+              title="活力粉"
+            ></button>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="font-body-md text-[#737686]">暗色模式</span>
+          <button
+            @click="toggleDarkMode"
+            :class="[
+              'w-12 h-6 rounded-full relative transition-all duration-200',
+              isDark ? 'bg-[#004ac6]' : 'bg-[#e7e7f3]'
+            ]"
+          >
+            <span
+              :class="[
+                'absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all duration-200',
+                isDark ? 'left-7' : 'left-1'
+              ]"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Add/Edit Product Modal -->
+    <transition name="fade">
+      <div
+        v-if="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <!-- Backdrop -->
+        <div
+          class="modal-backdrop absolute inset-0"
+          @click="closeModal"
+        ></div>
+
+        <!-- Modal Content -->
+        <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto glass-strong rounded-3xl shadow-2xl animate-scale-in">
+          <!-- Modal Header -->
+          <div class="sticky top-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-white/30 px-6 py-4 flex items-center justify-between rounded-t-3xl z-10">
+            <h2 class="font-headline-md text-[#191b23] dark:text-white">
+              {{ isEditing ? '编辑商品' : '添加商品' }}
+            </h2>
+            <button
+              @click="closeModal"
+              class="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+            >
+              <span class="material-symbols-outlined text-[#737686]">close</span>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6 space-y-6">
+            <!-- Product Name -->
+            <div>
+              <label class="block font-label-md text-[#737686] mb-2">商品名称 *</label>
+              <input
+                v-model="formData.name"
+                type="text"
+                class="input"
+                placeholder="请输入商品名称"
+              />
+            </div>
+
+            <!-- Main Image Upload -->
+            <div>
+              <label class="block font-label-md text-[#737686] mb-2">主图 *</label>
+              <div
+                class="upload-zone rounded-2xl p-6 text-center cursor-pointer"
+                @click="triggerMainImageUpload"
+                @dragover.prevent="handleDragOver"
+                @dragleave="handleDragLeave"
+                @drop.prevent="handleMainImageDrop"
+              >
+                <input
+                  type="file"
+                  ref="mainImageInput"
+                  @change="handleMainImageSelect"
+                  accept="image/*"
+                  class="hidden"
+                />
+                <div v-if="!formData.mainImage" class="flex flex-col items-center gap-2">
+                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-3xl text-blue-500">add_photo_alternate</span>
+                  </div>
+                  <p class="font-body-md text-[#737686]">点击或拖拽上传主图</p>
+                  <p class="text-xs text-[#737686]">支持 JPG、PNG 格式，建议尺寸 800x800</p>
+                </div>
+                <div v-else class="relative">
+                  <img :src="formData.mainImage" class="w-32 h-32 rounded-2xl object-cover mx-auto" />
+                  <button
+                    @click.stop="removeMainImage"
+                    class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center text-xs"
+                  >
+                    <span class="material-symbols-outlined text-sm">close</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detail Images -->
+            <div>
+              <label class="block font-label-md text-[#737686] mb-2">详情图</label>
+              <div
+                class="upload-zone rounded-2xl p-4 text-center cursor-pointer"
+                @click="triggerDetailImagesUpload"
+              >
+                <input
+                  type="file"
+                  ref="detailImagesInput"
+                  @change="handleDetailImagesSelect"
+                  accept="image/*"
+                  multiple
+                  class="hidden"
+                />
+                <div v-if="formData.detailImages.length === 0" class="flex flex-col items-center gap-2 py-4">
+                  <span class="material-symbols-outlined text-3xl text-blue-500">image</span>
+                  <p class="font-body-md text-[#737686]">点击上传详情图（可多选）</p>
+                </div>
+                <div v-else class="detail-images-grid">
+                  <div
+                    v-for="(img, index) in formData.detailImages"
+                    :key="index"
+                    class="detail-image-item"
+                  >
+                    <img :src="img" />
+                    <button
+                      @click.stop="removeDetailImage(index)"
+                      class="remove-btn"
+                    >
+                      <span class="material-symbols-outlined text-xs">close</span>
+                    </button>
+                  </div>
+                  <div
+                    class="aspect-square rounded-xl border-2 border-dashed border-[#c3c6d7] flex items-center justify-center cursor-pointer hover:border-blue-400 transition-colors"
+                    @click.stop="triggerDetailImagesUpload"
+                  >
+                    <span class="material-symbols-outlined text-2xl text-[#737686]">add</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category & Points Price -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label-md text-[#737686] mb-2">商品分类 *</label>
+                <select v-model="formData.category" class="input">
+                  <option value="">请选择分类</option>
+                  <option value="digital">数码电子</option>
+                  <option value="home">家居生活</option>
+                  <option value="fashion">服饰配件</option>
+                  <option value="food">美食饮品</option>
+                  <option value="beauty">美妆护肤</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-label-md text-[#737686] mb-2">积分价格 *</label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-amber-500">stars</span>
+                  <input
+                    v-model.number="formData.points"
+                    type="number"
+                    min="0"
+                    class="input pl-12"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Stock & Max Per User -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-label-md text-[#737686] mb-2">库存数量 *</label>
+                <input
+                  v-model.number="formData.stock"
+                  type="number"
+                  min="0"
+                  class="input"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label class="block font-label-md text-[#737686] mb-2">每人限购</label>
+                <input
+                  v-model.number="formData.maxPerUser"
+                  type="number"
+                  min="0"
+                  class="input"
+                  placeholder="0表示不限购"
+                />
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block font-label-md text-[#737686] mb-2">商品描述</label>
+              <textarea
+                v-model="formData.description"
+                rows="4"
+                class="input py-3 px-4 h-auto resize-none"
+                placeholder="请输入商品描述..."
+              ></textarea>
+            </div>
+
+            <!-- Status Toggle -->
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="font-label-md text-[#737686]">商品状态</label>
+                <p class="text-xs text-[#737686] mt-1">开启后商品将显示在积分商城</p>
+              </div>
+              <div
+                @click="formData.status = formData.status === 'active' ? 'inactive' : 'active'"
+                :class="['toggle-switch', { active: formData.status === 'active' }]"
+              ></div>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="sticky bottom-0 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-t border-white/30 px-6 py-4 flex items-center justify-end gap-3 rounded-b-3xl">
+            <button
+              @click="closeModal"
+              class="btn btn-secondary btn-md"
+            >
+              取消
+            </button>
+            <button
+              @click="saveProduct"
+              class="btn btn-primary btn-md"
+              :disabled="!isFormValid"
+            >
+              <span class="material-symbols-outlined">check</span>
+              保存
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+  </div>
+
+  <script>
+    const { ref, computed, reactive } = Vue;
+
+    const app = Vue.createApp({
+      setup() {
+        // ThemeApp 状态
+        const isDark = ref(false);
+        const showThemePanel = ref(false);
+
+        // 导航数据
+        const navItems = reactive([
+          { name: 'Dashboard', icon: 'dashboard', active: false },
+          { name: '店铺管理', icon: 'storefront', active: false },
+          { name: '用户管理', icon: 'group', active: false },
+          { name: '商品管理', icon: 'inventory_2', active: true },
+          { name: '订单管理', icon: 'receipt_long', active: false },
+          { name: '消息通知', icon: 'notifications', active: false },
+          { name: '个人中心', icon: 'person', active: false }
+        ]);
+
+        // 导航切换
+        const setActive = (index) => {
+          navItems.forEach((item, i) => {
+            item.active = i === index;
+          });
+        };
+
+        // 主题设置
+        const setTheme = (theme) => {
+          console.log('主题切换:', theme);
+        };
+
+        const toggleDarkMode = () => {
+          isDark.value = !isDark.value;
+          document.documentElement.setAttribute('data-mode', isDark.value ? 'dark' : 'light');
+        };
+
+        // 商品管理状态
+        const viewMode = ref('card');
+        const searchQuery = ref('');
+        const filterCategory = ref('');
+        const filterStatus = ref('');
+        const showModal = ref(false);
+        const isEditing = ref(false);
+        const currentProductId = ref(null);
+
+        const mainImageInput = ref(null);
+        const detailImagesInput = ref(null);
+
+        const formData = reactive({
+          name: '',
+          mainImage: '',
+          detailImages: [],
+          category: '',
+          points: 0,
+          stock: 0,
+          maxPerUser: 0,
+          description: '',
+          status: 'active'
+        });
+
+        const products = ref([
+          {
+            id: 1,
+            name: 'iPhone 15 Pro Max',
+            image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop',
+            categoryName: '数码电子',
+            category: 'digital',
+            points: 98000,
+            stock: 25,
+            maxPerUser: 2,
+            description: '苹果旗舰手机，A17 Pro芯片，钛金属设计',
+            status: 'active'
+          },
+          {
+            id: 2,
+            name: '戴森吹风机 Supersonic',
+            image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop',
+            categoryName: '家居生活',
+            category: 'home',
+            points: 32000,
+            stock: 48,
+            maxPerUser: 1,
+            description: '智能温控，快速干发，减少热损伤',
+            status: 'active'
+          },
+          {
+            id: 3,
+            name: '索尼 WH-1000XM5 耳机',
+            image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?w=400&h=400&fit=crop',
+            categoryName: '数码电子',
+            category: 'digital',
+            points: 28000,
+            stock: 86,
+            maxPerUser: 2,
+            description: '行业领先降噪，30小时续航',
+            status: 'active'
+          },
+          {
+            id: 4,
+            name: 'SK-II 护肤精华套装',
+            image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop',
+            categoryName: '美妆护肤',
+            category: 'beauty',
+            points: 15800,
+            stock: 120,
+            maxPerUser: 3,
+            description: '神仙水套装，焕亮肌肤',
+            status: 'active'
+          },
+          {
+            id: 5,
+            name: '星巴克星礼卡 500元',
+            image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=400&fit=crop',
+            categoryName: '美食饮品',
+            category: 'food',
+            points: 48000,
+            stock: 999,
+            maxPerUser: 5,
+            description: '星巴克全国通用，余额永不过期',
+            status: 'inactive'
+          },
+          {
+            id: 6,
+            name: 'Air Jordan 1 Retro High',
+            image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop',
+            categoryName: '服饰配件',
+            category: 'fashion',
+            points: 22000,
+            stock: 0,
+            maxPerUser: 1,
+            description: '经典芝加哥配色，限量版球鞋',
+            status: 'inactive'
+          }
+        ]);
+
+        const filteredProducts = computed(() => {
+          return products.value.filter(product => {
+            const matchSearch = !searchQuery.value ||
+              product.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+            const matchCategory = !filterCategory.value ||
+              product.category === filterCategory.value;
+            const matchStatus = !filterStatus.value ||
+              product.status === filterStatus.value;
+            return matchSearch && matchCategory && matchStatus;
+          });
+        });
+
+        const isFormValid = computed(() => {
+          return formData.name.trim() &&
+            formData.mainImage &&
+            formData.category &&
+            formData.points > 0 &&
+            formData.stock >= 0;
+        });
+
+        const openAddModal = () => {
+          isEditing.value = false;
+          resetForm();
+          showModal.value = true;
+        };
+
+        const openEditModal = (product) => {
+          isEditing.value = true;
+          currentProductId.value = product.id;
+          formData.name = product.name;
+          formData.mainImage = product.image;
+          formData.detailImages = [];
+          formData.category = product.category;
+          formData.points = product.points;
+          formData.stock = product.stock;
+          formData.maxPerUser = product.maxPerUser;
+          formData.description = product.description;
+          formData.status = product.status;
+          showModal.value = true;
+        };
+
+        const closeModal = () => {
+          showModal.value = false;
+          resetForm();
+        };
+
+        const resetForm = () => {
+          formData.name = '';
+          formData.mainImage = '';
+          formData.detailImages = [];
+          formData.category = '';
+          formData.points = 0;
+          formData.stock = 0;
+          formData.maxPerUser = 0;
+          formData.description = '';
+          formData.status = 'active';
+        };
+
+        const saveProduct = () => {
+          if (!isFormValid.value) return;
+
+          const categoryNames = {
+            'digital': '数码电子',
+            'home': '家居生活',
+            'fashion': '服饰配件',
+            'food': '美食饮品',
+            'beauty': '美妆护肤'
+          };
+
+          if (isEditing.value) {
+            const index = products.value.findIndex(p => p.id === currentProductId.value);
+            if (index !== -1) {
+              products.value[index] = {
+                ...products.value[index],
+                name: formData.name,
+                image: formData.mainImage,
+                category: formData.category,
+                categoryName: categoryNames[formData.category] || formData.category,
+                points: formData.points,
+                stock: formData.stock,
+                maxPerUser: formData.maxPerUser,
+                description: formData.description,
+                status: formData.status
+              };
+            }
+            window.Utils?.showToast('商品已更新');
+          } else {
+            const newProduct = {
+              id: Math.max(...products.value.map(p => p.id)) + 1,
+              name: formData.name,
+              image: formData.mainImage,
+              category: formData.category,
+              categoryName: categoryNames[formData.category] || formData.category,
+              points: formData.points,
+              stock: formData.stock,
+              maxPerUser: formData.maxPerUser,
+              description: formData.description,
+              status: formData.status
+            };
+            products.value.unshift(newProduct);
+            window.Utils?.showToast('商品添加成功');
+          }
+
+          closeModal();
+        };
+
+        const toggleStatus = (product) => {
+          product.status = product.status === 'active' ? 'inactive' : 'active';
+          window.Utils?.showToast(product.status === 'active' ? '商品已上架' : '商品已下架');
+        };
+
+        const deleteProduct = (id) => {
+          if (confirm('确定要删除这个商品吗？')) {
+            products.value = products.value.filter(p => p.id !== id);
+            window.Utils?.showToast('商品已删除');
+          }
+        };
+
+        // Image upload handlers
+        const triggerMainImageUpload = () => {
+          mainImageInput.value?.click();
+        };
+
+        const handleMainImageSelect = (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              formData.mainImage = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        const handleDragOver = (e) => {
+          e.currentTarget.classList.add('dragover');
+        };
+
+        const handleDragLeave = (e) => {
+          e.currentTarget.classList.remove('dragover');
+        };
+
+        const handleMainImageDrop = (e) => {
+          e.currentTarget.classList.remove('dragover');
+          const file = e.dataTransfer.files?.[0];
+          if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              formData.mainImage = event.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+
+        const removeMainImage = () => {
+          formData.mainImage = '';
+        };
+
+        const triggerDetailImagesUpload = () => {
+          detailImagesInput.value?.click();
+        };
+
+        const handleDetailImagesSelect = (e) => {
+          const files = Array.from(e.target.files || []);
+          files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                formData.detailImages.push(event.target.result);
+              };
+              reader.readAsDataURL(file);
+            }
+          });
+        };
+
+        const removeDetailImage = (index) => {
+          formData.detailImages.splice(index, 1);
+        };
+
+        return {
+          isDark,
+          showThemePanel,
+          navItems,
+          searchQuery,
+          setActive,
+          setTheme,
+          toggleDarkMode,
+          viewMode,
+          filterCategory,
+          filterStatus,
+          showModal,
+          isEditing,
+          formData,
+          products,
+          filteredProducts,
+          isFormValid,
+          mainImageInput,
+          detailImagesInput,
+          openAddModal,
+          openEditModal,
+          closeModal,
+          saveProduct,
+          toggleStatus,
+          deleteProduct,
+          triggerMainImageUpload,
+          handleMainImageSelect,
+          handleDragOver,
+          handleDragLeave,
+          handleMainImageDrop,
+          removeMainImage,
+          triggerDetailImagesUpload,
+          handleDetailImagesSelect,
+          removeDetailImage
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+</html>
