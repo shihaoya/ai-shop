@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>用户管理列表 - 多店铺积分管理系统</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#fffbff",
+                        "outline": "#737686",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb596",
+                        "surface-variant": "#e1e2ed",
+                        "glass-bg": "rgba(255, 255, 255, 0.6)",
+                        "inverse-surface": "#2e3039",
+                        "fresh-green": "#10B981",
+                        "tertiary-fixed": "#ffdbcd",
+                        "secondary": "#712ae2",
+                        "surface-container": "#ededf9",
+                        "secondary-fixed": "#eaddff",
+                        "background": "#faf8ff",
+                        "inverse-primary": "#b4c5ff",
+                        "outline-variant": "#c3c6d7",
+                        "surface-container-high": "#e7e7f3",
+                        "on-secondary-fixed-variant": "#5a00c6",
+                        "romantic-purple": "#8B5CF6",
+                        "tertiary-container": "#bc4800",
+                        "on-tertiary-fixed-variant": "#7d2d00",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-container": "#8a4cfc",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e1e2ed",
+                        "secondary-fixed-dim": "#d2bbff",
+                        "tech-blue": "#2563EB",
+                        "on-surface": "#191b23",
+                        "on-surface-variant": "#434655",
+                        "surface-tint": "#0053db",
+                        "primary-fixed": "#dbe1ff",
+                        "on-primary-container": "#eeefff",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "on-secondary-fixed": "#25005a",
+                        "surface-bright": "#faf8ff",
+                        "glass-border": "rgba(255, 255, 255, 0.3)",
+                        "on-tertiary-container": "#ffede6",
+                        "classic-black": "#1F2937",
+                        "tertiary": "#943700",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "primary-container": "#2563eb",
+                        "vibrant-pink": "#EC4899",
+                        "surface": "#faf8ff",
+                        "pure-white": "#FFFFFF",
+                        "on-background": "#191b23",
+                        "on-secondary": "#ffffff",
+                        "warning": "#F59E0B",
+                        "on-tertiary-fixed": "#360f00",
+                        "surface-dim": "#d9d9e5",
+                        "primary": "#004ac6",
+                        "success": "#10B981",
+                        "surface-container-low": "#f3f3fe",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#00174b",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "danger": "#EF4444",
+                        "inverse-on-surface": "#f0f0fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "md": "16px",
+                        "container-padding": "32px",
+                        "xl": "40px",
+                        "unit": "4px",
+                        "xs": "4px",
+                        "gutter": "20px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "points-display": ["manrope"],
+                        "headline-sm": ["manrope"],
+                        "body-lg": ["inter"],
+                        "body-md": ["inter"],
+                        "label-md": ["inter"],
+                        "headline-md": ["manrope"],
+                        "display-lg": ["manrope"]
+                    },
+                    "fontSize": {
+                        "points-display": ["32px", { "lineHeight": "1", "letterSpacing": "-0.01em", "fontWeight": "800" }],
+                        "headline-sm": ["20px", { "lineHeight": "1.4", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "800" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for tables */
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(115, 118, 134, 0.2);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen text-on-background font-body-md relative overflow-x-hidden">
+<!-- Level 0: Vibrant Background Mesh -->
+<div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-fixed-dim/40 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-secondary-fixed-dim/30 rounded-full blur-[150px]"></div>
+<div class="absolute top-[30%] right-[20%] w-[30%] h-[30%] bg-tertiary-fixed-dim/20 rounded-full blur-[100px]"></div>
+</div>
+<!-- TopNavBar -->
+<nav class="flex justify-between items-center px-6 h-16 fixed top-4 right-4 left-[288px] z-50 bg-glass-bg backdrop-blur-xl dark:bg-gray-900/40 border border-glass-border rounded-2xl shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] font-['Manrope'] antialiased">
+<div class="flex items-center gap-md">
+<span class="text-xl font-black text-slate-800 dark:text-white tracking-wider">多店铺积分管理系统</span>
+</div>
+<div class="flex items-center gap-lg">
+<!-- Search Bar on Right -->
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">search</span>
+<input class="pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-full text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-md placeholder-slate-500 transition-all w-64" placeholder="搜索..." type="text"/>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 rounded-full text-blue-600 dark:text-blue-400 hover:bg-white/20 dark:hover:bg-gray-800/30 transition-all duration-300 scale-95 active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined">palette</span>
+</button>
+<button class="p-2 rounded-full text-blue-600 dark:text-blue-400 hover:bg-white/20 dark:hover:bg-gray-800/30 transition-all duration-300 scale-95 active:opacity-80 flex items-center justify-center relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full"></span>
+</button>
+<button class="p-2 rounded-full text-blue-600 dark:text-blue-400 hover:bg-white/20 dark:hover:bg-gray-800/30 transition-all duration-300 scale-95 active:opacity-80 flex items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="flex flex-col pt-8 pb-6 w-64 border border-glass-border fixed left-4 top-4 bottom-4 rounded-2xl bg-glass-bg backdrop-blur-2xl dark:bg-black/30 shadow-2xl z-40">
+<!-- Header Info -->
+<div class="flex flex-col items-center px-6 mb-8">
+<div class="w-20 h-20 rounded-full bg-gradient-to-tr from-primary-fixed to-secondary-fixed p-1 mb-4 shadow-lg">
+<img alt="管理员头像" class="w-full h-full rounded-full object-cover border-2 border-white/50" data-alt="professional headshot of a man with a slight smile, clean background, soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvdzV4R94NjTdY0a_UWNuKXjy2jAa8dVGMZRhKmnJK3sVJvTU2u5VLGYj9YuHxRg3E-UzaQfugTgfA9BSxt_b1qw0xJE_Ir6pAYIyCibWQMfGl2a69uUyW4BfmYcsCPjMOr7dzw4f0krK0Sq4bbCr9RY5jqAcUxrPQj9QuSj5eivB8r78ludTlN6pbQBTREvv2pP1MHTciZAXcZeR7b824aySmSW5rasne2xB-NLEtIyFeCJ4FLIP4NaJjX9ygLsXn2VvomqK2hPz4"/>
+</div>
+<h2 class="text-lg font-bold text-slate-900 dark:text-white font-['Manrope']">系统管理员</h2>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">超级管理权限</p>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-4 space-y-2 font-['Manrope'] text-sm font-medium">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span>店铺管理</span>
+</a>
+<!-- Active Tab: 用户管理 -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-500/20 text-blue-700 dark:text-blue-300 border-r-4 border-blue-500 backdrop-blur-md active:scale-98" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span>用户管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>个人中心</span>
+</a>
+</nav>
+<!-- Bottom Action -->
+<div class="px-4 mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>退出登录</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[288px] pt-[104px] pr-8 pl-4 pb-xl min-h-screen flex flex-col gap-lg">
+<!-- Page Header -->
+<header class="flex justify-between items-end mb-sm">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">用户管理</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 opacity-80">管理系统内所有店铺与普通用户，控制访问权限。</p>
+</div>
+<button class="flex items-center gap-sm bg-primary text-on-primary px-lg py-sm rounded-lg shadow-[0_4px_14px_0_rgba(0,74,198,0.39)] hover:shadow-[0_6px_20px_rgba(0,74,198,0.23)] hover:bg-primary/90 transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                新增用户
+            </button>
+</header>
+<!-- Filter Bar (Glass Card) -->
+<div class="bg-glass-bg backdrop-blur-[12px] border border-glass-border rounded-xl p-md shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] flex flex-wrap items-end gap-md">
+<div class="flex flex-col gap-xs flex-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">角色</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white/40 border border-glass-border rounded-lg px-md py-[10px] font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all cursor-pointer backdrop-blur-sm">
+<option value="all">全部角色</option>
+<option value="shop_user">店铺用户</option>
+<option value="regular_user">普通用户</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-xs flex-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">店铺</label>
+<div class="relative">
+<select class="w-full appearance-none bg-white/40 border border-glass-border rounded-lg px-md py-[10px] font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all cursor-pointer backdrop-blur-sm">
+<option value="all">全部店铺</option>
+<option value="shop_a">星巴克 (望京店)</option>
+<option value="shop_b">瑞幸咖啡 (中关村店)</option>
+<option value="shop_c">喜茶 (三里屯店)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-xs flex-1 min-w-[250px]">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">关键词搜索</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-[10px] bg-white/40 border border-glass-border rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all backdrop-blur-sm placeholder:text-outline-variant" placeholder="搜索账号或昵称..." type="text"/>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="px-lg py-[10px] rounded-lg border border-glass-border bg-white/20 hover:bg-white/40 text-on-surface font-label-md text-label-md transition-all shadow-sm backdrop-blur-sm">
+                    重置
+                </button>
+<button class="px-lg py-[10px] rounded-lg bg-surface-tint text-on-primary font-label-md text-label-md shadow-md hover:shadow-lg hover:bg-primary transition-all">
+                    筛选
+                </button>
+</div>
+</div>
+<!-- Data Table (Ghost Table Pattern in Glass Card) -->
+<div class="bg-glass-bg backdrop-blur-[12px] border border-glass-border rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.04)] overflow-hidden flex-1 flex flex-col">
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-glass-border/50">
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide">用户账号</th>
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide">昵称</th>
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide">角色</th>
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide">关联店铺</th>
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide">状态</th>
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide">创建时间</th>
+<th class="font-label-md text-label-md text-outline py-md px-lg font-medium tracking-wide text-right">操作</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-white/30 transition-colors border-b border-glass-border/30 last:border-0 group">
+<td class="py-md px-lg font-medium text-on-surface">admin_wang</td>
+<td class="py-md px-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-xs">王</div>
+                                王店长
+                            </td>
+<td class="py-md px-lg">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary-fixed/50 text-on-secondary-fixed text-xs font-medium border border-secondary-fixed">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                                    店铺用户
+                                </span>
+</td>
+<td class="py-md px-lg text-on-surface-variant">星巴克 (望京店)</td>
+<td class="py-md px-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="text-sm">正常</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant text-sm">2023-10-24 14:30</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-md text-label-md transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-end w-full gap-1">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                    重置密码
+                                </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/30 transition-colors border-b border-glass-border/30 last:border-0 group">
+<td class="py-md px-lg font-medium text-on-surface">user_7782</td>
+<td class="py-md px-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary font-bold text-xs">L</div>
+                                咖啡爱好者Li
+                            </td>
+<td class="py-md px-lg">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant text-xs font-medium border border-outline-variant/30">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                    普通用户
+                                </span>
+</td>
+<td class="py-md px-lg text-outline italic text-sm">-</td>
+<td class="py-md px-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="text-sm">正常</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant text-sm">2023-10-25 09:15</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-md text-label-md transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-end w-full gap-1">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                    重置密码
+                                </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/30 transition-colors border-b border-glass-border/30 last:border-0 group">
+<td class="py-md px-lg font-medium text-on-surface">staff_zhao</td>
+<td class="py-md px-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-xs">赵</div>
+                                赵小哥
+                            </td>
+<td class="py-md px-lg">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary-fixed/50 text-on-secondary-fixed text-xs font-medium border border-secondary-fixed">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                                    店铺用户
+                                </span>
+</td>
+<td class="py-md px-lg text-on-surface-variant">瑞幸咖啡 (中关村店)</td>
+<td class="py-md px-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-danger"></span>
+<span class="text-sm text-danger">禁用</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant text-sm">2023-10-20 11:45</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-md text-label-md transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-end w-full gap-1">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                    重置密码
+                                </button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-white/30 transition-colors border-b border-glass-border/30 last:border-0 group">
+<td class="py-md px-lg font-medium text-on-surface">user_9910</td>
+<td class="py-md px-lg flex items-center gap-sm">
+<img alt="用户头像" class="w-8 h-8 rounded-full object-cover" data-alt="portrait of a young woman with natural makeup, soft daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpO6hROyMUEvLhUPu77CMr0Pq5ij9gCEZoT8iYvLSE_pOEUq9-DXITo0f_o3475HNvMEW94p0jDqn-zHZVjhjIvUKwISKb7AnlPF5TOkjFrffVmdCVcBTk3iG-41qlFBS4Lt3iS2HyJRO0q1vCq1qfvYA7n-XZwT7_ryqs_FrO3u-BjWG4aKL8nlzzpii1ErpuhqWMjhrBy-T9drroc1iC6KMLSE6fHfxJIedzCL_Jzw6kQgkXxVSz0p24DLqIy2gIdk4mHlX7ODhJ"/>
+                                奶茶续命
+                            </td>
+<td class="py-md px-lg">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-variant text-on-surface-variant text-xs font-medium border border-outline-variant/30">
+<span class="material-symbols-outlined text-[14px]">person</span>
+                                    普通用户
+                                </span>
+</td>
+<td class="py-md px-lg text-outline italic text-sm">-</td>
+<td class="py-md px-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-success"></span>
+<span class="text-sm">正常</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant text-sm">2023-10-26 16:20</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-md text-label-md transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-end w-full gap-1">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                    重置密码
+                                </button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-white/30 transition-colors border-b border-glass-border/30 last:border-0 group">
+<td class="py-md px-lg font-medium text-on-surface">admin_chen</td>
+<td class="py-md px-lg flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold text-xs">陈</div>
+                                陈经理
+                            </td>
+<td class="py-md px-lg">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-secondary-fixed/50 text-on-secondary-fixed text-xs font-medium border border-secondary-fixed">
+<span class="material-symbols-outlined text-[14px]">storefront</span>
+                                    店铺用户
+                                </span>
+</td>
+<td class="py-md px-lg text-on-surface-variant">喜茶 (三里屯店)</td>
+<td class="py-md px-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-warning"></span>
+<span class="text-sm text-warning">待审核</span>
+</div>
+</td>
+<td class="py-md px-lg text-on-surface-variant text-sm">2023-10-27 10:05</td>
+<td class="py-md px-lg text-right">
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-md text-label-md transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-end w-full gap-1">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+                                    重置密码
+                                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (simplified) -->
+<div class="px-lg py-md border-t border-glass-border/50 flex justify-between items-center bg-white/10 mt-auto">
+<span class="text-sm text-on-surface-variant">共 42 条记录</span>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded flex items-center justify-center text-outline hover:bg-white/40 hover:text-on-surface transition-colors disabled:opacity-50">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center bg-primary text-on-primary font-medium text-sm shadow-sm">1</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface hover:bg-white/40 transition-colors font-medium text-sm">2</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface hover:bg-white/40 transition-colors font-medium text-sm">3</button>
+<span class="text-outline px-1">...</span>
+<button class="w-8 h-8 rounded flex items-center justify-center text-outline hover:bg-white/40 hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (Theme Switch) -->
+<button class="fixed bottom-xl right-xl z-50 w-14 h-14 rounded-full bg-glass-bg backdrop-blur-xl border border-glass-border shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] flex items-center justify-center text-primary hover:bg-white/40 hover:scale-105 active:scale-95 transition-all duration-300 group">
+<span class="material-symbols-outlined text-[28px] group-hover:rotate-45 transition-transform duration-500">dark_mode</span>
+</button>
+</body></html>

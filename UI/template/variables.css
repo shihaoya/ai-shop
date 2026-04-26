@@ -1,0 +1,795 @@
+/**
+ * 多店铺积分商城系统 - CSS 变量与公共样式
+ * 
+ * 设计风格：拟态玻璃（Glassmorphism）
+ * 技术栈：reka-ui + unocss (tailwindcss 预设)
+ * 版本：v1.0
+ */
+
+/* ============================================
+   一、设计令牌 (Design Tokens)
+   ============================================ */
+
+/* 1.1 颜色系统 - 基础色板 (Light Mode) */
+:root {
+  /* Surface 层级 */
+  --color-surface-dim: #d9d9e5;
+  --color-surface: #faf8ff;
+  --color-surface-bright: #faf8ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f3fe;
+  --color-surface-container: #ededf9;
+  --color-surface-container-high: #e7e7f3;
+  --color-surface-container-highest: #e1e2ed;
+  --color-surface-variant: #e1e2ed;
+
+  /* On Surface */
+  --color-on-surface: #191b23;
+  --color-on-surface-variant: #434655;
+  --color-inverse-surface: #2e3039;
+  --color-inverse-on-surface: #f0f0fb;
+
+  /* Outline */
+  --color-outline: #737686;
+  --color-outline-variant: #c3c6d7;
+  --color-surface-tint: #0053db;
+
+  /* Background */
+  --color-background: #faf8ff;
+  --color-on-background: #191b23;
+
+  /* 1.2 主色系 */
+  --color-primary: #004ac6;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #2563eb;
+  --color-on-primary-container: #eeefff;
+  --color-inverse-primary: #b4c5ff;
+  --color-primary-fixed: #dbe1ff;
+  --color-primary-fixed-dim: #b4c5ff;
+  --color-on-primary-fixed: #00174b;
+  --color-on-primary-fixed-variant: #003ea8;
+
+  --color-secondary: #712ae2;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #8a4cfc;
+  --color-on-secondary-container: #fffbff;
+  --color-secondary-fixed: #eaddff;
+  --color-secondary-fixed-dim: #d2bbff;
+  --color-on-secondary-fixed: #25005a;
+  --color-on-secondary-fixed-variant: #5a00c6;
+
+  --color-tertiary: #943700;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #bc4800;
+  --color-on-tertiary-container: #ffede6;
+  --color-tertiary-fixed: #ffdbcd;
+  --color-tertiary-fixed-dim: #ffb596;
+  --color-on-tertiary-fixed: #360f00;
+  --color-on-tertiary-fixed-variant: #7d2d00;
+
+  /* 1.3 语义色 */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* 1.4 玻璃效果 */
+  --color-glass-bg: rgba(255, 255, 255, 0.6);
+  --color-glass-border: rgba(255, 255, 255, 0.3);
+  --color-glass-bg-dark: rgba(0, 0, 0, 0.4);
+  --color-glass-border-dark: rgba(255, 255, 255, 0.1);
+
+  /* 1.5 六种主题色 - 默认科技蓝 */
+  --theme-primary: #004ac6;
+  --theme-secondary: #2563eb;
+  --theme-rgb-primary: 0, 74, 198;
+  --theme-gradient: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
+
+  /* 1.6 字体系统 */
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-headline: 'Manrope', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-label: 'Inter', system-ui, sans-serif;
+
+  /* 1.7 圆角系统 */
+  --radius-sm: 0.25rem;
+  --radius-DEFAULT: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.5rem;
+  --radius-full: 9999px;
+
+  /* 1.8 间距系统 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  /* 1.9 阴影系统 */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-DEFAULT: 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
+  --shadow-xl: 0 32px 64px rgba(0,0,0,0.16);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-glass-strong: 0 16px 48px rgba(31,38,135,0.15);
+}
+
+/* ============================================
+   二、主题色变体 (Theme Variants)
+   ============================================ */
+
+/* 清新绿 (Fresh Green) */
+[data-theme="fresh-green"] {
+  --theme-primary: #10B981;
+  --theme-secondary: #059669;
+  --theme-rgb-primary: 16, 185, 129;
+  --theme-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+/* 浪漫紫 (Romantic Purple) */
+[data-theme="romantic-purple"] {
+  --theme-primary: #8B5CF6;
+  --theme-secondary: #7C3AED;
+  --theme-rgb-primary: 139, 92, 246;
+  --theme-gradient: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+}
+
+/* 活力粉 (Vibrant Pink) */
+[data-theme="vibrant-pink"] {
+  --theme-primary: #EC4899;
+  --theme-secondary: #DB2777;
+  --theme-rgb-primary: 236, 72, 153;
+  --theme-gradient: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
+}
+
+/* 纯净白 (Pure White) - 深色主题 */
+[data-theme="pure-white"] {
+  --theme-primary: #1F2937;
+  --theme-secondary: #374151;
+  --theme-rgb-primary: 31, 41, 55;
+  --theme-gradient: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+}
+
+/* 经典黑 (Classic Black) - 深色主题 */
+[data-theme="classic-black"] {
+  --theme-primary: #FFFFFF;
+  --theme-secondary: #E5E7EB;
+  --theme-rgb-primary: 255, 255, 255;
+  --theme-gradient: linear-gradient(135deg, #FFFFFF 0%, #E5E7EB 100%);
+}
+
+/* ============================================
+   三、暗色模式 (Dark Mode)
+   ============================================ */
+
+[data-mode="dark"] {
+  --color-surface-dim: #1a1a24;
+  --color-surface: #121218;
+  --color-surface-bright: #1e1e2a;
+  --color-surface-container-lowest: #0f0f14;
+  --color-surface-container-low: #16161e;
+  --color-surface-container: #1c1c26;
+  --color-surface-container-high: #262630;
+  --color-surface-container-highest: #2e2e3a;
+  --color-surface-variant: #2e2e3a;
+
+  --color-on-surface: #f0f0fb;
+  --color-on-surface-variant: #a0a4b8;
+  --color-inverse-surface: #f0f0fb;
+  --color-inverse-on-surface: #2e3039;
+
+  --color-outline: #8b8fa8;
+  --color-outline-variant: #4a4d63;
+
+  --color-background: #121218;
+  --color-on-background: #f0f0fb;
+
+  --color-glass-bg: rgba(0, 0, 0, 0.4);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   四、玻璃效果 (Glass Effect)
+   ============================================ */
+
+.glass {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-content {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-dark {
+  background: var(--color-glass-bg-dark);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border-dark);
+}
+
+/* 暗色模式玻璃效果 */
+[data-mode="dark"] .glass {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   五、背景装饰 (Background Decoration)
+   ============================================ */
+
+.bg-mesh {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-mesh::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  background: var(--theme-primary);
+  opacity: 0.1;
+  blur: 100px;
+  mix-blend-mode: multiply;
+}
+
+.bg-mesh::after {
+  content: '';
+  position: absolute;
+  top: 30%;
+  right: -20%;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  background: var(--theme-secondary);
+  opacity: 0.1;
+  blur: 120px;
+  mix-blend-mode: multiply;
+}
+
+.bg-mesh-secondary {
+  position: absolute;
+  bottom: -20%;
+  left: 20%;
+  width: 70vw;
+  height: 70vw;
+  border-radius: 50%;
+  background: var(--color-success);
+  opacity: 0.05;
+  blur: 150px;
+  mix-blend-mode: multiply;
+}
+
+/* ============================================
+   六、字体类 (Typography Classes)
+   ============================================ */
+
+.font-display-lg {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.font-headline-md {
+  font-family: var(--font-headline);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.font-headline-sm {
+  font-family: var(--font-headline);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.font-body-lg {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.font-body-md {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.font-label-md {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.font-points-display {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================
+   七、布局工具类 (Layout Utilities)
+   ============================================ */
+
+/* 悬浮侧边栏 */
+.sidebar-float {
+  margin: 16px;
+  width: 256px;
+  height: calc(100vh - 32px);
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 40px;
+  box-shadow: var(--shadow-glass-strong);
+}
+
+/* 悬浮顶部栏 */
+.topbar-float {
+  margin: 16px;
+  height: 80px;
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 40px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* 内容区域 */
+.content-area {
+  margin: 16px;
+  margin-left: 0;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 40px;
+}
+
+/* ============================================
+   八、按钮样式 (Button Styles)
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* 主要按钮 */
+.btn-primary {
+  background: var(--theme-primary);
+  color: var(--color-on-primary);
+  box-shadow: 0 8px 32px rgba(var(--theme-rgb-primary), 0.3);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+/* 次要按钮 */
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--theme-primary);
+  color: var(--theme-primary);
+}
+
+.btn-secondary:hover {
+  background: rgba(var(--theme-rgb-primary), 0.05);
+}
+
+/* 幽灵按钮 */
+.btn-ghost {
+  background: transparent;
+  color: var(--theme-primary);
+}
+
+.btn-ghost:hover {
+  background: rgba(var(--theme-rgb-primary), 0.1);
+}
+
+/* 危险按钮 */
+.btn-danger {
+  background: var(--color-danger);
+  color: white;
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+}
+
+/* 按钮尺寸 */
+.btn-sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  border-radius: var(--radius-md);
+}
+
+.btn-md {
+  height: 40px;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.btn-lg {
+  height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+  border-radius: var(--radius-xl);
+}
+
+/* 图标按钮 */
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-glass-bg);
+  border: 1px solid var(--color-glass-border);
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+/* ============================================
+   九、输入框样式 (Input Styles)
+   ============================================ */
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-xl);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--color-on-surface);
+  transition: all 0.2s ease;
+}
+
+.input::placeholder {
+  color: var(--color-outline);
+}
+
+.input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 2px rgba(var(--theme-rgb-primary), 0.2);
+}
+
+.input-error {
+  background: rgba(239, 68, 68, 0.05);
+  border-color: var(--color-danger);
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.input-disabled {
+  background: var(--color-surface-container-low);
+  border-color: var(--color-outline-variant);
+  color: var(--color-outline);
+  cursor: not-allowed;
+}
+
+/* 带图标输入框 */
+.input-with-icon {
+  padding-left: 48px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-outline);
+}
+
+/* ============================================
+   十、卡片样式 (Card Styles)
+   ============================================ */
+
+.card {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.card-stat {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 128px;
+  height: 128px;
+  background: var(--theme-primary);
+  opacity: 0.05;
+  border-radius: 0 0 0 100%;
+  transition: transform 0.3s ease;
+}
+
+.card-stat:hover::before {
+  transform: scale(1.1);
+}
+
+/* ============================================
+   十一、标签/徽章样式 (Badge Styles)
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-primary {
+  background: rgba(var(--theme-rgb-primary), 0.1);
+  color: var(--theme-primary);
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--color-warning);
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+/* ============================================
+   十二、主题切换按钮 (Theme Switcher)
+   ============================================ */
+
+.theme-btn {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+.theme-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.theme-btn:active {
+  transform: scale(0.95);
+}
+
+.theme-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 32px;
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-2xl);
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  z-index: 9998;
+}
+
+/* ============================================
+   十三、表格样式 (Table Styles)
+   ============================================ */
+
+.table-container {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.table th {
+  padding: 16px 24px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.table td {
+  padding: 16px 24px;
+  font-size: 14px;
+  color: var(--color-on-surface);
+  border-top: 1px solid var(--color-glass-border);
+}
+
+.table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   十四、动画 (Animations)
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease;
+}
+
+.animate-spin-slow {
+  animation: rotate 2s linear infinite;
+}
+
+/* ============================================
+   十五、实用工具类 (Utility Classes)
+   ============================================ */
+
+/* 文字截断 */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 滚动条美化 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* 隐藏滚动条但保持功能 */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

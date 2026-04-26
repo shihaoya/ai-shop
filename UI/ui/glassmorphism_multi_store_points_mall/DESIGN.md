@@ -1,0 +1,360 @@
+---
+name: Glassmorphism Multi-Store Points Mall
+colors:
+  surface: '#faf8ff'
+  surface-dim: '#d9d9e5'
+  surface-bright: '#faf8ff'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#f3f3fe'
+  surface-container: '#ededf9'
+  surface-container-high: '#e7e7f3'
+  surface-container-highest: '#e1e2ed'
+  on-surface: '#191b23'
+  on-surface-variant: '#434655'
+  inverse-surface: '#2e3039'
+  inverse-on-surface: '#f0f0fb'
+  outline: '#737686'
+  outline-variant: '#c3c6d7'
+  surface-tint: '#0053db'
+  primary: '#004ac6'
+  on-primary: '#ffffff'
+  primary-container: '#2563eb'
+  on-primary-container: '#eeefff'
+  inverse-primary: '#b4c5ff'
+  secondary: '#712ae2'
+  on-secondary: '#ffffff'
+  secondary-container: '#8a4cfc'
+  on-secondary-container: '#fffbff'
+  tertiary: '#943700'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#bc4800'
+  on-tertiary-container: '#ffede6'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#93000a'
+  primary-fixed: '#dbe1ff'
+  primary-fixed-dim: '#b4c5ff'
+  on-primary-fixed: '#00174b'
+  on-primary-fixed-variant: '#003ea8'
+  secondary-fixed: '#eaddff'
+  secondary-fixed-dim: '#d2bbff'
+  on-secondary-fixed: '#25005a'
+  on-secondary-fixed-variant: '#5a00c6'
+  tertiary-fixed: '#ffdbcd'
+  tertiary-fixed-dim: '#ffb596'
+  on-tertiary-fixed: '#360f00'
+  on-tertiary-fixed-variant: '#7d2d00'
+  background: '#faf8ff'
+  on-background: '#191b23'
+  surface-variant: '#e1e2ed'
+  tech-blue: '#2563EB'
+  fresh-green: '#10B981'
+  romantic-purple: '#8B5CF6'
+  vibrant-pink: '#EC4899'
+  pure-white: '#FFFFFF'
+  classic-black: '#1F2937'
+  glass-bg: rgba(255, 255, 255, 0.6)
+  glass-border: rgba(255, 255, 255, 0.3)
+  success: '#10B981'
+  warning: '#F59E0B'
+  danger: '#EF4444'
+typography:
+  display-lg:
+    fontFamily: manrope
+    fontSize: 48px
+    fontWeight: '800'
+    lineHeight: '1.2'
+    letterSpacing: -0.02em
+  headline-md:
+    fontFamily: manrope
+    fontSize: 24px
+    fontWeight: '700'
+    lineHeight: '1.4'
+  headline-sm:
+    fontFamily: manrope
+    fontSize: 20px
+    fontWeight: '600'
+    lineHeight: '1.4'
+  body-lg:
+    fontFamily: inter
+    fontSize: 16px
+    fontWeight: '400'
+    lineHeight: '1.6'
+  body-md:
+    fontFamily: inter
+    fontSize: 14px
+    fontWeight: '400'
+    lineHeight: '1.6'
+  label-md:
+    fontFamily: inter
+    fontSize: 12px
+    fontWeight: '600'
+    lineHeight: '1.2'
+  points-display:
+    fontFamily: manrope
+    fontSize: 32px
+    fontWeight: '800'
+    lineHeight: '1'
+    letterSpacing: -0.01em
+rounded:
+  sm: 0.25rem
+  DEFAULT: 0.5rem
+  md: 0.75rem
+  lg: 1rem
+  xl: 1.5rem
+  full: 9999px
+spacing:
+  unit: 4px
+  xs: 4px
+  sm: 8px
+  md: 16px
+  lg: 24px
+  xl: 40px
+  container-padding: 32px
+  gutter: 20px
+---
+
+# 多店铺积分商城系统 - UI页面提示词
+
+> **版本**：v1.0
+> **生成时间**：2026-04-26
+> **依据来源**：`/context/01_需求澄清/00_业务需求.md`、`/context/06_prototype/02_UI原型数据模型.md`
+
+---
+
+## 一、通用设计规范
+
+### 1.1 视觉风格
+- **设计风格**：拟态玻璃（Glassmorphism）
+
+### 1.2 颜色主题（6种）
+| 序号 | 主题名称 |
+|------|----------|
+| 1 | 科技蓝 |
+| 2 | 清新绿 |
+| 3 | 浪漫紫 |
+| 4 | 活力粉 |
+| 5 | 纯净白 |
+| 6 | 经典黑 |
+
+### 1.3 主题切换
+- 右下角悬浮按钮触发
+- 面板包含：颜色主题选择 + 明暗模式切换
+
+---
+
+## 二、管理员端页面
+
+### 2.1 登录页
+- 账号密码登录
+- 玻璃态卡片居中
+- 主题色渐变背景
+
+### 2.2 仪表盘
+- 四格统计卡片：店铺总数、用户总数、订单总量、积分发放统计
+- 每个卡片带图标和趋势指示
+- 支持时间范围筛选
+
+### 2.3 店铺管理列表
+- 筛选栏：状态（全部/申请中/已通过/已冻结）
+- 表格列：店铺编号、店铺名称、Logo、状态、申请时间、操作
+- 操作按钮：审核/冻结/解冻
+
+### 2.4 店铺审核详情（抽屉/弹窗）
+- 展示：店铺名称、Logo、简介、申请人信息
+- 审核操作：通过/拒绝
+- 拒绝需填写理由
+
+### 2.5 用户管理列表
+- 筛选栏：角色（店铺用户/普通用户）、店铺
+- 表格列：用户账号、昵称、角色、关联店铺、状态、创建时间
+- 操作：重置密码
+
+### 2.6 密码重置弹窗
+- 显示用户基本信息
+- 随机生成密码（6位，弹窗内显示）
+- 确认重置按钮
+
+### 2.7 个人中心
+- 头像、昵称、账号信息
+- 修改密码表单
+- 退出登录
+
+---
+
+## 三、店铺用户端页面
+
+### 3.1 登录/注册页
+- 账号登录
+- 店铺用户注册入口（需审核）：昵称，用户名，密码，确认密码
+- 玻璃态卡片居中
+
+### 3.2 仪表盘
+- 六格统计：店铺用户数、普通用户数、商品数（上架/下架）、订单数（按状态饼图）、积分余额
+- 快捷操作入口
+
+### 3.3 商品分类管理
+- 分类列表（系统内置 + 商家自定义标签区分）
+- 新增/编辑分类弹窗：分类名称输入
+- 显示每个分类下的商品数量
+
+### 3.4 商品列表
+- 切换按钮：卡片视图 / 表格视图
+- **卡片视图**：网格布局，商品主图+名称+积分价格+库存+状态标签
+- **表格视图**：图片+名称+分类+积分价格+库存+状态+操作列
+- 筛选栏：分类、状态
+- 操作：上架/下架/编辑/删除
+
+### 3.5 商品表单（新增/编辑）
+- 左侧：表单区域
+  - 商品名称（必填）
+  - 商品主图上传（必填，支持拖拽）
+  - 详情图上传（多张，支持拖拽排序）
+  - 积分价格（必填）
+  - 库存数量（必填）
+  - 商品分类下拉（必填）
+  - 状态开关（上架/下架）
+  - 商品描述（富文本）
+  - 单用户最大兑换个数（默认0=无限制）
+- 右侧：预览效果
+
+### 3.6 普通用户管理
+- 表格列：用户账号、昵称、头像、积分余额、注册方式、状态、操作
+- 操作：查看详情/调整积分/重置密码/删除
+- 积分调整弹窗：增加/扣除+积分数量+操作理由
+
+### 3.7 积分变动记录
+- 表格列：变动类型、变动积分、变动后余额、操作理由、操作人、时间
+- 筛选：时间范围、变动类型
+
+### 3.8 订单列表
+- 切换按钮：卡片视图 / 表格视图
+- **卡片视图**：订单概要+商品缩略图+用户+积分+状态+时间
+- **表格视图**：订单号+商品+用户+积分+状态+下单时间+操作
+- 筛选栏：状态、时间范围
+
+### 3.9 订单详情
+- 订单状态进度条
+- 商品明细列表（快照：名称/主图/数量/积分）
+- 收货信息（姓名/手机/地址）
+- 积分总计
+- 物流信息（快递类型+单号，发货后显示）
+- 操作按钮（根据状态显示）：确认/发货/完成/关闭
+
+### 3.10 我的店铺
+- 店铺状态标签（未申请/申请中/已通过/已冻结）
+- **未申请/已拒绝**：申请表单（店铺名称+Logo上传+简介）
+- **已通过**：展示店铺信息+编辑入口
+- **已冻结**：显示冻结原因+重新申请入口
+
+### 3.11 消息列表
+- 消息卡片：标题+内容摘要+类型标签+时间+已读状态
+- 类型标签：订单超时/账号审核/店铺审核/用户审核/密码重置
+- 点击进入消息详情
+
+### 3.12 个人中心
+- 头像上传
+- 昵称修改
+- 退出登录
+
+---
+
+## 四、普通用户端页面
+
+### 4.1 商品列表
+- 顶部：店铺名称+积分余额
+- 切换按钮：卡片视图 / 表格视图
+- **卡片视图**：网格，商品图+名称+积分价格+库存
+- **表格视图**：图+名称+分类+积分价格+库存
+- 筛选栏：分类
+- 点击进入商品详情
+
+### 4.2 商品详情
+- 商品主图（大图轮播）
+- 详情图列表
+- 商品名称、分类标签
+- 积分价格（大字突出）
+- 库存数量
+- 描述
+- 兑换限制提示
+- 底部：立即兑换按钮
+
+### 4.3 订单提交
+- 商品信息卡片（快照）
+- 收货信息表单：姓名+手机+地址（虚拟商品无需填写）
+- 积分扣除预览
+- 确认兑换按钮
+
+### 4.4 我的订单
+- 切换按钮：卡片视图 / 表格视图
+- **卡片视图**：订单概要+商品+状态+时间
+- **表格视图**：订单号+商品+积分+状态+时间
+- 筛选栏：状态
+- 点击进入订单详情
+
+### 4.5 订单详情
+- 订单状态进度条
+- 商品明细（快照）
+- 收货信息
+- 积分总计
+- 物流信息（已发货后显示）
+- 关闭订单按钮（已下单状态可见，需填理由）
+
+### 4.6 个人中心
+- 头像+昵称
+- 积分余额（大字突出）
+- 快捷入口：我的订单/积分明细
+- 修改个人信息
+
+### 4.7 积分明细
+- 列表：变动类型+积分（+增加/-扣除）+余额+时间
+- 时间筛选
+
+---
+
+## 五、公共组件
+
+### 5.1 颜色主题选择面板
+- 触发：右下角悬浮按钮
+- 内容：6个颜色圆形按钮 + 明暗模式开关
+- 选中状态高亮
+- 实时预览效果
+
+### 5.2 登录/注册页
+- 玻璃态卡片居中
+- 背景：主题色渐变+动态模糊
+- 支持主题切换预览
+
+---
+
+## 六、页面清单汇总
+
+| 序号 | 页面名称 | 所属角色 | 路由 |
+|------|----------|----------|------|
+| 1 | 管理员登录 | 管理员 | /admin/login |
+| 2 | 管理员仪表盘 | 管理员 | /admin/dashboard |
+| 3 | 店铺管理列表 | 管理员 | /admin/shops |
+| 4 | 店铺审核详情 | 管理员 | /admin/shops/:id |
+| 5 | 用户管理列表 | 管理员 | /admin/users |
+| 6 | 管理员个人中心 | 管理员 | /admin/profile |
+| 7 | 店铺用户登录 | 店铺用户 | /shop/login |
+| 8 | 店铺用户注册 | 店铺用户 | /shop/register |
+| 9 | 店铺仪表盘 | 店铺用户 | /shop/dashboard |
+| 10 | 商品分类管理 | 店铺用户 | /shop/categories |
+| 11 | 商品列表 | 店铺用户 | /shop/goods |
+| 12 | 商品表单 | 店铺用户 | /shop/goods/edit/:id |
+| 13 | 普通用户管理 | 店铺用户 | /shop/users |
+| 14 | 积分变动记录 | 店铺用户 | /shop/points-log |
+| 15 | 订单列表 | 店铺用户 | /shop/orders |
+| 16 | 订单详情 | 店铺用户 | /shop/orders/:id |
+| 17 | 我的店铺 | 店铺用户 | /shop/shop |
+| 18 | 消息列表 | 店铺用户 | /shop/messages |
+| 19 | 店铺个人中心 | 店铺用户 | /shop/profile |
+| 20 | 商品列表 | 普通用户 | /goods |
+| 21 | 商品详情 | 普通用户 | /goods/:id |
+| 22 | 订单提交 | 普通用户 | /orders/create |
+| 23 | 我的订单 | 普通用户 | /my-orders |
+| 24 | 订单详情 | 普通用户 | /my-orders/:id |
+| 25 | 个人中心 | 普通用户 | /my-profile |
+| 26 | 积分明细 | 普通用户 | /points-detail |

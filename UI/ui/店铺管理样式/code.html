@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>多店铺积分管理系统 - 店铺管理</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#fffbff",
+                      "outline": "#737686",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#ffb596",
+                      "surface-variant": "#e1e2ed",
+                      "glass-bg": "rgba(255, 255, 255, 0.6)",
+                      "inverse-surface": "#2e3039",
+                      "fresh-green": "#10B981",
+                      "tertiary-fixed": "#ffdbcd",
+                      "secondary": "#712ae2",
+                      "surface-container": "#ededf9",
+                      "secondary-fixed": "#eaddff",
+                      "background": "#faf8ff",
+                      "inverse-primary": "#b4c5ff",
+                      "outline-variant": "#c3c6d7",
+                      "surface-container-high": "#e7e7f3",
+                      "on-secondary-fixed-variant": "#5a00c6",
+                      "romantic-purple": "#8B5CF6",
+                      "tertiary-container": "#bc4800",
+                      "on-tertiary-fixed-variant": "#7d2d00",
+                      "on-error": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#8a4cfc",
+                      "error": "#ba1a1a",
+                      "surface-container-highest": "#e1e2ed",
+                      "secondary-fixed-dim": "#d2bbff",
+                      "tech-blue": "#2563EB",
+                      "on-surface": "#191b23",
+                      "on-surface-variant": "#434655",
+                      "surface-tint": "#0053db",
+                      "primary-fixed": "#dbe1ff",
+                      "on-primary-container": "#eeefff",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "on-secondary-fixed": "#25005a",
+                      "surface-bright": "#faf8ff",
+                      "glass-border": "rgba(255, 255, 255, 0.3)",
+                      "on-tertiary-container": "#ffede6",
+                      "classic-black": "#1F2937",
+                      "tertiary": "#943700",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "primary-container": "#2563eb",
+                      "vibrant-pink": "#EC4899",
+                      "surface": "#faf8ff",
+                      "pure-white": "#FFFFFF",
+                      "on-background": "#191b23",
+                      "on-secondary": "#ffffff",
+                      "warning": "#F59E0B",
+                      "on-tertiary-fixed": "#360f00",
+                      "surface-dim": "#d9d9e5",
+                      "primary": "#004ac6",
+                      "success": "#10B981",
+                      "surface-container-low": "#f3f3fe",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed": "#00174b",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "danger": "#EF4444",
+                      "inverse-on-surface": "#f0f0fb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "md": "16px",
+                      "container-padding": "32px",
+                      "xl": "40px",
+                      "unit": "4px",
+                      "xs": "4px",
+                      "gutter": "20px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "points-display": [
+                              "manrope"
+                      ],
+                      "headline-sm": [
+                              "manrope"
+                      ],
+                      "body-lg": [
+                              "inter"
+                      ],
+                      "body-md": [
+                              "inter"
+                      ],
+                      "label-md": [
+                              "inter"
+                      ],
+                      "headline-md": [
+                              "manrope"
+                      ],
+                      "display-lg": [
+                              "manrope"
+                      ]
+              },
+              "fontSize": {
+                      "points-display": [
+                              "32px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden relative">
+<!-- Decorative Background Mesh Gradients -->
+<div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+<div class="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-primary/10 blur-[100px] mix-blend-multiply opacity-70"></div>
+<div class="absolute top-[30%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-secondary/10 blur-[120px] mix-blend-multiply opacity-60"></div>
+<div class="absolute -bottom-[20%] left-[20%] w-[70vw] h-[70vw] rounded-full bg-fresh-green/5 blur-[150px] mix-blend-multiply opacity-50"></div>
+</div>
+<!-- TopNavBar -->
+<nav class="bg-white/10 backdrop-blur-xl dark:bg-gray-900/20 font-['Manrope'] antialiased flex justify-between items-center px-6 h-16 fixed top-4 left-4 right-4 z-50 rounded-3xl border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]">
+<div class="flex items-center gap-4">
+<span class="text-xl font-black text-slate-800 dark:text-white tracking-wider">多店铺积分管理系统</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative glass-panel rounded-full flex items-center px-4 py-2">
+<input class="bg-transparent border-none outline-none text-sm w-48 text-on-surface placeholder-outline-variant focus:ring-0" placeholder="Search..." type="text"/>
+<span class="material-symbols-outlined text-outline-variant">search</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-blue-600 dark:text-blue-400 hover:bg-white/20 dark:hover:bg-gray-800/30 transition-all duration-300 scale-95 active:opacity-80 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">palette</span>
+</button>
+<button class="text-blue-600 dark:text-blue-400 hover:bg-white/20 dark:hover:bg-gray-800/30 transition-all duration-300 scale-95 active:opacity-80 p-2 rounded-full flex items-center justify-center relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+</button>
+<button class="text-blue-600 dark:text-blue-400 hover:bg-white/20 dark:hover:bg-gray-800/30 transition-all duration-300 scale-95 active:opacity-80 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- SideNavBar & Main Content Wrapper -->
+<div class="flex h-screen pt-24 relative z-10">
+<!-- SideNavBar -->
+<aside class="bg-white/10 backdrop-blur-2xl dark:bg-black/30 font-['Manrope'] text-sm font-medium w-64 fixed left-4 top-24 bottom-4 rounded-3xl border border-white/20 shadow-2xl flex flex-col pt-8 pb-6 z-40 hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-4">
+<img alt="管理员头像" class="w-12 h-12 rounded-full border-2 border-white/50 object-cover" data-alt="professional portrait of a confident male executive in a modern office setting, bright natural lighting, sharp focus, business casual attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCxMWjnJ-Ec8_8CgtMjnODhWLtiC82fZtcOWPQI7ihIVPJTtj-ZCmSBRjLjmn0-OiK2FIO9qM3P69I4uJpu3NB4e1x1oHKDc7hoslx0Zua0BM5kppS0bVWiulLJdrAy4s45_KYvagSXpLT0FFSqzrFt6ZAeFYI9EyD5hk6pszVZfaCvGs7asK5Fd-3Kq7y6oKkKLa0rxpAuq8cYKx50kV-t5J2IwoL_ERwhmp8cOfPRzxx3BvdAtGuASgNlUQoCHjfVUlLPCSkvi_kk"/>
+<div>
+<h2 class="text-lg font-bold text-slate-900 dark:text-white leading-tight">系统管理员</h2>
+<p class="text-xs text-slate-500">超级管理权限</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-500/20 text-blue-700 dark:text-blue-300 border-l-4 border-blue-500 backdrop-blur-md hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">storefront</span>
+<span class="font-bold">店铺管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>用户管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>个人中心</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/5 hover:translate-x-1 transition-transform duration-200 active:scale-98" href="#">
+<span class="material-symbols-outlined text-danger">logout</span>
+<span class="text-danger">退出登录</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-72 p-4 md:pr-8 overflow-y-auto w-full mb-4">
+<!-- Page Header -->
+<div class="mb-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">店铺管理</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">管理系统内所有接入的店铺状态与信息</p>
+</div>
+<button class="glass-panel text-primary font-label-md text-label-md px-6 py-2.5 rounded-full flex items-center gap-2 hover:bg-white/50 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    新增店铺
+                </button>
+</div>
+<!-- Filter Bar -->
+<div class="glass-panel rounded-3xl p-5 mb-lg flex flex-wrap gap-4 items-center justify-between">
+<div class="flex flex-wrap items-center gap-4">
+<span class="font-label-md text-label-md text-on-surface-variant">状态筛选:</span>
+<div class="flex gap-2">
+<button class="px-4 py-1.5 rounded-full bg-primary text-on-primary font-label-md text-label-md shadow-md">全部</button>
+<button class="px-4 py-1.5 rounded-full glass-panel text-on-surface-variant hover:bg-white/50 font-label-md text-label-md transition-colors">申请中</button>
+<button class="px-4 py-1.5 rounded-full glass-panel text-on-surface-variant hover:bg-white/50 font-label-md text-label-md transition-colors">已通过</button>
+<button class="px-4 py-1.5 rounded-full glass-panel text-on-surface-variant hover:bg-white/50 font-label-md text-label-md transition-colors">已冻结</button>
+</div>
+</div>
+<div class="relative w-full sm:w-auto">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-[18px]">search</span>
+</div>
+<input class="pl-10 pr-4 py-2 w-full sm:w-64 glass-panel rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm font-body-sm text-on-surface placeholder-outline" placeholder="搜索店铺编号/名称..." type="text"/>
+</div>
+</div>
+<!-- Data Table (Ghost Table Style) -->
+<div class="glass-panel rounded-3xl overflow-hidden p-2">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-white/20">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">店铺编号</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">Logo</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">店铺名称</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">状态</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">申请时间</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap text-right">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/10 font-body-md text-body-md">
+<!-- Row 1 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 text-on-surface font-medium">SP-2023-001</td>
+<td class="px-6 py-4">
+<div class="w-10 h-10 rounded-2xl bg-white/30 p-1 flex items-center justify-center border border-white/40">
+<img alt="Starbucks Logo" class="w-full h-full object-cover rounded-xl" data-alt="minimalist modern coffee shop interior with warm lighting, wood accents, and a glowing neon sign, high resolution, soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaFLehL15cOHOWO8UgPAyT-oiAScPeNe09cssXoYOGlSnBLnd0GGRQ8MJKVMJdxLYHkgsa7eBnLYfIn-QeFDcmtHhcXpoYeNfpyOYz2qTpaZjFiklIi3F6WxnaOIYyDI8H8PaYDw99Ku08_S9bK0-dQ79z1GEZMfLbvTwtP-nYlSRy3wYS4HZNaJpRgH10Z_X5fZddFFqiq0Kmu-VXjjCvd0xgpocBawtbXdSKQfMZ4a-FaASD1tytvHR9z5-1oDn-mswkzui_pGMA"/>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface">星巴克 (中心城店)</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success text-xs font-semibold border border-success/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                        已通过
+                                    </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">2023-10-15 09:30</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-full hover:bg-white/20 text-primary transition-colors tooltip-trigger relative">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-full hover:bg-white/20 text-warning transition-colors">
+<span class="material-symbols-outlined text-[20px]">pause_circle</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 text-on-surface font-medium">SP-2023-002</td>
+<td class="px-6 py-4">
+<div class="w-10 h-10 rounded-2xl bg-white/30 p-1 flex items-center justify-center border border-white/40">
+<span class="material-symbols-outlined text-outline-variant">store</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface">喜茶 (万象汇店)</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tech-blue/10 text-tech-blue text-xs font-semibold border border-tech-blue/20">
+<span class="w-1.5 h-1.5 rounded-full bg-tech-blue animate-pulse"></span>
+                                        申请中
+                                    </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">2023-10-22 14:15</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1 text-xs rounded-full bg-primary text-on-primary font-medium hover:bg-primary/90 transition-colors">审核</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 text-on-surface font-medium">SP-2023-003</td>
+<td class="px-6 py-4">
+<div class="w-10 h-10 rounded-2xl bg-white/30 p-1 flex items-center justify-center border border-white/40">
+<img alt="Restaurant Logo" class="w-full h-full object-cover rounded-xl" data-alt="high-end minimalist culinary restaurant interior with dark ambient lighting, sleek counters, and modern art pieces, sharp focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDInbwUyuxOy2No3aNewhWum4GjvHXYXk8ei5-Km2UzA_MrduAvWV7coCXAp5xvujqzJ4dzSqw4QkXSkpa3T5aBj7-NbVtlW7CfBJ2GBlMb5PQ13f8eGFD0O45xllhUZkAawLDOYrgIz5Yeme8nJgu-KMsROR8-1qq03gmxX0f76-zPXGWIJTvQU-xRpaCHpqppZ6IKDkU04QUZfu5MMvQhQHcNozVeSh6Xy1bAntIbqjqczhAVVSW0i8N6TiVLu6u5y1OXfieh2Ujv"/>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface text-outline line-through decoration-danger/50">海底捞 (高新园店)</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-danger/10 text-danger text-xs font-semibold border border-danger/20">
+<span class="w-1.5 h-1.5 rounded-full bg-danger"></span>
+                                        已冻结
+                                    </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">2023-09-05 11:20</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-3 py-1 text-xs rounded-full border border-success text-success font-medium hover:bg-success/10 transition-colors">解冻</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4 text-on-surface font-medium">SP-2023-004</td>
+<td class="px-6 py-4">
+<div class="w-10 h-10 rounded-2xl bg-white/30 p-1 flex items-center justify-center border border-white/40">
+<img alt="Bakery Logo" class="w-full h-full object-cover rounded-xl" data-alt="artisan bakery display case with fresh pastries, warm sunlight streaming through window, soft natural lighting, aesthetic composition" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADtHHe6uSTa9l8LX25LKL5wpmsCnCntnLwt2VU1fsMI4N3amPXHqwAHQiGCv5T1Dzxp-LH5XmMCi042BCUPtI6NhVJXgOh38lfTP2ZkWcwOawSyg3IkklxP8LOh5Y-xJqXxQ997amZee_Tz9wqjwz569rjNW909P0Xsb2u-PVk5AQPZ2GERw4NyH-942UZ6SCJ9SDIe57TnCFUx_IqVvbJcpMZ2f8oxSZZ302i7BTs9nYRUtJdDjvRqBjIZ2J4fMD-lNiOxirrRGGy"/>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface">奈雪的茶 (科兴店)</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 text-success text-xs font-semibold border border-success/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                        已通过
+                                    </span>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">2023-10-25 16:45</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 rounded-full hover:bg-white/20 text-primary transition-colors tooltip-trigger relative">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-full hover:bg-white/20 text-warning transition-colors">
+<span class="material-symbols-outlined text-[20px]">pause_circle</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-white/10 flex items-center justify-between">
+<span class="text-sm text-on-surface-variant">共 4 条记录</span>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded-full text-outline hover:bg-white/20 hover:text-on-surface transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center text-sm font-medium">1</button>
+<button class="p-1 rounded-full text-outline hover:bg-white/20 hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Theme Switcher FAB -->
+<button class="fixed bottom-8 right-8 w-14 h-14 rounded-full glass-panel flex items-center justify-center hover:scale-110 transition-transform duration-300 shadow-xl z-50 border border-white/40 group">
+<span class="material-symbols-outlined text-primary group-hover:rotate-180 transition-transform duration-500">palette</span>
+</button>
+</body></html>
