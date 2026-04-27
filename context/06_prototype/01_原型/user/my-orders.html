@@ -106,36 +106,62 @@
 
       <!-- Content Area -->
       <main class="content-area overflow-y-auto p-4" style="flex: 1;">
-        <!-- Order Stats Row - Compact -->
-        <div class="grid grid-cols-6 gap-2 mb-3">
-          <div v-for="(stat, index) in orderStats" :key="index"
-               :class="['glass rounded-xl p-3 cursor-pointer transition-all hover:scale-[1.02]', currentStatus === stat.key ? 'ring-2 ring-[#004ac6]' : '']"
-               @click="filterByStatus(stat.key)">
-            <div class="text-center">
-              <div class="font-points-display text-xl text-[#191b23] dark:text-white">{{ stat.count }}</div>
-              <div class="font-body-md text-[10px] text-[#737686]">{{ stat.label }}</div>
+        <!-- View Toggle and Stats Combined -->
+        <div class="flex items-center justify-between mb-3">
+          <!-- Status Tabs - Compact -->
+          <div class="glass rounded-xl p-2">
+            <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar">
+              <button v-for="tab in statusTabs" :key="tab.key"
+                      @click="currentStatus = tab.key; filterByStatus(tab.key)"
+                      :class="[
+                        'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
+                        currentStatus === tab.key
+                          ? 'bg-[#004ac6] text-white shadow'
+                          : 'text-[#737686] hover:bg-white/50'
+                      ]">
+                {{ tab.label }}
+                <span v-if="tab.count > 0" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px]"
+                      :class="currentStatus === tab.key ? 'bg-white/20' : 'bg-[#e7e7f3]'">
+                  {{ tab.count }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- View Toggle (Card/Table) -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-[#737686]">共 {{ filteredOrders.length }} 条</span>
+            <div class="flex items-center bg-white/50 p-1 rounded-xl">
+              <button
+                @click="viewMode = 'card'"
+                :class="[
+                  'p-2 rounded-lg transition-all',
+                  viewMode === 'card'
+                    ? 'bg-[#004ac6] text-white shadow'
+                    : 'text-[#737686] hover:text-[#191b23]'
+                ]"
+                title="卡片视图"
+              >
+                <span class="material-symbols-outlined text-lg">view_card</span>
+              </button>
+              <button
+                @click="viewMode = 'table'"
+                :class="[
+                  'p-2 rounded-lg transition-all',
+                  viewMode === 'table'
+                    ? 'bg-[#004ac6] text-white shadow'
+                    : 'text-[#737686] hover:text-[#191b23]'
+                ]"
+                title="表格视图"
+              >
+                <span class="material-symbols-outlined text-lg">table_rows</span>
+              </button>
             </div>
           </div>
         </div>
 
-        <!-- Status Tabs - Compact -->
-        <div class="glass rounded-xl p-2 mb-3">
-          <div class="flex items-center gap-1 overflow-x-auto custom-scrollbar">
-            <button v-for="tab in statusTabs" :key="tab.key"
-                    @click="currentStatus = tab.key; filterByStatus(tab.key)"
-                    :class="[
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
-                      currentStatus === tab.key
-                        ? 'bg-[#004ac6] text-white shadow'
-                        : 'text-[#737686] hover:bg-white/50'
-                    ]">
-              {{ tab.label }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Orders List -->
-        <div class="space-y-3">
+        <!-- Card View -->
+        <div v-if="viewMode === 'card'" class="space-y-3">
           <div v-for="order in filteredOrders" :key="order.id"
                class="glass rounded-xl p-4 animate-slide-up">
             <!-- Order Header - Compact -->
@@ -208,6 +234,69 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Table View -->
+        <div v-else class="glass rounded-xl overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-white/30 dark:bg-white/5">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-[#737686] uppercase tracking-wider">订单信息</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-[#737686] uppercase tracking-wider">商品</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-[#737686] uppercase tracking-wider">状态</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-[#737686] uppercase tracking-wider">时间</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-[#737686] uppercase tracking-wider">操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/10">
+              <tr v-for="order in filteredOrders" :key="order.id" class="hover:bg-white/10 transition-colors">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[#737686] text-base">receipt_long</span>
+                    <span class="font-medium text-sm text-[#191b23] dark:text-white">{{ order.orderNo }}</span>
+                  </div>
+                  <div class="text-xs text-[#737686] mt-1">{{ order.shopName }}</div>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2">
+                    <img :src="order.items[0]?.image" :alt="order.items[0]?.name"
+                         class="w-8 h-8 rounded-lg object-cover bg-[#f3f3fe]"/>
+                    <div class="min-w-0">
+                      <div class="text-sm text-[#191b23] dark:text-white truncate max-w-[200px]">{{ order.items[0]?.name }}</div>
+                      <div class="text-xs text-[#737686]" v-if="order.items.length > 1">等 {{ order.items.length }} 件商品</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <span :class="['badge text-xs', getStatusBadgeClass(order.status)]">
+                    {{ order.statusText }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-xs text-[#737686]">
+                  {{ order.createTime }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button v-if="order.status === 'pending_confirm'"
+                            @click="cancelOrder(order)"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#737686] hover:bg-white/50 transition-all">
+                      取消
+                    </button>
+                    <button v-if="order.status === 'shipped'"
+                            @click="confirmReceive(order)"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#10B981] text-white hover:brightness-110 transition-all">
+                      确认收货
+                    </button>
+                    <button v-if="order.status === 'completed'"
+                            @click="viewOrderDetail(order)"
+                            class="px-3 py-1.5 rounded-lg text-xs font-medium bg-[#004ac6] text-white hover:brightness-110 transition-all">
+                      详情
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- Empty State - Compact -->
@@ -347,30 +436,23 @@
           document.documentElement.setAttribute('data-mode', isDark.value ? 'dark' : 'light');
         };
 
+        // 视图模式
+        const viewMode = ref('card');
+
         // 搜索
         const searchQuery = ref('');
 
         // 状态标签
-        const statusTabs = [
-          { key: 'all', label: '全部' },
-          { key: 'pending_confirm', label: '待确认' },
-          { key: 'confirmed', label: '已确认' },
-          { key: 'shipped', label: '已发货' },
-          { key: 'completed', label: '已完成' },
-          { key: 'cancelled', label: '已取消' }
-        ];
+        const statusTabs = computed(() => [
+          { key: 'all', label: '全部', count: orders.value.length },
+          { key: 'pending_confirm', label: '待确认', count: orders.value.filter(o => o.status === 'pending_confirm').length },
+          { key: 'confirmed', label: '已确认', count: orders.value.filter(o => o.status === 'confirmed').length },
+          { key: 'shipped', label: '已发货', count: orders.value.filter(o => o.status === 'shipped').length },
+          { key: 'completed', label: '已完成', count: orders.value.filter(o => o.status === 'completed').length },
+          { key: 'cancelled', label: '已取消', count: orders.value.filter(o => o.status === 'cancelled').length }
+        ]);
 
         const currentStatus = ref('all');
-
-        // 订单统计数据
-        const orderStats = reactive([
-          { key: 'all', label: '全部订单', count: 12 },
-          { key: 'pending_confirm', label: '待确认', count: 2 },
-          { key: 'confirmed', label: '已确认', count: 3 },
-          { key: 'shipped', label: '已发货', count: 1 },
-          { key: 'completed', label: '已完成', count: 5 },
-          { key: 'cancelled', label: '已取消', count: 1 }
-        ]);
 
         // 模拟订单数据
         const orders = ref([
@@ -565,10 +647,10 @@
           setActive,
           setTheme,
           toggleDarkMode,
+          viewMode,
           searchQuery,
           statusTabs,
           currentStatus,
-          orderStats,
           orders,
           filteredOrders,
           currentPage,
