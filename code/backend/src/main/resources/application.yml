@@ -3,3 +3,8 @@ server:
 spring:
   application:
     name: ai-shop
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_shop
+    username: root
+    password: root
