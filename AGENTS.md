@@ -61,3 +61,18 @@ cd code/backend/ai-shop
 ## 回复规范
 
 - **整体使用中文回复**
+
+## 已知限制
+
+### 工具可用性
+
+- **`glob` 不可用**：探索目录请用 `bash` PowerShell 命令（`Get-ChildItem`、`Test-Path`）或 `read` 工具。
+- **直接读取图片不可用**：直接传入图片会报错 "this model does not support image input"。如需图片识别，使用 `MiniMax_understand_image` MCP 工具。
+
+### 已验证可用的工具
+
+- 文件操作：`read`、`edit`、`write`
+- 目录操作：`bash`（PowerShell：`Get-ChildItem`、`Test-Path`、`echo`）
+- 图片识别：`MiniMax_understand_image`（MCP）
+- 网页搜索：`MiniMax_web_search`（MCP）
+- LSP：`lsp_diagnostics`、`lsp_goto_definition` 等
