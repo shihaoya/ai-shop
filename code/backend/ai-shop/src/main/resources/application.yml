@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: ai-shop
+  
+  # MySQL
+  datasource:
+    url: jdbc:mysql://localhost:3306/ai_shop?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # Redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: 
+      database: 0
+
+# JWT
+jwt:
+  secret: ai-shop-jwt-secret-key-2026-very-long-string-for-security
+  expiration: 604800000
+
+# MyBatis-Plus
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.sh.aishop.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+# Server
+server:
+  port: 18780

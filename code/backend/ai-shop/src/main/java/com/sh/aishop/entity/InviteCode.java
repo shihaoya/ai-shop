@@ -1,0 +1,15 @@
+package com.sh.aishop.entity;
+
+import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import java.time.LocalDateTime;
+
+@Data
+@TableName("invite_code")
+public class InviteCode extends BaseEntity<InviteCode> {
+    private String code;
+    private Integer role;
+    private Long creatorId;
+    private Integer status;
+}
