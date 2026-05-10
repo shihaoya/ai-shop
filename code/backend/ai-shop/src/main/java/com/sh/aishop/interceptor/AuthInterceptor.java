@@ -37,6 +37,11 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        // 去除 Bearer 前缀
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
         // 检查Redis黑名单
         if (Boolean.TRUE.equals(redisTemplate.hasKey("blacklist:" + token))) {
             sendUnauthorized(response, ResultCode.TOKEN_INVALID, "令牌已失效");
