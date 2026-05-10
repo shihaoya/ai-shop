@@ -54,34 +54,38 @@ export default function OperatorCategories() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">分类管理</h1>
-        <Button onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-2" /> 添加分类</Button>
+        <Button className="glass-btn" onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-2" /> 添加分类</Button>
       </div>
 
       {showForm && (
-        <Card>
+        <Card glass>
           <CardHeader><CardTitle>{form.id ? '编辑' : '新建'}分类</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>名称</Label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+                <Input className="glass-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>排序</Label>
-                <Input type="number" value={form.sort} onChange={(e) => setForm({ ...form, sort: e.target.value })} />
+                <Input className="glass-input" type="number" value={form.sort} onChange={(e) => setForm({ ...form, sort: e.target.value })} />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleSubmit}>保存</Button>
-              <Button variant="outline" onClick={() => setShowForm(false)}>取消</Button>
+              <Button className="glass-btn-primary" onClick={handleSubmit}>
+                {form.id ? '更新' : '创建'}
+              </Button>
+              <Button className="glass-btn" variant="outline" onClick={() => { setShowForm(false); setForm({ id: '', name: '', sort: '' }) }}>
+                取消
+              </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <Card>
+      <Card glass>
         <CardContent className="p-0">
-          <Table>
+          <Table className="glass-table">
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
@@ -93,12 +97,18 @@ export default function OperatorCategories() {
             <TableBody>
               {categories.map((cat) => (
                 <TableRow key={cat.id}>
-                  <TableCell>{cat.id}</TableCell>
+                  <TableCell className="font-mono text-xs">{cat.id}</TableCell>
                   <TableCell>{cat.name}</TableCell>
-                  <TableCell>{cat.sort}</TableCell>
+                  <TableCell>{cat.sort ?? 0}</TableCell>
                   <TableCell>
-                    <Button size="sm" variant="ghost" onClick={() => { setForm(cat); setShowForm(true) }}><Pencil className="h-4 w-4" /></Button>
-                    <Button size="sm" variant="ghost" onClick={() => handleDelete(cat.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="ghost" className="glass-btn" onClick={() => { setForm({ id: cat.id, name: cat.name, sort: String(cat.sort ?? '') }); setShowForm(true) }}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="glass-btn" onClick={() => handleDelete(cat.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

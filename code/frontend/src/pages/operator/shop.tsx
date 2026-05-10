@@ -55,37 +55,43 @@ export default function OperatorShop() {
       <h1 className="text-2xl font-bold">我的店铺</h1>
 
       {!shop ? (
-        <Card>
+        <Card glass>
           <CardHeader>
             <CardTitle>申请店铺</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>店铺名称</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="请输入店铺名称" />
+              <Input className="glass-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="请输入店铺名称" />
             </div>
             <div className="space-y-2">
               <Label>店铺简介</Label>
-              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="请输入店铺简介" />
+              <Input className="glass-input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="请输入店铺简介" />
             </div>
-            <Button onClick={handleApply} disabled={loading}>提交申请</Button>
+            <Button className="glass-btn" onClick={handleApply} disabled={loading}>提交申请</Button>
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card glass>
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <CardTitle>{shop.name}</CardTitle>
-              <Badge>{statusMap[shop.status]}</Badge>
+              <Badge className="glass-badge">{statusMap[shop.status]}</Badge>
             </div>
-            {shop.status === 2 && (
-              <Button variant="outline" onClick={handleToggleStatus}>
-                {shop.isActive === 1 ? '切换歇业' : '切换营业'}
-              </Button>
-            )}
           </CardHeader>
-          <CardContent>
-            <p className="text-neutral-500">{shop.description}</p>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-4">
+              <p className="text-sm text-muted-foreground">店铺简介</p>
+              <p>{shop.description || '暂无简介'}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                className="glass-btn"
+                onClick={handleToggleStatus}
+              >
+                {shop.isActive === 1 ? '歇业' : '营业'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}

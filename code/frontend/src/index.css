@@ -17,17 +17,80 @@
   color-scheme: light dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text: #9ca3af;
-    --color-text-h: #f3f4f6;
-    --color-bg: #16171d;
-    --color-border: #2e303a;
-    --color-code-bg: #1f2028;
-    --color-accent: #c084fc;
-    --color-accent-bg: rgba(192, 132, 252, 0.15);
-    --color-accent-border: rgba(192, 132, 252, 0.5);
-  }
+/* ================================================================
+   Option A Theme System (Aurora Ice)
+   Uses data-theme="dark|light" and data-accent="blue|purple|green|rose|amber" on <body>
+   ================================================================ */
+
+:root, [data-theme="dark"] {
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  --accent-light: rgba(59, 130, 246, 0.15);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --card-bg: rgba(15, 23, 42, 0.7);
+  --card-border: rgba(59, 130, 246, 0.25);
+  --input-bg: rgba(30, 41, 59, 0.6);
+  --input-border: rgba(59, 130, 246, 0.2);
+  --body-bg: #0a0f1a;
+}
+
+[data-theme="light"] {
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --accent-light: rgba(59, 130, 246, 0.1);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --card-border: rgba(59, 130, 246, 0.2);
+  --input-bg: rgba(241, 245, 249, 0.8);
+  --input-border: rgba(59, 130, 246, 0.15);
+  --body-bg: #e8f0fe;
+}
+
+/* Accent colors */
+[data-accent="purple"] {
+  --accent: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.3);
+  --accent-light: rgba(139, 92, 246, 0.15);
+}
+[data-accent="purple"][data-theme="light"] {
+  --accent: #7c3aed;
+  --accent-glow: rgba(124, 58, 237, 0.15);
+  --accent-light: rgba(124, 58, 237, 0.1);
+}
+
+[data-accent="green"] {
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.3);
+  --accent-light: rgba(16, 185, 129, 0.15);
+}
+[data-accent="green"][data-theme="light"] {
+  --accent: #059669;
+  --accent-glow: rgba(5, 150, 105, 0.15);
+  --accent-light: rgba(5, 150, 105, 0.1);
+}
+
+[data-accent="rose"] {
+  --accent: #f43f5e;
+  --accent-glow: rgba(244, 63, 94, 0.3);
+  --accent-light: rgba(244, 63, 94, 0.15);
+}
+[data-accent="rose"][data-theme="light"] {
+  --accent: #e11d48;
+  --accent-glow: rgba(225, 29, 72, 0.15);
+  --accent-light: rgba(225, 29, 72, 0.1);
+}
+
+[data-accent="amber"] {
+  --accent: #f59e0b;
+  --accent-glow: rgba(245, 158, 11, 0.3);
+  --accent-light: rgba(245, 158, 11, 0.15);
+}
+[data-accent="amber"][data-theme="light"] {
+  --accent: #d97706;
+  --accent-glow: rgba(217, 119, 6, 0.15);
+  --accent-light: rgba(217, 119, 6, 0.1);
 }
 
 body {
@@ -35,4 +98,68 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--body-bg);
+  transition: background 0.3s;
+}
+
+/* ================================================================
+   Animations
+   ================================================================ */
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  33% { transform: translateY(-30px) scale(1.05); }
+  66% { transform: translateY(15px) scale(0.97); }
+}
+
+@keyframes authFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+}
+
+/* ================================================================
+   Floating Orbs (Aurora Ice)
+   ================================================================ */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: float 12s ease-in-out infinite;
+  transition: opacity 0.3s, background 0.3s;
+  pointer-events: none;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  right: -100px;
+  background: radial-gradient(circle, var(--accent-glow), transparent 70%);
+  opacity: 0.6;
+}
+
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  bottom: -50px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
+  animation-delay: -4s;
+  opacity: 0.5;
+}
+
+.orb-3 {
+  width: 200px;
+  height: 200px;
+  top: 40%;
+  left: 25%;
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+  filter: blur(60px);
+  animation-delay: -8s;
+  opacity: 0.3;
+}
+
+/* Light mode orb adjustments */
+[data-theme="light"] .orb {
+  opacity: 0.5;
+  filter: blur(100px);
 }

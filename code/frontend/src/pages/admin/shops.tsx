@@ -37,23 +37,23 @@ export default function AdminShops() {
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">店铺管理</h1>
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <div className="flex items-center gap-4">
-            <Input placeholder="搜索店铺名称" className="w-64" />
-            <Button>搜索</Button>
+            <Input placeholder="搜索店铺名称" className="glass-input w-64" />
+            <Button className="glass-btn">搜索</Button>
           </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>店铺名称</TableHead>
-                <TableHead>运营者</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead>申请时间</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead className="glass-table">ID</TableHead>
+                <TableHead className="glass-table">店铺名称</TableHead>
+                <TableHead className="glass-table">运营者</TableHead>
+                <TableHead className="glass-table">状态</TableHead>
+                <TableHead className="glass-table">申请时间</TableHead>
+                <TableHead className="glass-table">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -63,14 +63,14 @@ export default function AdminShops() {
                   <TableCell>{shop.name}</TableCell>
                   <TableCell>{shop.operatorUsername}</TableCell>
                   <TableCell>
-                    <Badge className={statusColor[shop.status]}>{statusMap[shop.status]}</Badge>
+                    <Badge className={`glass-badge ${statusColor[shop.status]}`}>{statusMap[shop.status]}</Badge>
                   </TableCell>
                   <TableCell>{shop.createdAt}</TableCell>
                   <TableCell>
                     {shop.status === 1 && (
                       <>
-                        <Button size="sm" variant="outline" className="mr-2" onClick={() => handleAudit(shop.id, 2)}>通过</Button>
-                        <Button size="sm" variant="destructive" onClick={() => handleAudit(shop.id, 3)}>拒绝</Button>
+                        <Button size="sm" className="glass-btn mr-2" onClick={() => handleAudit(shop.id, 2)}>通过</Button>
+                        <Button size="sm" className="glass-btn" onClick={() => handleAudit(shop.id, 3)}>拒绝</Button>
                       </>
                     )}
                   </TableCell>

@@ -57,10 +57,10 @@ export default function ProductsPage() {
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            className="pl-9"
+            className="pl-9 glass-input"
           />
         </div>
-        <Button onClick={handleSearch}>搜索</Button>
+        <Button onClick={handleSearch} className="glass-btn-primary">搜索</Button>
       </div>
 
       {/* View Toggle */}
@@ -68,11 +68,12 @@ export default function ProductsPage() {
         <p className="text-sm text-muted-foreground">
           共 {total} 件商品
         </p>
-        <div className="flex gap-1 border rounded-lg p-1">
+        <div className="flex gap-1 glass rounded-lg p-1">
           <Button
             variant={viewMode === 'card' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('card')}
+            className={viewMode === 'card' ? 'glass-btn' : 'glass-btn'}
           >
             <Grid className="w-4 h-4" />
           </Button>
@@ -80,6 +81,7 @@ export default function ProductsPage() {
             variant={viewMode === 'table' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('table')}
+            className={viewMode === 'table' ? 'glass-btn' : 'glass-btn'}
           >
             <List className="w-4 h-4" />
           </Button>
@@ -90,22 +92,22 @@ export default function ProductsPage() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i}>
-              <Skeleton className="h-40 w-full rounded-none" />
+            <Card key={i} className="glass-card">
+              <Skeleton className="h-40 w-full rounded-none glass-skeleton" />
               <CardHeader>
-                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-3/4 glass-skeleton" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-3 w-1/2" />
+                <Skeleton className="h-3 w-1/2 glass-skeleton" />
               </CardContent>
               <CardFooter>
-                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full glass-skeleton" />
               </CardFooter>
             </Card>
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-muted-foreground glass-card">
           <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>暂无商品</p>
         </div>
@@ -113,7 +115,7 @@ export default function ProductsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {products.map((product) => (
             <Link key={product.id} to={`/user/products/${product.id}`}>
-              <Card className="hover:ring-2 hover:ring-accent/50 transition-all cursor-pointer h-full">
+              <Card className="glass-card hover:ring-2 hover:ring-accent/50 transition-all cursor-pointer h-full">
                 <div className="aspect-square bg-muted flex items-center justify-center overflow-hidden">
                   {product.image ? (
                     <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
@@ -138,9 +140,9 @@ export default function ProductsPage() {
           ))}
         </div>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
+        <div className="glass-card overflow-hidden">
           <table className="w-full">
-            <thead className="bg-muted/50">
+            <thead className="bg-muted/30">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium">商品</th>
                 <th className="px-4 py-3 text-left text-sm font-medium">描述</th>
@@ -151,7 +153,7 @@ export default function ProductsPage() {
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-t hover:bg-muted/30">
+                <tr key={product.id} className="border-t border-muted/30 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded bg-muted flex-shrink-0 overflow-hidden">
@@ -169,7 +171,7 @@ export default function ProductsPage() {
                   <td className="px-4 py-3 text-sm text-muted-foreground text-right">{product.stock}</td>
                   <td className="px-4 py-3 text-center">
                     <Link to={`/user/products/${product.id}`}>
-                      <Button variant="ghost" size="sm">查看</Button>
+                      <Button variant="ghost" size="sm" className="glass-btn">查看</Button>
                     </Link>
                   </td>
                 </tr>
@@ -187,10 +189,11 @@ export default function ProductsPage() {
             size="sm"
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
+            className="glass-btn"
           >
             上一页
           </Button>
-          <span className="px-3 py-2 text-sm">
+          <span className="px-3 py-2 text-sm glass">
             {page} / {totalPages}
           </span>
           <Button
@@ -198,6 +201,7 @@ export default function ProductsPage() {
             size="sm"
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
+            className="glass-btn"
           >
             下一页
           </Button>

@@ -45,17 +45,17 @@ export default function OperatorInviteCode() {
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">邀请码管理</h1>
-      <Card>
+      <Card glass>
         <CardHeader>
           <CardTitle>我的邀请码</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
-            <Input value={code} readOnly placeholder="点击生成获取邀请码" className="w-64" />
-            <Button variant="outline" size="icon" onClick={handleCopy}>
+            <Input className="glass-input w-64" value={code} readOnly placeholder="点击生成获取邀请码" />
+            <Button className="glass-btn" variant="outline" size="icon" onClick={handleCopy}>
               <Copy className="h-4 w-4" />
             </Button>
-            <Button onClick={handleCreate} disabled={loading}>
+            <Button className="glass-btn-primary" onClick={handleCreate} disabled={loading}>
               <RefreshCw className="h-4 w-4 mr-2" />
               {loading ? '生成中...' : '生成新邀请码'}
             </Button>

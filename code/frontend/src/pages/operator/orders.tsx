@@ -34,11 +34,11 @@ export default function OperatorOrders() {
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">订单管理</h1>
-      <Card>
+      <Card glass>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-4 space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}
+              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-12" />)}
             </div>
           ) : orders.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
@@ -46,7 +46,7 @@ export default function OperatorOrders() {
               <p>暂无订单</p>
             </div>
           ) : (
-            <Table>
+            <Table className="glass-table">
               <TableHeader>
                 <TableRow>
                   <TableHead>订单ID</TableHead>
@@ -65,13 +65,11 @@ export default function OperatorOrders() {
                     <TableCell>{o.userId}</TableCell>
                     <TableCell>{o.points}</TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_MAP[o.status]?.variant as any || 'secondary'}>
+                      <Badge className="glass-badge" variant={STATUS_MAP[o.status]?.variant as any || 'secondary'}>
                         {STATUS_MAP[o.status]?.label || '未知'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {o.createTime ? new Date(o.createTime).toLocaleDateString() : '-'}
-                    </TableCell>
+                    <TableCell>{o.createTime ? new Date(o.createTime).toLocaleString() : '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

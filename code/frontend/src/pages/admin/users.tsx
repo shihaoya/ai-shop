@@ -45,20 +45,20 @@ export default function AdminUsers() {
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">用户管理</h1>
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
-          <Input placeholder="搜索用户" className="w-64" />
+          <Input placeholder="搜索用户" className="glass-input w-64" />
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>用户名</TableHead>
-                <TableHead>昵称</TableHead>
-                <TableHead>角色</TableHead>
-                <TableHead>状态</TableHead>
-                <TableHead>操作</TableHead>
+                <TableHead className="glass-table">ID</TableHead>
+                <TableHead className="glass-table">用户名</TableHead>
+                <TableHead className="glass-table">昵称</TableHead>
+                <TableHead className="glass-table">角色</TableHead>
+                <TableHead className="glass-table">状态</TableHead>
+                <TableHead className="glass-table">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -68,16 +68,16 @@ export default function AdminUsers() {
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.nickname}</TableCell>
                   <TableCell>{roleMap[user.role]}</TableCell>
-                  <TableCell><Badge>{statusMap[user.status]}</Badge></TableCell>
+                  <TableCell><Badge className="glass-badge">{statusMap[user.status]}</Badge></TableCell>
                   <TableCell>
                     {user.status === 1 && (
-                      <Button size="sm" onClick={() => handleApprove(user.id)}>审批</Button>
+                      <Button size="sm" className="glass-btn" onClick={() => handleApprove(user.id)}>审批</Button>
                     )}
                     {user.status === 2 && (
-                      <Button size="sm" variant="destructive" onClick={() => handleStatus(user.id, 3)}>冻结</Button>
+                      <Button size="sm" className="glass-btn" onClick={() => handleStatus(user.id, 3)}>冻结</Button>
                     )}
                     {user.status === 3 && (
-                      <Button size="sm" onClick={() => handleStatus(user.id, 2)}>解冻</Button>
+                      <Button size="sm" className="glass-btn-primary" onClick={() => handleStatus(user.id, 2)}>解冻</Button>
                     )}
                   </TableCell>
                 </TableRow>

@@ -31,11 +31,11 @@ export default function OperatorUsers() {
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">用户管理</h1>
-      <Card>
+      <Card glass>
         <CardContent className="p-0">
           {loading ? (
             <div className="p-4 space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-12" />)}
+              {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-12" />)}
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
@@ -43,7 +43,7 @@ export default function OperatorUsers() {
               <p>暂无用户</p>
             </div>
           ) : (
-            <Table>
+            <Table className="glass-table">
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
@@ -61,7 +61,7 @@ export default function OperatorUsers() {
                     <TableCell>{u.username}</TableCell>
                     <TableCell>{u.nickname}</TableCell>
                     <TableCell>{roleMap[u.role] || '-'}</TableCell>
-                    <TableCell><Badge>{statusMap[u.status] || '-'}</Badge></TableCell>
+                    <TableCell><Badge className="glass-badge">{statusMap[u.status] || '-'}</Badge></TableCell>
                     <TableCell>{u.points ?? '-'}</TableCell>
                   </TableRow>
                 ))}

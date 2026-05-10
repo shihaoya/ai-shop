@@ -36,24 +36,26 @@ export default function OperatorMessages() {
       <h1 className="text-2xl font-bold">消息中心</h1>
       {loading ? (
         <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-20" />)}
+          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-20" />)}
         </div>
       ) : messages.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>暂无消息</p>
-        </div>
+        <Card glass>
+          <CardContent className="text-center py-12 text-muted-foreground">
+            <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>暂无消息</p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {messages.map((msg) => (
-            <Card key={msg.id}>
+            <Card glass key={msg.id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <p className="font-medium">{msg.title || '系统消息'}</p>
                     <p className="text-sm text-muted-foreground">{msg.content}</p>
                   </div>
-                  {msg.isRead !== 1 && <Badge>未读</Badge>}
+                  {msg.isRead !== 1 && <Badge className="glass-badge">未读</Badge>}
                 </div>
               </CardContent>
             </Card>

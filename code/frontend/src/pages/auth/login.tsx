@@ -1,10 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LogIn } from 'lucide-react'
+import { LogIn, Eye, EyeOff, User, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
 import { login } from '@/services/auth'
 import { useAuthStore } from '@/stores/auth'
@@ -13,6 +10,7 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const { login: setAuth } = useAuthStore()
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ username: '', password: '' })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,7 +18,6 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const res = await login(form) as any
-      // 映射后端返回的 userinfo 字段到前端期望的格式
       const userInfo = {
         id: res.userinfo.id,
         username: res.userinfo.username,
@@ -33,7 +30,6 @@ export default function LoginPage() {
       setAuth(res.token, userInfo)
       toast.success('登录成功')
 
-      // 根据角色跳转
       if (userInfo.role === 1) {
         navigate('/admin/dashboard')
       } else if (userInfo.role === 2) {
@@ -49,51 +45,150 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-950 p-4">
-      <Card className="w-full max-w-md bg-neutral-50 border-neutral-200 shadow-xl">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center text-neutral-900">积分商城</CardTitle>
-          <CardDescription className="text-center text-neutral-600">输入用户名和密码登录</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username" className="text-neutral-700">用户名</Label>
-              <Input
-                id="username"
-                placeholder="请输入用户名"
-                style={{ backgroundColor: 'white', borderColor: '#d1d5db', color: '#111827' }}
-                className="placeholder:text-neutral-400"
+    <div className="w-full max-w-[420px] relative z-10">
+      {/* Card */}
+      <div
+        className="relative rounded-[20px] overflow-hidden"
+        style={{
+          background: 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          boxShadow: '0 0 0 1px rgba(59, 130, 246, 0.1), 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 80px rgba(59, 130, 246, 0.08)',
+          transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s',
+        }}
+      >
+        {/* Top accent bar */}
+        <div
+          className="h-[3px]"
+          style={{
+            background: 'linear-gradient(90deg, transparent, var(--accent), transparent)',
+            boxShadow: '0 0 20px var(--accent-glow)',
+          }}
+        />
+
+        {/* Inner border */}
+        <div
+          className="absolute inset-[1px] rounded-[20px] pointer-events-none"
+          style={{ border: '1px solid rgba(255, 255, 255, 0.05)' }}
+        />
+
+        {/* Card body */}
+        <div style={{ padding: '36px 40px 32px' }}>
+          <h1 className="text-[26px] font-bold mb-1.5" style={{ color: 'var(--text-primary)', letterSpacing: '-0.5px', transition: 'color 0.3s' }}>
+            积分商城
+          </h1>
+          <p className="text-sm mb-8" style={{ color: 'var(--text-secondary)', transition: 'color 0.3s' }}>
+            登录以继续您的兑换之旅
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            {/* Username field */}
+            <div className="relative mb-5">
+              <input
+                id="login-username"
+                type="text"
+                placeholder=" "
                 value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
                 required
+                className="peer w-full h-[56px] rounded-xl text-[15px] outline-none"
+                style={{
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--input-border)',
+                  color: 'var(--text-primary)',
+                  padding: '16px 16px 0',
+                  transition: 'border-color 0.2s, box-shadow 0.2s, background 0.3s, color 0.3s',
+                }}
               />
+              <label
+                htmlFor="login-username"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] pointer-events-none flex items-center gap-2 transition-all duration-200"
+                style={{ transform: 'none', top: '10px', fontSize: '11px', color: 'var(--accent)', fontWeight: 500 }}
+              >
+                <User className="w-[13px] h-[13px] opacity-70" />
+                用户名
+              </label>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-neutral-700">密码</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="请输入密码"
-                style={{ backgroundColor: 'white', borderColor: '#d1d5db', color: '#111827' }}
-                className="placeholder:text-neutral-400"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-              />
+
+            {/* Password field */}
+            <div className="relative mb-5">
+              <div className="relative">
+                <input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder=" "
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  required
+                  className="peer w-full h-[56px] rounded-xl text-[15px] outline-none pr-10"
+                  style={{
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--input-border)',
+                    color: 'var(--text-primary)',
+                    padding: '16px 44px 0 16px',
+                    transition: 'border-color 0.2s, box-shadow 0.2s, background 0.3s, color 0.3s',
+                  }}
+                />
+                <label
+                  htmlFor="login-password"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-[15px] pointer-events-none flex items-center gap-2 transition-all duration-200"
+style={{ transform: 'none', top: '10px', fontSize: '11px', color: 'var(--accent)', fontWeight: 500 }}
+                >
+                  <Lock className="w-[13px] h-[13px] opacity-70" />
+                  密码
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 transition-colors"
+                  style={{ color: 'var(--text-secondary)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)' }}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-[14px] h-[14px]" />
+                  ) : (
+                    <Eye className="w-[14px] h-[14px]" />
+                  )}
+                </button>
+              </div>
             </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" className="w-full bg-[#aa3bff] text-white hover:bg-[#9728eb]" disabled={loading}>
-              <LogIn className="w-4 h-4 mr-2" />
-              {loading ? '登录中...' : '登录'}
+
+            {/* Submit button */}
+            <Button
+              type="submit"
+              className="w-full h-[52px] rounded-xl text-[15px] font-semibold text-white transition-all duration-200 active:scale-[0.97] flex items-center justify-center gap-2"
+              disabled={loading}
+              style={{
+                background: 'var(--accent)',
+                boxShadow: '0 4px 16px var(--accent-glow)',
+                transition: 'transform 0.2s, box-shadow 0.2s, filter 0.2s, background 0.3s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 8px 24px var(--accent-glow)'
+                e.currentTarget.style.filter = 'brightness(1.05)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = ''
+                e.currentTarget.style.boxShadow = '0 4px 16px var(--accent-glow)'
+                e.currentTarget.style.filter = ''
+              }}
+            >
+              <LogIn className="w-[15px] h-[15px]" />
+              {loading ? '登录中...' : '登 录'}
             </Button>
-            <p className="text-sm text-neutral-500 text-center">
-              还没有账号？<Link to="/auth/register" className="text-[#aa3bff] hover:underline">立即注册</Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+          </form>
+        </div>
+
+        {/* Card footer */}
+        <div style={{ padding: '0 40px 32px', textAlign: 'center' }}>
+          <p className="text-xs" style={{ color: 'var(--text-secondary)', marginTop: '16px', transition: 'color 0.3s' }}>
+            还没有账号？<Link to="/auth/register" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>立即注册</Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

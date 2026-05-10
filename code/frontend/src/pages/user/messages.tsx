@@ -61,11 +61,11 @@ export default function MessagesPage() {
       {loading ? (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
+            <Skeleton key={i} className="h-20 w-full glass-skeleton" />
           ))}
         </div>
       ) : messages.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-muted-foreground glass-card">
           <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>暂无消息</p>
         </div>
@@ -74,7 +74,7 @@ export default function MessagesPage() {
           {messages.map((msg) => (
             <Card
               key={msg.id}
-              className={`cursor-pointer hover:bg-muted/30 transition-colors ${
+              className={`glass-card cursor-pointer hover:ring-2 hover:ring-accent/50 transition-all ${
                 msg.isRead === 1 ? 'opacity-60' : ''
               }`}
               onClick={() => handleRead(msg.id)}
@@ -85,9 +85,9 @@ export default function MessagesPage() {
                     <div className="flex items-center gap-2">
                       <h3 className="font-medium">{msg.title}</h3>
                       {msg.isRead === 1 ? (
-                        <Badge variant="outline" className="text-xs">已读</Badge>
+                        <Badge variant="outline" className="glass-badge text-xs">已读</Badge>
                       ) : (
-                        <Badge variant="default" className="text-xs">未读</Badge>
+                        <Badge variant="default" className="glass-badge text-xs">未读</Badge>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
@@ -118,10 +118,11 @@ export default function MessagesPage() {
             size="sm"
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
+            className="glass-btn"
           >
             上一页
           </Button>
-          <span className="px-3 py-2 text-sm">
+          <span className="px-3 py-2 text-sm glass">
             {page} / {totalPages}
           </span>
           <Button
@@ -129,6 +130,7 @@ export default function MessagesPage() {
             size="sm"
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
+            className="glass-btn"
           >
             下一页
           </Button>

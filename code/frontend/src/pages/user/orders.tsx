@@ -56,7 +56,7 @@ export default function OrdersPage() {
               setStatusFilter(e.target.value === '' ? undefined : Number(e.target.value))
               setPage(1)
             }}
-            className="border rounded-lg px-3 py-1.5 text-sm bg-background"
+            className="glass-input rounded-lg px-3 py-1.5 text-sm"
           >
             <option value="">全部</option>
             {Object.entries(STATUS_MAP).map(([value, { label }]) => (
@@ -69,11 +69,11 @@ export default function OrdersPage() {
       {loading ? (
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
+            <Skeleton key={i} className="h-20 w-full glass-skeleton" />
           ))}
         </div>
       ) : orders.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-muted-foreground glass-card">
           <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>暂无订单</p>
         </div>
@@ -81,7 +81,7 @@ export default function OrdersPage() {
         <div className="space-y-4">
           {orders.map((order) => (
             <Link key={order.id} to={`/user/orders/${order.id}`}>
-              <div className="border rounded-lg p-4 hover:bg-muted/30 transition-colors cursor-pointer">
+              <div className="glass-card rounded-lg p-4 hover:ring-2 hover:ring-accent/50 transition-all cursor-pointer">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     <div className="w-16 h-16 rounded bg-muted flex-shrink-0 overflow-hidden">
@@ -100,7 +100,7 @@ export default function OrdersPage() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <Badge variant={STATUS_MAP[order.status]?.variant || 'secondary'}>
+                    <Badge variant={STATUS_MAP[order.status]?.variant || 'secondary'} className="glass-badge">
                       {STATUS_MAP[order.status]?.label || '未知'}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
@@ -122,10 +122,11 @@ export default function OrdersPage() {
             size="sm"
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
+            className="glass-btn"
           >
             上一页
           </Button>
-          <span className="px-3 py-2 text-sm">
+          <span className="px-3 py-2 text-sm glass">
             {page} / {totalPages}
           </span>
           <Button
@@ -133,6 +134,7 @@ export default function OrdersPage() {
             size="sm"
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
+            className="glass-btn"
           >
             下一页
           </Button>

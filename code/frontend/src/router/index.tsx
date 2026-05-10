@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import AdminLayout from '@/layouts/AdminLayout'
 import OperatorLayout from '@/layouts/OperatorLayout'
 import UserLayout from '@/layouts/UserLayout'
+import AuthLayout from '@/layouts/AuthLayout'
 import { useEffect } from 'react'
 
 // ============================================================================
@@ -116,24 +117,31 @@ const router = createBrowserRouter([
   // 公开路由
   // ============================================================================
   {
-    path: '/auth/login',
+    path: '/auth',
     element: (
       <React.Suspense fallback={<PageLoading />}>
-        <AuthRedirect>
-          <LoginPage />
-        </AuthRedirect>
+        <AuthLayout />
       </React.Suspense>
     ),
-  },
-  {
-    path: '/auth/register',
-    element: (
-      <React.Suspense fallback={<PageLoading />}>
-        <AuthRedirect>
-          <RegisterPage />
-        </AuthRedirect>
-      </React.Suspense>
-    ),
+    children: [
+      { index: true, element: <Navigate to="/auth/login" replace /> },
+      {
+        path: 'login',
+        element: (
+          <AuthRedirect>
+            <LoginPage />
+          </AuthRedirect>
+        ),
+      },
+      {
+        path: 'register',
+        element: (
+          <AuthRedirect>
+            <RegisterPage />
+          </AuthRedirect>
+        ),
+      },
+    ],
   },
 
   // ============================================================================
@@ -224,11 +232,11 @@ const router = createBrowserRouter([
   // ============================================================================
   {
     path: '/',
-    element: <Navigate to="/error-test" replace />,
+    element: <Navigate to="/auth/login" replace />,
   },
   {
     path: '*',
-    element: <Navigate to="/error-test" replace />,
+    element: <Navigate to="/auth/login" replace />,
   },
 ])
 

@@ -58,7 +58,7 @@ export default function CenterPage() {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
       {/* User Info Card */}
-      <Card>
+      <Card className="glass-card">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center">
@@ -73,7 +73,7 @@ export default function CenterPage() {
       </Card>
 
       {/* Points Balance Card */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <Coins className="w-5 h-5 text-accent" />
@@ -82,9 +82,12 @@ export default function CenterPage() {
         </CardHeader>
         <CardContent>
           {pointsLoading ? (
-            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32 glass-skeleton" />
           ) : (
-            <div className="text-3xl font-bold text-accent">{points}</div>
+            <div className="flex items-center gap-3">
+              <div className="text-3xl font-bold text-accent">{points}</div>
+              <span className="glass-badge px-2 py-1 rounded-full text-xs">积分</span>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -92,7 +95,7 @@ export default function CenterPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-3 gap-4">
         <Link to="/user/addresses">
-          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+          <Card className="glass-card hover:ring-2 hover:ring-accent/50 transition-all cursor-pointer">
             <CardContent className="p-4 flex flex-col items-center gap-2">
               <MapPin className="w-6 h-6 text-muted-foreground" />
               <span className="text-sm">地址管理</span>
@@ -100,7 +103,7 @@ export default function CenterPage() {
           </Card>
         </Link>
         <Link to="/user/messages">
-          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+          <Card className="glass-card hover:ring-2 hover:ring-accent/50 transition-all cursor-pointer">
             <CardContent className="p-4 flex flex-col items-center gap-2">
               <MessageSquare className="w-6 h-6 text-muted-foreground" />
               <span className="text-sm">消息中心</span>
@@ -108,7 +111,7 @@ export default function CenterPage() {
           </Card>
         </Link>
         <Link to="/user/orders">
-          <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+          <Card className="glass-card hover:ring-2 hover:ring-accent/50 transition-all cursor-pointer">
             <CardContent className="p-4 flex flex-col items-center gap-2">
               <History className="w-6 h-6 text-muted-foreground" />
               <span className="text-sm">订单记录</span>
@@ -118,7 +121,7 @@ export default function CenterPage() {
       </div>
 
       {/* Points Flow */}
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <History className="w-5 h-5 text-muted-foreground" />
@@ -129,7 +132,7 @@ export default function CenterPage() {
           {logLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <Skeleton key={i} className="h-12 w-full glass-skeleton" />
               ))}
             </div>
           ) : logs.length === 0 ? (
@@ -138,10 +141,10 @@ export default function CenterPage() {
             <>
               <div className="space-y-3">
                 {logs.map((log) => (
-                  <div key={log.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <div key={log.id} className="glass-card flex items-center justify-between p-3 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        log.type === 1 ? 'bg-green-100' : 'bg-red-100'
+                        log.type === 1 ? 'bg-green-100/50' : 'bg-red-100/50'
                       }`}>
                         {log.type === 1 ? (
                           <ArrowUp className="w-4 h-4 text-green-600" />
@@ -169,10 +172,11 @@ export default function CenterPage() {
                     size="sm"
                     disabled={page === 1}
                     onClick={() => setPage(page - 1)}
+                    className="glass-btn"
                   >
                     上一页
                   </Button>
-                  <span className="px-3 py-2 text-sm">
+                  <span className="px-3 py-2 text-sm glass">
                     {page} / {totalPages}
                   </span>
                   <Button
@@ -180,6 +184,7 @@ export default function CenterPage() {
                     size="sm"
                     disabled={page === totalPages}
                     onClick={() => setPage(page + 1)}
+                    className="glass-btn"
                   >
                     下一页
                   </Button>
