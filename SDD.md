@@ -12,14 +12,15 @@
 
 | 规范 | 说明 |
 |------|------|
-| 前端 | Aceternity UI + pnpm |
-| 后端 | Spring Boot |
+| 后端 | Spring Boot + MyBatis-Plus + MySQL |
 | 数据库 | MySQL |
 | ID生成 | 雪花ID，传递给前端时转为String（避免精度丢失） |
 | 删除方式 | 逻辑删除 |
 | 外键 | 不使用物理外键 |
 | 唯一键 | 部分字段不使用唯一键（逻辑删除后无法保证唯一性） |
 | 枚举类型 | 不使用，使用tinyint并添加备注说明含义 |
+
+> **前端技术栈**：详见 `docs/开发文档.md`
 
 ---
 
@@ -417,26 +418,13 @@
 
 ## 10. 技术架构
 
-### 10.1 技术栈
+### 10.1 后端技术栈
 
-- **后端**：Spring Boot 3.x + MyBatis-Plus + MySQL 8.0
-- **前端**：Vue 3 + Aceternity UI + Vite + pnpm
+- **框架**：Spring Boot 3.x + MyBatis-Plus + MySQL 8.0
 - **认证**：JWT
 - **ID生成**：雪花算法（传前端时转String）
 
-### 10.2 项目结构
-
-```
-points-mall/
-├── points-mall-api/        # 通用实体、枚举、工具类
-├── points-mall-admin/       # 管理员后端
-├── points-mall-operator/    # 店铺用户后端
-├── points-mall-user/        # 普通用户后端
-├── points-mall-web/         # 前端（多角色统一入口）
-└── sql/                     # SQL脚本
-```
-
-### 10.3 数据库规范
+### 10.2 数据库规范
 
 - 不使用物理外键，逻辑关联
 - 不使用唯一键（逻辑删除场景下无法保证唯一）

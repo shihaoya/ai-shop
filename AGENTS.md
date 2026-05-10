@@ -6,8 +6,9 @@
 ai-shop/
 ├── SDD.md              # 解决方案设计文档（唯一的需求文档）
 ├── docs/
-│   └── 开发调整记录.md   # 开发过程中的技术变更记录
-├── docs/开发文档.md      # 前后端开发文档（技术栈、命令、约束等）
+│   ├── 开发调整记录.md   # 开发过程中的技术变更记录
+│   ├── 前端开发文档.md   # 前端开发技术栈、命令、组件使用
+│   └── 后端开发文档.md   # 后端开发技术栈、API、数据库规范
 └── code/
     ├── frontend/       # React + TypeScript + Vite + pnpm
     └── backend/        # Spring Boot + Maven (ai-shop/ 子目录内)
@@ -39,13 +40,9 @@ ai-shop/
 - 网页搜索：`MiniMax_web_search`（MCP）
 - LSP：`lsp_diagnostics`、`lsp_goto_definition` 等
 
-## 技术栈说明
+## 开发文档索引
 
-**详细技术栈信息请参考 `docs/开发文档.md`，其他文档中不再重复描述技术栈。**
-
-### 快速参考
-
-| 端 | 技术栈 | 参考文档 |
-|---|--------|----------|
-| 前端 | React 18 + TypeScript + Vite + pnpm + Tailwind CSS + shadcn/ui | `docs/开发文档.md` |
-| 后端 | Spring Boot + Maven + MyBatis-Plus + MySQL | `docs/开发文档.md` |
+| 端 | 文档 | 说明 |
+|---|------|------|
+| 前端 | `docs/前端开发文档.md` | 技术栈、命令、组件、路由、API约定 |
+| 后端 | `docs/后端开发文档.md` | 技术栈、命令、数据库规范、API接口 |
