@@ -58,7 +58,7 @@ export default function OperatorProducts() {
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">商品管理</h1>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>商品管理</h1>
         <Button className="glass-btn" onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-2" /> 添加商品</Button>
       </div>
 
@@ -67,24 +67,24 @@ export default function OperatorProducts() {
           <CardContent className="space-y-4 p-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>商品名称</Label>
+                <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>商品名称</Label>
                 <Input className="glass-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>所需积分</Label>
+                <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>所需积分</Label>
                 <Input className="glass-input" type="number" value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>库存</Label>
+                <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>库存</Label>
                 <Input className="glass-input" type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>分类ID</Label>
+                <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>分类ID</Label>
                 <Input className="glass-input" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>商品描述</Label>
+              <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>商品描述</Label>
               <Input className="glass-input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
             <div className="flex gap-2">
@@ -104,22 +104,22 @@ export default function OperatorProducts() {
               {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-12" />)}
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
               <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <p>暂无商品</p>
             </div>
           ) : (
-            <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            <div style={{ borderTop: '1px solid var(--card-border)' }}>
               {products.map((p) => (
                 <div key={p.id} className="flex items-center justify-between p-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <span className="font-medium">{p.name}</span>
+                      <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{p.name}</span>
                       <Badge className="glass-badge" variant="outline">{p.points} 积分</Badge>
-                      <span className="text-sm text-muted-foreground">库存 {p.stock ?? 0}</span>
+                      <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>库存 {p.stock ?? 0}</span>
                     </div>
                     {p.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{p.description}</p>
+                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '4px' }}>{p.description}</p>
                     )}
                   </div>
                 </div>

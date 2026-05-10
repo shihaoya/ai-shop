@@ -33,16 +33,16 @@ export default function OperatorMessages() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">消息中心</h1>
+      <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>消息中心</h1>
       {loading ? (
         <div className="space-y-4">
           {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-20" />)}
         </div>
       ) : messages.length === 0 ? (
         <Card glass>
-          <CardContent className="text-center py-12 text-muted-foreground">
-            <Mail className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>暂无消息</p>
+          <CardContent style={{ textAlign: 'center', padding: '48px' }}>
+            <Mail style={{ width: '48px', height: '48px', margin: '0 auto 16px', opacity: 0.5 }} />
+            <p style={{ color: 'var(--text-muted)' }}>暂无消息</p>
           </CardContent>
         </Card>
       ) : (
@@ -52,8 +52,8 @@ export default function OperatorMessages() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
-                    <p className="font-medium">{msg.title || '系统消息'}</p>
-                    <p className="text-sm text-muted-foreground">{msg.content}</p>
+                    <p style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{msg.title || '系统消息'}</p>
+                    <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>{msg.content}</p>
                   </div>
                   {msg.isRead !== 1 && <Badge className="glass-badge">未读</Badge>}
                 </div>

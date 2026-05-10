@@ -30,7 +30,7 @@ export default function OperatorUsers() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">用户管理</h1>
+      <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>用户管理</h1>
       <Card glass>
         <CardContent className="p-0">
           {loading ? (
@@ -38,9 +38,9 @@ export default function OperatorUsers() {
               {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-12" />)}
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>暂无用户</p>
+            <div style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+              <Users style={{ width: '48px', height: '48px', margin: '0 auto 16px', opacity: 0.5 }} />
+              <p style={{ color: 'var(--text-muted)' }}>暂无用户</p>
             </div>
           ) : (
             <Table className="glass-table">

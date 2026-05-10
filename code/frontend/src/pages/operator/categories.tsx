@@ -53,8 +53,8 @@ export default function OperatorCategories() {
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">分类管理</h1>
-        <Button className="glass-btn" onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-2" /> 添加分类</Button>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>分类管理</h1>
+        <Button className="glass-btn-primary" onClick={() => setShowForm(true)}><Plus className="h-4 w-4 mr-2" /> 添加分类</Button>
       </div>
 
       {showForm && (
@@ -63,11 +63,11 @@ export default function OperatorCategories() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>名称</Label>
+                <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>名称</Label>
                 <Input className="glass-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>排序</Label>
+                <Label style={{ color: 'var(--text-primary)', fontSize: '14px', fontWeight: 500 }}>排序</Label>
                 <Input className="glass-input" type="number" value={form.sort} onChange={(e) => setForm({ ...form, sort: e.target.value })} />
               </div>
             </div>
@@ -102,10 +102,10 @@ export default function OperatorCategories() {
                   <TableCell>{cat.sort ?? 0}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" className="glass-btn" onClick={() => { setForm({ id: cat.id, name: cat.name, sort: String(cat.sort ?? '') }); setShowForm(true) }}>
+                      <Button size="sm" variant="ghost" className="action-btn" onClick={() => { setForm({ id: cat.id, name: cat.name, sort: String(cat.sort ?? '') }); setShowForm(true) }}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" className="glass-btn" onClick={() => handleDelete(cat.id)}>
+                      <Button size="sm" variant="ghost" className="action-btn" style={{ color: '#ef4444' }} onClick={() => handleDelete(cat.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

@@ -33,7 +33,7 @@ export default function OperatorOrders() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">订单管理</h1>
+      <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>订单管理</h1>
       <Card glass>
         <CardContent className="p-0">
           {loading ? (
@@ -41,9 +41,9 @@ export default function OperatorOrders() {
               {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="glass-skeleton h-12" />)}
             </div>
           ) : orders.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Package className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>暂无订单</p>
+            <div style={{ textAlign: 'center', paddingTop: '48px', paddingBottom: '48px', color: 'var(--text-muted)' }}>
+              <Package style={{ width: '48px', height: '48px', marginLeft: 'auto', marginRight: 'auto', marginBottom: '16px', opacity: 0.5 }} />
+              <p style={{ color: 'var(--text-muted)' }}>暂无订单</p>
             </div>
           ) : (
             <Table className="glass-table">
@@ -69,7 +69,7 @@ export default function OperatorOrders() {
                         {STATUS_MAP[o.status]?.label || '未知'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{o.createTime ? new Date(o.createTime).toLocaleString() : '-'}</TableCell>
+                    <TableCell>{o.createTime}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

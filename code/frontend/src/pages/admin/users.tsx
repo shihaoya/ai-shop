@@ -1,23 +1,25 @@
-import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useState, useEffect } from 'react'
+import { Search, ShieldCheck, Snowflake, Unlock } from 'lucide-react'
 import { getUsers, updateUserStatus, approveUser } from '@/services/admin'
 import { toast } from 'sonner'
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<any[]>([])
+  const [keyword, setKeyword] = useState('')
 
   const loadData = async () => {
     try {
-      const res = await getUsers({ page: 1 })
+      const res = await getUsers({ page: 1, keyword })
       setUsers(res.list || [])
     } catch (err: any) {
       toast.error(err.message)
     }
   }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: loadData is stable
+  useEffect(() => {
+    loadData()
+  }, [])
 
   const handleStatus = async (id: string, status: number) => {
     try {
@@ -42,50 +44,174 @@ export default function AdminUsers() {
   const roleMap: Record<number, string> = { 1: '管理员', 2: '店铺用户', 3: '普通用户' }
   const statusMap: Record<number, string> = { 1: '待审核', 2: '正常', 3: '已冻结' }
 
+  const getRoleBadge = (role: number) => {
+    const config: Record<number, { className: string; dotClass: string }> = {
+      1: { className: 'bg-purple-500/15 text-purple-500', dotClass: 'bg-purple-500' },
+      2: { className: 'bg-blue-500/15 text-blue-500', dotClass: 'bg-blue-500' },
+      3: { className: 'bg-slate-500/15 text-slate-400', dotClass: 'bg-slate-500' },
+    }
+    const c = config[role] || config[3]
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${c.className}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
+        {roleMap[role]}
+      </span>
+    )
+  }
+
+  const getStatusBadge = (status: number) => {
+    const config: Record<number, { className: string; dotClass: string }> = {
+      1: { className: 'bg-amber-500/15 text-amber-500', dotClass: 'bg-amber-500' },
+      2: { className: 'bg-emerald-500/15 text-emerald-500', dotClass: 'bg-emerald-500' },
+      3: { className: 'bg-rose-500/15 text-rose-500', dotClass: 'bg-rose-500' },
+    }
+    const c = config[status] || config[1]
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${c.className}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
+        {statusMap[status]}
+      </span>
+    )
+  }
+
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">用户管理</h1>
-      <Card className="glass-card">
-        <CardHeader>
-          <Input placeholder="搜索用户" className="glass-input w-64" />
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="glass-table">ID</TableHead>
-                <TableHead className="glass-table">用户名</TableHead>
-                <TableHead className="glass-table">昵称</TableHead>
-                <TableHead className="glass-table">角色</TableHead>
-                <TableHead className="glass-table">状态</TableHead>
-                <TableHead className="glass-table">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+    <div className="p-6 space-y-5">
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>用户管理</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>管理所有用户</p>
+      </div>
+
+      {/* Main Card */}
+      <div
+        className="rounded-2xl border backdrop-blur-xl"
+        style={{
+          background: 'var(--card-bg)',
+          borderColor: 'var(--card-border)',
+        }}
+      >
+        {/* Card Header with Search */}
+        <div className="p-5 border-b" style={{ borderColor: 'var(--card-border)' }}>
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1"
+              style={{
+                background: 'var(--card-bg)',
+                borderColor: 'var(--card-border)',
+              }}
+            >
+              <Search className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                placeholder="搜索用户"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && loadData()}
+                className="flex-1 bg-transparent text-sm outline-none"
+                style={{ color: 'var(--text-primary)' }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={loadData}
+              className="px-4 py-2.5 rounded-xl border-0 font-medium"
+              style={{
+                background: 'var(--accent)',
+                color: '#fff',
+                boxShadow: '0 4px 16px var(--accent-glow)',
+              }}
+            >
+              搜索
+            </button>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>ID</th>
+                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>用户名</th>
+                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>昵称</th>
+                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>角色</th>
+                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>状态</th>
+                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>操作</th>
+              </tr>
+            </thead>
+            <tbody>
               {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.nickname}</TableCell>
-                  <TableCell>{roleMap[user.role]}</TableCell>
-                  <TableCell><Badge className="glass-badge">{statusMap[user.status]}</Badge></TableCell>
-                  <TableCell>
-                    {user.status === 1 && (
-                      <Button size="sm" className="glass-btn" onClick={() => handleApprove(user.id)}>审批</Button>
-                    )}
-                    {user.status === 2 && (
-                      <Button size="sm" className="glass-btn" onClick={() => handleStatus(user.id, 3)}>冻结</Button>
-                    )}
-                    {user.status === 3 && (
-                      <Button size="sm" className="glass-btn-primary" onClick={() => handleStatus(user.id, 2)}>解冻</Button>
-                    )}
-                  </TableCell>
-                </TableRow>
+                <tr key={user.id} className="border-t" style={{ borderColor: 'var(--card-border)' }}>
+                  <td className="p-4 text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>{user.id}</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                        style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
+                      >
+                        {user.username?.charAt(0) || 'U'}
+                      </div>
+                      <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{user.username}</span>
+                    </div>
+                  </td>
+                  <td className="p-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{user.nickname}</td>
+                  <td className="p-4">{getRoleBadge(user.role)}</td>
+                  <td className="p-4">{getStatusBadge(user.status)}</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      {user.status === 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleApprove(user.id)}
+                          className="px-4 py-2 rounded-xl border-0 font-medium flex items-center gap-1.5 hover:scale-105 transition-transform"
+                          style={{
+                            background: '#10b981',
+                            color: '#fff',
+                            boxShadow: '0 4px 16px rgba(16,185,129,0.3)',
+                          }}
+                        >
+                          <ShieldCheck className="w-4 h-4" />
+                          审批通过
+                        </button>
+                      )}
+                      {user.status === 2 && (
+                        <button
+                          type="button"
+                          onClick={() => handleStatus(user.id, 3)}
+                          className="w-9 h-9 rounded-xl border flex items-center justify-center hover:scale-105 transition-transform"
+                          style={{
+                            background: 'var(--card-bg)',
+                            borderColor: 'var(--card-border)',
+                            color: '#f43f5e',
+                          }}
+                          title="冻结"
+                        >
+                          <Snowflake className="w-4 h-4" />
+                        </button>
+                      )}
+                      {user.status === 3 && (
+                        <button
+                          type="button"
+                          onClick={() => handleStatus(user.id, 2)}
+                          className="w-9 h-9 rounded-xl border flex items-center justify-center hover:scale-105 transition-transform"
+                          style={{
+                            background: 'var(--card-bg)',
+                            borderColor: 'var(--card-border)',
+                            color: '#f59e0b',
+                          }}
+                          title="解冻"
+                        >
+                          <Unlock className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

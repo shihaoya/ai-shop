@@ -50,25 +50,42 @@ export default function OperatorShop() {
 
   const statusMap: Record<number, string> = { 1: '待审核', 2: '已通过', 3: '已拒绝', 4: '已禁用' }
 
+  // Status badge color mapping
+  const getStatusStyle = (status: number) => {
+    switch (status) {
+      case 1: // pending
+        return { background: '#f59e0b', color: '#fff' }
+      case 2: // approved
+        return { background: '#10b981', color: '#fff' }
+      case 3: // rejected
+        return { background: 'var(--text-muted)', color: '#fff' }
+      case 4: // disabled
+        return { background: 'var(--text-muted)', color: '#fff' }
+      default:
+        return { background: 'var(--text-muted)', color: '#fff' }
+    }
+  }
+
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">我的店铺</h1>
+      <h1 style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>我的店铺</h1>
 
       {!shop ? (
         <Card glass>
           <CardHeader>
             <CardTitle>申请店铺</CardTitle>
+            <p style={{ fontSize: '14px', color: 'var(--text-primary)', marginTop: '4px' }}>申请成为店主</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>店铺名称</Label>
+              <Label style={{ fontSize: '14px', color: 'var(--text-primary)' }}>店铺名称</Label>
               <Input className="glass-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="请输入店铺名称" />
             </div>
             <div className="space-y-2">
-              <Label>店铺简介</Label>
+              <Label style={{ fontSize: '14px', color: 'var(--text-primary)' }}>店铺简介</Label>
               <Input className="glass-input" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="请输入店铺简介" />
             </div>
-            <Button className="glass-btn" onClick={handleApply} disabled={loading}>提交申请</Button>
+            <Button className="glass-btn glass-btn-primary" onClick={handleApply} disabled={loading}>提交申请</Button>
           </CardContent>
         </Card>
       ) : (
@@ -76,13 +93,13 @@ export default function OperatorShop() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <CardTitle>{shop.name}</CardTitle>
-              <Badge className="glass-badge">{statusMap[shop.status]}</Badge>
+              <Badge className="status-badge" style={getStatusStyle(shop.status)}>{statusMap[shop.status]}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-lg bg-neutral-50 dark:bg-neutral-800/50 p-4">
-              <p className="text-sm text-muted-foreground">店铺简介</p>
-              <p>{shop.description || '暂无简介'}</p>
+            <div style={{ borderRadius: '12px', background: 'var(--card-bg)', border: '1px solid var(--card-border)', padding: '16px' }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>店铺简介</p>
+              <p style={{ color: 'var(--text-primary)', marginTop: '4px' }}>{shop.description || '暂无简介'}</p>
             </div>
             <div className="flex gap-2">
               <Button
