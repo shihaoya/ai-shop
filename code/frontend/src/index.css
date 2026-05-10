@@ -1,15 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-text: #6b6375;
-  --color-text-h: #08060d;
-  --color-bg: #fff;
-  --color-border: #e5e4e7;
-  --color-code-bg: #f4f3ec;
+  /* Colors */
   --color-accent: #aa3bff;
+  --color-accent-light: #c084fc;
   --color-accent-bg: rgba(170, 59, 255, 0.1);
   --color-accent-border: rgba(170, 59, 255, 0.5);
 
+  /* Typography */
   --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
