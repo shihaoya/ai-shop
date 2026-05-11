@@ -47,6 +47,12 @@ public class AdminController {
         return adminService.approveUser(userId);
     }
 
+    @Operation(summary = "拒绝用户", description = "拒绝用户的注册申请（软删除）")
+    @PutMapping("/users/{id}/reject")
+    public Result<?> rejectUser(@PathVariable("id") Long userId) {
+        return adminService.rejectUser(userId);
+    }
+
     @Operation(summary = "我的邀请码", description = "获取管理员的邀请码")
     @GetMapping("/invite-code")
     public Result<?> getInviteCode(HttpServletRequest request) {

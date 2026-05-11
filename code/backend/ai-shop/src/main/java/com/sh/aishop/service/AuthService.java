@@ -67,7 +67,7 @@ public class AuthService {
     public Result<?> register(RegisterRequest request) {
         // 验证密码确认
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            return Result.fail(ResultCode.FAIL, "两次密码输入不一致");
+            return Result.fail(ResultCode.PASSWORD_MISMATCH, "两次密码输入不一致");
         }
 
         // 验证邀请码

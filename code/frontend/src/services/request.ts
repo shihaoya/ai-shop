@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import { toast } from 'sonner'
 import type { ApiResponse } from '@/types'
 
 const request: AxiosInstance = axios.create({
@@ -25,7 +26,7 @@ request.interceptors.response.use(
     if (code === 200) {
       return data
     }
-    // 非 200 码视为错误
+    // 非 200 码视为业务错误，直接 reject，不在这里 toast
     return Promise.reject(new Error(message || '请求失败'))
   },
   (error) => {
@@ -33,6 +34,21 @@ request.interceptors.response.use(
       localStorage.removeItem('token')
       window.location.href = '/auth/login'
     }
+
+    // 后端通过 GlobalExceptionHandler 返回的标准 Result 错误
+    const backendMessage = error.response?.data?.message
+    if (backendMessage) {
+      toast.error(backendMessage)
+      return Promise.reject(new Error(backendMessage))
+    }
+
+    // HTTP 400 等无 body 情况
+    const httpStatus = error.response?.status
+    if (httpStatus === 400) {
+      toast.error('请求参数有误，请检查输入')
+      return Promise.reject(new Error('请求参数有误，请检查输入'))
+    }
+
     return Promise.reject(error)
   }
 )

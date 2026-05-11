@@ -17,6 +17,10 @@ public class ResultCode {
     public static final int INVITE_CODE_INVALID = 1006;
     public static final int USERNAME_EXISTS = 1007;
     public static final int PASSWORD_ERROR = 1008;
+    public static final int PARAM_VALID_FAIL = 1009;       // 参数校验失败
+    public static final int PASSWORD_MISMATCH = 1010;     // 两次密码输入不一致
+    public static final int REQUEST_FORMAT_ERROR = 1101;  // 请求格式错误
+    public static final int MISSING_PARAM = 1102;          // 缺少必要参数
 
     // 业务错误 2000-2999
     public static final int SHOP_NOT_FOUND = 2001;

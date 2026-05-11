@@ -6,38 +6,31 @@ import { toast } from 'sonner'
 
 export default function AdminShops() {
   const [shops, setShops] = useState<any[]>([])
-  const [params] = useSearchParams({ page: '1', keyword: '' })
+  const [params, setParams] = useSearchParams({ page: '1', keyword: '', status: '' })
   const [keyword, setKeyword] = useState(params.get('keyword') || '')
+  const [statusFilter, setStatusFilter] = useState(params.get('status') || '')
 
   const loadData = async () => {
     try {
-      const res = await getShops({ page: Number(params.get('page')), keyword: params.get('keyword') || '' })
+      const status = statusFilter ? Number(statusFilter) : undefined
+      const res = await getShops({ page: Number(params.get('page')), keyword: params.get('keyword') || '', status })
       setShops(res.list || [])
     } catch (err: any) {
       toast.error(err.message)
     }
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: loadData is stable
   useEffect(() => {
     loadData()
-  }, [params])
-
-  const handleAudit = async (id: string, status: number) => {
-    try {
-      await auditShop(id, status)
-      toast.success(status === 2 ? '已通过' : '已拒绝')
-      loadData()
-    } catch (err: any) {
-      toast.error(err.message)
-    }
-  }
+  }, [params, statusFilter])
 
   const handleSearch = () => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('keyword', keyword)
-    url.searchParams.set('page', '1')
-    window.location.href = url.toString()
+    setParams({ page: '1', keyword, status: statusFilter })
+  }
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value)
+    setParams({ page: '1', keyword, status: value })
   }
 
   const getStatusBadge = (status: number) => {
@@ -63,8 +56,8 @@ export default function AdminShops() {
       <div className="glass-card p-5">
         {/* Card Header with Search */}
         <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-          <div className="flex items-center gap-3">
-            <div className="glass-input flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-3 flex-wrap py-4">
+            <div className="glass-input flex items-center gap-2 flex-1 min-w-[200px]">
               <Search className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
@@ -76,6 +69,25 @@ export default function AdminShops() {
                 style={{ color: 'var(--text-primary)' }}
               />
             </div>
+
+            {/* 状态筛选 */}
+            <select
+              value={statusFilter}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
+              className="px-4 py-2.5 rounded-xl border text-sm"
+              style={{
+                background: 'var(--card-bg)',
+                borderColor: 'var(--card-border)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <option value="">全部状态</option>
+              <option value="1">待审核</option>
+              <option value="2">已通过</option>
+              <option value="3">已拒绝</option>
+              <option value="4">已禁用</option>
+            </select>
+
             <button
               type="button"
               onClick={handleSearch}

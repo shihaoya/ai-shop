@@ -44,11 +44,15 @@ export const getUsers = (params?: PageRequest) =>
 
 // 冻结/解冻用户
 export const updateUserStatus = (id: string, status: number) =>
-  put<void>(`/api/admin/users/${id}/status`, { status })
+  put<void>(`/api/admin/users/${id}/status?status=${status}`)
 
 // 审核通过店铺用户
 export const approveUser = (id: string) =>
   put<void>(`/api/admin/users/${id}/approve`)
+
+// 拒绝用户
+export const rejectUser = (id: string) =>
+  put<void>(`/api/admin/users/${id}/reject`)
 
 // 获取邀请码
 export const getInviteCode = () =>

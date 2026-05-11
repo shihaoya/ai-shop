@@ -37,13 +37,13 @@ export default function RegisterPage() {
         username: form.username,
         nickname: form.nickname,
         password: form.password,
+        confirmPassword: form.confirmPassword,
         inviteCode: form.inviteCode,
       })
       toast.success('注册成功，请登录')
       navigate('/auth/login')
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : '注册失败'
-      toast.error(message)
+    } catch {
+      // 错误已由 request 拦截器的 toast 提示，无需重复处理
     } finally {
       setLoading(false)
     }

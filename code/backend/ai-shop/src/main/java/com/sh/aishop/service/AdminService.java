@@ -33,6 +33,11 @@ public class AdminService {
     public Result<?> getShops(PageRequest pageRequest) {
         LambdaQueryWrapper<Shop> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Shop::getDeleted, 0);
+        // 状态筛选
+        if (pageRequest.getStatus() != null) {
+            wrapper.eq(Shop::getStatus, pageRequest.getStatus());
+        }
+        // 关键词搜索
         if (StringUtils.hasText(pageRequest.getKeyword())) {
             wrapper.like(Shop::getName, pageRequest.getKeyword());
         }
@@ -82,6 +87,15 @@ public class AdminService {
         wrapper.eq(User::getDeleted, 0);
         // 排除管理员
         wrapper.ne(User::getRole, RoleEnum.ADMIN.getCode());
+        // 角色筛选
+        if (pageRequest.getRole() != null) {
+            wrapper.eq(User::getRole, pageRequest.getRole());
+        }
+        // 状态筛选
+        if (pageRequest.getStatus() != null) {
+            wrapper.eq(User::getStatus, pageRequest.getStatus());
+        }
+        // 关键词搜索
         if (StringUtils.hasText(pageRequest.getKeyword())) {
             wrapper.and(w -> w.like(User::getUsername, pageRequest.getKeyword())
                     .or().like(User::getNickname, pageRequest.getKeyword()));
@@ -139,12 +153,39 @@ public class AdminService {
         return Result.success();
     }
 
+    @Transactional
+    public Result<?> rejectUser(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
+        }
+        if (user.getStatus() != UserStatus.PENDING.getCode()) {
+            return Result.fail(ResultCode.FAIL, "用户不是待审核状态");
+        }
+
+        // 软删除用户
+        user.setDeleted(1);
+        userMapper.updateById(user);
+
+        // 作废该用户的邀请码（如果该用户创建了邀请码）
+        InviteCode code = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
+                .eq(InviteCode::getCreatorId, userId)
+                .eq(InviteCode::getStatus, InviteCodeStatus.ACTIVE.getCode())
+                .eq(InviteCode::getDeleted, 0));
+        if (code != null) {
+            code.setStatus(InviteCodeStatus.INVALID.getCode());
+            inviteCodeMapper.updateById(code);
+        }
+
+        return Result.success();
+    }
+
     // ============ 邀请码管理 ============
     public Result<?> getInviteCode(Long adminId) {
-        // 查找当前有效的邀请码
+        // 查找当前有效的邀请码（管理员邀请码用于创建店铺用户，role=2）
         InviteCode code = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
                 .eq(InviteCode::getCreatorId, adminId)
-                .eq(InviteCode::getRole, RoleEnum.ADMIN.getCode())
+                .eq(InviteCode::getRole, RoleEnum.SHOP_USER.getCode())
                 .eq(InviteCode::getStatus, InviteCodeStatus.ACTIVE.getCode())
                 .eq(InviteCode::getDeleted, 0));
 
@@ -156,7 +197,7 @@ public class AdminService {
         // 作废旧的邀请码
         InviteCode oldCode = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
                 .eq(InviteCode::getCreatorId, adminId)
-                .eq(InviteCode::getRole, RoleEnum.ADMIN.getCode())
+                .eq(InviteCode::getRole, RoleEnum.SHOP_USER.getCode())
                 .eq(InviteCode::getStatus, InviteCodeStatus.ACTIVE.getCode())
                 .eq(InviteCode::getDeleted, 0));
 
@@ -165,11 +206,11 @@ public class AdminService {
             inviteCodeMapper.updateById(oldCode);
         }
 
-        // 创建新的邀请码
+        // 创建新的邀请码（管理员邀请码用于创建店铺用户，role=2）
         InviteCode newCode = new InviteCode();
         newCode.setId(SnowflakeIdUtil.nextId());
         newCode.setCode(generateCode());
-        newCode.setRole(RoleEnum.ADMIN.getCode());
+        newCode.setRole(RoleEnum.SHOP_USER.getCode());
         newCode.setCreatorId(adminId);
         newCode.setStatus(InviteCodeStatus.ACTIVE.getCode());
         inviteCodeMapper.insert(newCode);

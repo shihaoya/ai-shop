@@ -26,6 +26,7 @@ export interface RegisterRequest {
   username: string
   nickname: string
   password: string
+  confirmPassword: string
   inviteCode: string
 }
 
@@ -40,6 +41,8 @@ export interface PageRequest {
   page?: number
   pageSize?: number
   keyword?: string
+  role?: number   // 角色筛选：1=管理员，2=店铺用户，3=普通用户
+  status?: number  // 状态筛选：1=待审核，2=正常，3=已冻结
 }
 
 // 分页响应

@@ -151,6 +151,7 @@ CREATE TABLE `invite_code` (
   `status` TINYINT DEFAULT 1 COMMENT '1=有效 2=已作废',
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邀请码表';
@@ -177,4 +178,4 @@ CREATE TABLE `message` (
 -- 密码为 BCrypt 加密后的值
 -- ============================================
 INSERT INTO `user` (`id`, `username`, `nickname`, `password`, `role`, `parent_id`, `status`, `deleted`)
-VALUES (1, 'admin', '管理员', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsjM/tUo7l2sKuvIlTSfG', 1, 0, 2, 0);
+VALUES (1, 'admin', '管理员', '$2a$10$mxdpkIwUAXyKYprDS8nIKOQr8W3v47PZuv3pgMwGEayB3sDRdiHMq', 1, 0, 2, 0);
