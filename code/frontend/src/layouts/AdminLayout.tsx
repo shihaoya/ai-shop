@@ -131,7 +131,6 @@ export default function AdminLayout(_props: AdminLayoutProps) {
           transition: 'width 0.3s ease',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden',
           zIndex: 40,
         }}
       >
@@ -140,7 +139,7 @@ export default function AdminLayout(_props: AdminLayoutProps) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: collapsed ? '0' : '12px',
             padding: '20px 16px',
             borderBottom: '1px solid var(--card-border)',
           }}
@@ -178,8 +177,6 @@ export default function AdminLayout(_props: AdminLayoutProps) {
           style={{
             flex: 1,
             padding: '16px 12px',
-            overflowY: 'auto',
-            overflowX: 'hidden',
           }}
         >
           {navSections.map((section) => (
@@ -204,12 +201,14 @@ export default function AdminLayout(_props: AdminLayoutProps) {
                 <div key={path} style={{ position: 'relative' }}>
                   <Link
                     to={path}
-                    onMouseEnter={() => setHoveredItem(path)}
+                    onMouseEnter={() => {
+                      setHoveredItem(path)
+                    }}
                     onMouseLeave={() => setHoveredItem(null)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '12px',
+                      gap: collapsed ? '0' : '12px',
                       padding: collapsed ? '10px' : '10px 12px',
                       borderRadius: '10px',
                       color: isActive(path) ? 'var(--accent)' : 'var(--text-secondary)',
@@ -249,31 +248,50 @@ export default function AdminLayout(_props: AdminLayoutProps) {
                       {label}
                     </span>
                   </Link>
-                  {/* Tooltip for collapsed state */}
+                  {/* Tooltip - speech bubble with left-arrow, inside sidebar DOM */}
                   {collapsed && hoveredItem === path && (
                     <div
                       style={{
-                        position: 'fixed',
-                        left: '116px',
+                        position: 'absolute',
+                        left: 'calc(100% + 8px)',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
                         background: 'var(--card-bg)',
                         backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
                         border: '1px solid var(--card-border)',
                         borderRadius: '10px',
-                        padding: '8px 14px',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-                        zIndex: 50,
+                        padding: '6px 12px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                        zIndex: 40,
                         pointerEvents: 'none',
+                        whiteSpace: 'nowrap',
                       }}
                     >
-                      <span
-                        style={{
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          color: 'var(--text-primary)',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
+                      {/* CSS triangle arrow pointing left */}
+                      <span style={{
+                        position: 'absolute',
+                        left: '-6px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderTop: '5px solid transparent',
+                        borderBottom: '5px solid transparent',
+                        borderRight: '6px solid var(--card-border)',
+                      }} />
+                      {/* Arrow inner (covers border) */}
+                      <span style={{
+                        position: 'absolute',
+                        left: '-5px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 0,
+                        height: 0,
+                        borderTop: '4px solid transparent',
+                        borderBottom: '4px solid transparent',
+                        borderRight: '5px solid var(--card-bg)',
+                      }} />
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>
                         {label}
                       </span>
                     </div>
@@ -300,21 +318,42 @@ export default function AdminLayout(_props: AdminLayoutProps) {
               <div
                 style={{
                   position: 'absolute',
-                  bottom: '100%',
+                  bottom: 'calc(100% + 8px)',
                   left: collapsed ? '50%' : '0',
                   transform: collapsed ? 'translateX(-50%)' : 'none',
-                  marginBottom: '8px',
                   background: 'var(--card-bg)',
                   backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
                   border: '1px solid var(--card-border)',
                   borderRadius: '12px',
                   padding: '6px',
                   minWidth: '160px',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-                  zIndex: 50,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                  zIndex: 40,
                 }}
               >
+                {/* Top arrow pointing down */}
+                <span style={{
+                  position: 'absolute',
+                  bottom: '-6px',
+                  left: collapsed ? '50%' : '12px',
+                  transform: collapsed ? 'translateX(-50%)' : 'none',
+                  width: 0,
+                  height: 0,
+                  borderLeft: '5px solid transparent',
+                  borderRight: '5px solid transparent',
+                  borderTop: '6px solid var(--card-border)',
+                }} />
+                <span style={{
+                  position: 'absolute',
+                  bottom: '-5px',
+                  left: collapsed ? '50%' : '12px',
+                  transform: collapsed ? 'translateX(-50%)' : 'none',
+                  width: 0,
+                  height: 0,
+                  borderLeft: '4px solid transparent',
+                  borderRight: '4px solid transparent',
+                  borderTop: '5px solid var(--card-bg)',
+                }} />
                 <button
                   type="button"
                   onClick={() => { logout(); setDropdownOpen(false) }}
@@ -341,7 +380,7 @@ export default function AdminLayout(_props: AdminLayoutProps) {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
+                gap: collapsed ? '0' : '10px',
                 width: '100%',
                 padding: collapsed ? '8px' : '10px 12px',
                 borderRadius: '10px',
@@ -367,7 +406,6 @@ export default function AdminLayout(_props: AdminLayoutProps) {
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                   opacity: collapsed ? 0 : 1, transition: 'opacity 0.3s ease',
-                  overflow: 'hidden', visibility: collapsed ? 'hidden' : 'visible',
                   width: collapsed ? 0 : 'auto',
                 }}
               >
@@ -388,26 +426,16 @@ export default function AdminLayout(_props: AdminLayoutProps) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
               gap: '8px',
               width: '100%',
-              padding: '8px',
+              padding: collapsed ? '8px' : '8px 12px',
               borderRadius: '10px',
               border: '1px solid var(--card-border)',
               background: 'var(--card-bg)',
               color: 'var(--text-muted)',
               cursor: 'pointer',
               transition: 'all 0.2s',
-            }}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = 'var(--accent)'
-              e.currentTarget.style.color = 'var(--accent)'
-              e.currentTarget.style.background = 'var(--accent-light)'
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = 'var(--card-border)'
-              e.currentTarget.style.color = 'var(--text-muted)'
-              e.currentTarget.style.background = 'var(--card-bg)'
             }}
             onMouseOver={(e) => {
               e.currentTarget.style.borderColor = 'var(--accent)'
@@ -421,14 +449,11 @@ export default function AdminLayout(_props: AdminLayoutProps) {
             }}
           >
             {collapsed ? (
-              <>
-                <ChevronRight className="w-4 h-4" />
-                <span style={{ opacity: 0, width: 0, overflow: 'hidden', fontSize: '13px' }}>展开</span>
-              </>
+              <ChevronRight className="w-4 h-4" style={{ flexShrink: 0 }} />
             ) : (
               <>
                 <ChevronLeft className="w-4 h-4" />
-                <span style={{ fontSize: '13px' }}>收起侧栏</span>
+                <span style={{ fontSize: '13px', whiteSpace: 'nowrap' }}>收起侧栏</span>
               </>
             )}
           </button>
