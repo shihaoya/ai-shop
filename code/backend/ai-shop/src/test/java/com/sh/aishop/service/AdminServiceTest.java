@@ -122,7 +122,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(2, pageResult.getRecords().size());
+            assertEquals(2, pageResult.getList().size());
         }
 
         @Test
@@ -143,7 +143,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(1, pageResult.getRecords().size());
+            assertEquals(1, pageResult.getList().size());
         }
 
         @Test
@@ -159,7 +159,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(0, pageResult.getRecords().size());
+            assertEquals(0, pageResult.getList().size());
             assertEquals(0L, pageResult.getTotal());
         }
     }
@@ -230,7 +230,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(2, pageResult.getRecords().size());
+            assertEquals(2, pageResult.getList().size());
         }
 
         @Test
@@ -249,7 +249,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(1, pageResult.getRecords().size());
+            assertEquals(1, pageResult.getList().size());
         }
 
         @Test
@@ -265,7 +265,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(0, pageResult.getRecords().size());
+            assertEquals(0, pageResult.getList().size());
             assertEquals(0L, pageResult.getTotal());
         }
 
@@ -288,7 +288,7 @@ class AdminServiceTest {
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof PageResult);
             PageResult<?> pageResult = (PageResult<?>) result.getData();
-            assertEquals(1, pageResult.getRecords().size()); // 只返回第二页的1条
+            assertEquals(1, pageResult.getList().size()); // 只返回第二页的1条
             assertEquals(2L, pageResult.getTotal());
         }
     }

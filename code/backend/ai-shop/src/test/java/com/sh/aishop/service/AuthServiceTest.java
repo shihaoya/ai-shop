@@ -229,7 +229,7 @@ class AuthServiceTest {
 
             Result<?> result = authService.register(request);
 
-            assertEquals(ResultCode.FAIL, result.getCode());
+            assertEquals(ResultCode.PASSWORD_MISMATCH, result.getCode());
             assertEquals("两次密码输入不一致", result.getMessage());
             verify(inviteCodeMapper, never()).selectOne(any(LambdaQueryWrapper.class));
         }

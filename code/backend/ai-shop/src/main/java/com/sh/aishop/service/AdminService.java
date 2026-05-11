@@ -163,9 +163,10 @@ public class AdminService {
             return Result.fail(ResultCode.FAIL, "用户不是待审核状态");
         }
 
-        // 软删除用户
-        user.setDeleted(1);
-        userMapper.updateById(user);
+        // 软删除用户（使用 UpdateWrapper 避免 @TableLogic 对 deleted 字段的干扰）
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getId, userId).set(User::getDeleted, 1);
+        userMapper.update(null, updateWrapper);
 
         // 作废该用户的邀请码（如果该用户创建了邀请码）
         InviteCode code = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
