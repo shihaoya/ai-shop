@@ -57,7 +57,6 @@ export default function AdminInviteCode() {
         {/* Card header */}
         <div style={{
           padding: '18px 24px',
-          background: 'rgba(15,23,42,0.5)',
           borderBottom: '1px solid var(--card-border)',
           display: 'flex',
           alignItems: 'center',
@@ -71,7 +70,6 @@ export default function AdminInviteCode() {
         <div style={{ padding: '24px' }}>
           {/* Code display area */}
           <div style={{
-            background: 'rgba(30,41,59,0.6)',
             border: '1px solid var(--card-border)',
             borderRadius: '12px',
             padding: '14px 18px',

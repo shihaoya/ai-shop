@@ -45,30 +45,28 @@ export default function AdminUsers() {
   const statusMap: Record<number, string> = { 1: '待审核', 2: '正常', 3: '已冻结' }
 
   const getRoleBadge = (role: number) => {
-    const config: Record<number, { className: string; dotClass: string }> = {
-      1: { className: 'bg-purple-500/15 text-purple-500', dotClass: 'bg-purple-500' },
-      2: { className: 'bg-blue-500/15 text-blue-500', dotClass: 'bg-blue-500' },
-      3: { className: 'bg-slate-500/15 text-slate-400', dotClass: 'bg-slate-500' },
+    const config: Record<number, { bg: string; color: string }> = {
+      1: { bg: 'rgba(168, 85, 247, 0.15)', color: '#a855f7' },
+      2: { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' },
+      3: { bg: 'rgba(100, 116, 139, 0.15)', color: 'var(--text-muted)' },
     }
     const c = config[role] || config[3]
     return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${c.className}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
+      <span style={{ background: c.bg, color: c.color }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium">
+        <span style={{ background: c.color }} className="w-1.5 h-1.5 rounded-full" />
         {roleMap[role]}
       </span>
     )
   }
 
   const getStatusBadge = (status: number) => {
-    const config: Record<number, { className: string; dotClass: string }> = {
-      1: { className: 'bg-amber-500/15 text-amber-500', dotClass: 'bg-amber-500' },
-      2: { className: 'bg-emerald-500/15 text-emerald-500', dotClass: 'bg-emerald-500' },
-      3: { className: 'bg-rose-500/15 text-rose-500', dotClass: 'bg-rose-500' },
+    const config: Record<number, string> = {
+      1: 'pending',
+      2: 'active',
+      3: 'inactive',
     }
-    const c = config[status] || config[1]
     return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${c.className}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
+      <span className={`status-badge ${config[status] || config[1]}`}>
         {statusMap[status]}
       </span>
     )
@@ -83,21 +81,16 @@ export default function AdminUsers() {
       </div>
 
       {/* Main Card */}
-      <div
-        className="rounded-2xl border backdrop-blur-xl"
-        style={{
-          background: 'var(--card-bg)',
-          borderColor: 'var(--card-border)',
-        }}
-      >
+      <div className="glass-card p-5">
         {/* Card Header with Search */}
-        <div className="p-5 border-b" style={{ borderColor: 'var(--card-border)' }}>
+        <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
           <div className="flex items-center gap-3">
             <div
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1"
+              className="flex items-center gap-2 px-4 py-2.5 flex-1"
               style={{
                 background: 'var(--card-bg)',
-                borderColor: 'var(--card-border)',
+                border: '1px solid var(--card-border)',
+                borderRadius: '12px',
               }}
             >
               <Search className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
@@ -128,20 +121,20 @@ export default function AdminUsers() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full glass-table">
             <thead>
               <tr>
-                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>ID</th>
-                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>用户名</th>
-                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>昵称</th>
-                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>角色</th>
-                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>状态</th>
-                <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>操作</th>
+                <th className="text-left text-xs font-medium p-4 text-sm" style={{ color: 'var(--text-muted)' }}>ID</th>
+                <th className="text-left text-xs font-medium p-4 text-sm" style={{ color: 'var(--text-muted)' }}>用户名</th>
+                <th className="text-left text-xs font-medium p-4 text-sm" style={{ color: 'var(--text-muted)' }}>昵称</th>
+                <th className="text-left text-xs font-medium p-4 text-sm" style={{ color: 'var(--text-muted)' }}>角色</th>
+                <th className="text-left text-xs font-medium p-4 text-sm" style={{ color: 'var(--text-muted)' }}>状态</th>
+                <th className="text-left text-xs font-medium p-4 text-sm" style={{ color: 'var(--text-muted)' }}>操作</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} className="border-t" style={{ borderColor: 'var(--card-border)' }}>
+                <tr key={user.id}>
                   <td className="p-4 text-sm font-mono" style={{ color: 'var(--text-secondary)' }}>{user.id}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-2">

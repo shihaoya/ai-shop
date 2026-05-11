@@ -40,22 +40,15 @@ export default function AdminShops() {
     window.location.href = url.toString()
   }
 
-  const statusMap: Record<number, string> = { 1: '待审核', 2: '已通过', 3: '已拒绝', 4: '已禁用' }
-
   const getStatusBadge = (status: number) => {
-    const config: Record<number, { className: string; dotClass: string }> = {
-      1: { className: 'bg-amber-500/15 text-amber-500', dotClass: 'bg-amber-500' },
-      2: { className: 'bg-emerald-500/15 text-emerald-500', dotClass: 'bg-emerald-500' },
-      3: { className: 'bg-slate-500/15 text-slate-400', dotClass: 'bg-slate-500' },
-      4: { className: 'bg-slate-500/15 text-slate-400', dotClass: 'bg-slate-500' },
+    const config: Record<number, { className: string; label: string }> = {
+      1: { className: 'pending', label: '待审核' },
+      2: { className: 'active', label: '已通过' },
+      3: { className: 'inactive', label: '已拒绝' },
+      4: { className: 'inactive', label: '已禁用' },
     }
     const c = config[status] || config[1]
-    return (
-      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${c.className}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
-        {statusMap[status]}
-      </span>
-    )
+    return <span className={`status-badge ${c.className}`}>{c.label}</span>
   }
 
   return (
@@ -67,23 +60,11 @@ export default function AdminShops() {
       </div>
 
       {/* Main Card */}
-      <div
-        className="rounded-2xl border backdrop-blur-xl"
-        style={{
-          background: 'var(--card-bg)',
-          borderColor: 'var(--card-border)',
-        }}
-      >
+      <div className="glass-card p-5">
         {/* Card Header with Search */}
-        <div className="p-5 border-b" style={{ borderColor: 'var(--card-border)' }}>
+        <div className="border-b" style={{ borderColor: 'var(--card-border)' }}>
           <div className="flex items-center gap-3">
-            <div
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border flex-1"
-              style={{
-                background: 'var(--card-bg)',
-                borderColor: 'var(--card-border)',
-              }}
-            >
+            <div className="glass-input flex items-center gap-2 flex-1">
               <Search className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
@@ -98,12 +79,7 @@ export default function AdminShops() {
             <button
               type="button"
               onClick={handleSearch}
-              className="px-4 py-2.5 rounded-xl border-0 font-medium"
-              style={{
-                background: 'var(--accent)',
-                color: '#fff',
-                boxShadow: '0 4px 16px var(--accent-glow)',
-              }}
+              className="btn-primary"
             >
               搜索
             </button>
@@ -112,7 +88,7 @@ export default function AdminShops() {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="glass-table w-full">
             <thead>
               <tr>
                 <th className="text-left text-xs font-medium p-4" style={{ color: 'var(--text-muted)' }}>ID</th>
@@ -148,24 +124,16 @@ export default function AdminShops() {
                           <button
                             type="button"
                             onClick={() => handleAudit(shop.id, 2)}
-                            className="w-9 h-9 rounded-xl border flex items-center justify-center hover:scale-105 transition-transform"
-                            style={{
-                              background: 'var(--card-bg)',
-                              borderColor: 'var(--card-border)',
-                              color: '#10b981',
-                            }}
+                            className="action-btn"
+                            style={{ color: '#10b981' }}
                           >
                             <Check className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
                             onClick={() => handleAudit(shop.id, 3)}
-                            className="w-9 h-9 rounded-xl border flex items-center justify-center hover:scale-105 transition-transform"
-                            style={{
-                              background: 'var(--card-bg)',
-                              borderColor: 'var(--card-border)',
-                              color: '#f43f5e',
-                            }}
+                            className="action-btn"
+                            style={{ color: '#f43f5e' }}
                           >
                             <X className="w-4 h-4" />
                           </button>

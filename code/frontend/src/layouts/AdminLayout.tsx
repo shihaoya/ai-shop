@@ -204,7 +204,7 @@ export default function AdminLayout(_props: AdminLayoutProps) {
                 <div key={path} style={{ position: 'relative' }}>
                   <Link
                     to={path}
-                    onMouseEnter={() => !collapsed && setHoveredItem(path)}
+                    onMouseEnter={() => setHoveredItem(path)}
                     onMouseLeave={() => setHoveredItem(null)}
                     style={{
                       display: 'flex',

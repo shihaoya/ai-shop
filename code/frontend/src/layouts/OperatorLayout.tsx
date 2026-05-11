@@ -213,7 +213,7 @@ export default function OperatorLayout({ children }: OperatorLayoutProps) {
                 <div key={path} style={{ position: 'relative' }}>
                   <Link
                     to={path}
-                    onMouseEnter={() => !collapsed && setHoveredItem(path)}
+                    onMouseEnter={() => setHoveredItem(path)}
                     onMouseLeave={() => setHoveredItem(null)}
                     style={{
                       display: 'flex',
