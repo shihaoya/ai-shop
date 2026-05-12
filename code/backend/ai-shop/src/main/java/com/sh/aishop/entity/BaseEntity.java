@@ -18,6 +18,14 @@ public abstract class BaseEntity<T extends Model<T>> extends Model<T> {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     protected LocalDateTime updatedAt;
 
+    /** 创建人ID */
+    @TableField(fill = FieldFill.INSERT)
+    protected Long createdBy;
+
+    /** 更新人ID */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    protected Long updatedBy;
+
     @TableLogic
     protected Integer deleted = 0;
 }

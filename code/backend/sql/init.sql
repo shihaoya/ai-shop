@@ -20,6 +20,8 @@ CREATE TABLE `user` (
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
@@ -36,6 +38,8 @@ CREATE TABLE `shop` (
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='店铺表';
 
@@ -49,6 +53,9 @@ CREATE TABLE `category` (
   `sort` INT DEFAULT 0 COMMENT '排序',
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品分类表';
 
@@ -72,6 +79,8 @@ CREATE TABLE `product` (
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
 
@@ -90,6 +99,8 @@ CREATE TABLE `orders` (
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '下单时间',
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   `completed_at` DATETIME COMMENT '完成时间',
   `closed_at` DATETIME COMMENT '关闭时间',
   `close_reason` VARCHAR(255) COMMENT '关闭原因',
@@ -119,6 +130,9 @@ CREATE TABLE `points` (
   `operator_id` BIGINT COMMENT '操作人ID',
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='积分表';
 
@@ -137,6 +151,9 @@ CREATE TABLE `address` (
   `is_default` TINYINT DEFAULT 0 COMMENT '0=否 1=是',
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收货地址表';
 
@@ -152,6 +169,8 @@ CREATE TABLE `invite_code` (
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='邀请码表';
@@ -169,6 +188,9 @@ CREATE TABLE `message` (
   `is_read` TINYINT DEFAULT 0 COMMENT '0=未读 1=已读',
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消息表';
 
@@ -177,5 +199,5 @@ CREATE TABLE `message` (
 -- 用户名：admin，密码：admin123
 -- 密码为 BCrypt 加密后的值
 -- ============================================
-INSERT INTO `user` (`id`, `username`, `nickname`, `password`, `role`, `parent_id`, `status`, `deleted`)
-VALUES (1, 'admin', '管理员', '$2a$10$mxdpkIwUAXyKYprDS8nIKOQr8W3v47PZuv3pgMwGEayB3sDRdiHMq', 1, 0, 2, 0);
+INSERT INTO `user` (`id`, `username`, `nickname`, `password`, `role`, `parent_id`, `status`, `deleted`, `created_at`, `updated_at`)
+VALUES (1, 'admin', '管理员', '$2a$10$mxdpkIwUAXyKYprDS8nIKOQr8W3v47PZuv3pgMwGEayB3sDRdiHMq', 1, 0, 2, 0, NOW(), NOW());
