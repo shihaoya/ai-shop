@@ -56,6 +56,7 @@ export interface Shop {
   operatorName?: string
   status: number     // 1=待审核, 2=通过, 3=拒绝, 4=禁用
   isActive: number   // 0=歇业, 1=营业
+  rejectReason?: string
   createdAt?: string
   updatedAt?: string
 }

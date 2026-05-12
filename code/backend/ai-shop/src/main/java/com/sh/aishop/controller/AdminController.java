@@ -37,9 +37,10 @@ public class AdminController {
     })
     @PutMapping("/shops/{id}/audit")
     public Result<?> auditShop(
-            @Parameter(description = "店铺ID", required = true, example = "100") @PathVariable("id") Long shopId, 
-            @Parameter(description = "审核状态：1通过 2拒绝", required = true, example = "1") @RequestParam Integer status) {
-        return adminService.auditShop(shopId, status);
+            @Parameter(description = "店铺ID", required = true, example = "100") @PathVariable("id") Long shopId,
+            @Parameter(description = "审核状态：2通过 3拒绝", required = true, example = "2") @RequestParam Integer status,
+            @Parameter(description = "拒绝原因（拒绝时必填）", required = false) @RequestParam(required = false) String rejectReason) {
+        return adminService.auditShop(shopId, status, rejectReason);
     }
 
     @Operation(summary = "用户列表", description = "分页获取所有用户列表")

@@ -8,6 +8,7 @@ public class ShopDTO {
     private String description;
     private Integer status;
     private Integer isActive;
+    private String rejectReason;
 
     // getters and setters
     public String getId() { return id; }
@@ -24,4 +25,6 @@ public class ShopDTO {
     public void setStatus(Integer status) { this.status = status; }
     public Integer getIsActive() { return isActive; }
     public void setIsActive(Integer isActive) { this.isActive = isActive; }
+    public String getRejectReason() { return rejectReason; }
+    public void setRejectReason(String rejectReason) { this.rejectReason = rejectReason; }
 }

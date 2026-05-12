@@ -176,7 +176,7 @@ class AdminServiceTest {
             when(shopMapper.selectById(100L)).thenReturn(shop);
             when(shopMapper.updateById(any(Shop.class))).thenReturn(1);
 
-            Result<?> result = adminService.auditShop(100L, ShopStatus.APPROVED.getCode());
+            Result<?> result = adminService.auditShop(100L, ShopStatus.APPROVED.getCode(), "");
 
             assertEquals(ResultCode.SUCCESS, result.getCode());
             verify(shopMapper).updateById(any(Shop.class));
@@ -190,7 +190,7 @@ class AdminServiceTest {
             when(shopMapper.selectById(100L)).thenReturn(shop);
             when(shopMapper.updateById(any(Shop.class))).thenReturn(1);
 
-            Result<?> result = adminService.auditShop(100L, ShopStatus.REJECTED.getCode());
+            Result<?> result = adminService.auditShop(100L, ShopStatus.REJECTED.getCode(), "");
 
             assertEquals(ResultCode.SUCCESS, result.getCode());
             verify(shopMapper).updateById(any(Shop.class));
@@ -201,7 +201,7 @@ class AdminServiceTest {
         void auditShop_ShopNotFound() {
             when(shopMapper.selectById(999L)).thenReturn(null);
 
-            Result<?> result = adminService.auditShop(999L, ShopStatus.APPROVED.getCode());
+            Result<?> result = adminService.auditShop(999L, ShopStatus.APPROVED.getCode(), "");
 
             assertEquals(ResultCode.SHOP_NOT_FOUND, result.getCode());
             assertEquals("店铺不存在", result.getMessage());

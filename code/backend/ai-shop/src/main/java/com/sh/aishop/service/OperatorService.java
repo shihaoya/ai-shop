@@ -55,6 +55,7 @@ public class OperatorService {
         result.put("description", shop.getDescription());
         result.put("status", shop.getStatus());
         result.put("isActive", shop.getIsActive());
+        result.put("rejectReason", shop.getRejectReason());
         return Result.success(result);
     }
 
@@ -65,7 +66,17 @@ public class OperatorService {
                 .eq(Shop::getOperatorId, operatorId)
                 .eq(Shop::getDeleted, 0));
         if (existShop != null) {
-            return Result.fail(ResultCode.FAIL, "已有店铺，不能重复申请");
+            // 已通过审核的店铺不能重复申请
+            if (existShop.getStatus() == ShopStatus.APPROVED.getCode()) {
+                return Result.fail(ResultCode.FAIL, "已有通过审核的店铺，无需重复申请");
+            }
+            // 重新提交：更新信息并设为待审核，清空拒绝原因
+            existShop.setName(name);
+            existShop.setDescription(description);
+            existShop.setStatus(ShopStatus.PENDING.getCode());
+            existShop.setRejectReason(null);
+            shopMapper.updateById(existShop);
+            return Result.success(existShop.getId().toString());
         }
 
         Shop shop = new Shop();

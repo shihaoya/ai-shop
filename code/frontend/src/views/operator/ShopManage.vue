@@ -198,6 +198,10 @@ function handleToggleStatus() {
             <span class="detail-label">创建时间</span>
             <span class="detail-value">{{ new Date(shop!.createdAt!).toLocaleString('zh-CN') }}</span>
           </div>
+          <div class="detail-row" v-if="shop?.status === ShopStatus.REJECTED && shop?.rejectReason">
+            <span class="detail-label">拒绝原因</span>
+            <span class="detail-value error-text">{{ shop!.rejectReason }}</span>
+          </div>
         </div>
 
         <div class="shop-actions" v-if="shop?.status === ShopStatus.APPROVED">
@@ -559,6 +563,10 @@ function handleToggleStatus() {
   flex: 1;
   font-size: 14px;
   color: var(--text-primary);
+}
+
+.error-text {
+  color: var(--red);
 }
 
 .id-value {

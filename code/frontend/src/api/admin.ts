@@ -10,8 +10,10 @@ export function getShops(params: PageRequest): Promise<AdminListResponse<Shop>> 
 }
 
 // 审核店铺
-export function auditShop(shopId: string | number, status: number): Promise<null> {
-  return request.put<null>(`/admin/shops/${shopId}/audit`, null, { params: { status } }) as any
+export function auditShop(shopId: string | number, status: number, rejectReason?: string): Promise<null> {
+  const params: any = { status }
+  if (rejectReason) params.rejectReason = rejectReason
+  return request.put<null>(`/admin/shops/${shopId}/audit`, null, { params }) as any
 }
 
 // 用户列表

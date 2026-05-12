@@ -63,6 +63,7 @@ public class AdminService {
             dto.setDescription(shop.getDescription());
             dto.setStatus(shop.getStatus());
             dto.setIsActive(shop.getIsActive());
+            dto.setRejectReason(shop.getRejectReason());
             dtos.add(dto);
         }
 
@@ -70,7 +71,7 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> auditShop(Long shopId, Integer statusCode) {
+    public Result<?> auditShop(Long shopId, Integer statusCode, String rejectReason) {
         Shop shop = shopMapper.selectById(shopId);
         if (shop == null) {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
@@ -81,6 +82,9 @@ public class AdminService {
             return Result.fail(ResultCode.FAIL, "无效的审核状态");
         }
         shop.setStatus(status.getCode());
+        if (status == ShopStatus.REJECTED && rejectReason != null) {
+            shop.setRejectReason(rejectReason);
+        }
         shopMapper.updateById(shop);
         return Result.success();
     }

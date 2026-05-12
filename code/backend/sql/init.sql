@@ -35,6 +35,7 @@ CREATE TABLE `shop` (
   `description` TEXT COMMENT '店铺简介',
   `status` TINYINT DEFAULT 1 COMMENT '1=待审核 2=已通过 3=已拒绝 4=已禁用',
   `is_active` TINYINT DEFAULT 1 COMMENT '0=歇业 1=营业',
+  `reject_reason` VARCHAR(500) DEFAULT NULL COMMENT '拒绝原因',
   `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
   `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

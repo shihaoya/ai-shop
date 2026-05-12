@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getShops, auditShop } from '@/api/admin'
+import { message, Modal } from 'ant-design-vue'
 import { ShopStatus, ShopStatusText, ShopStatusClass } from '@/types/enums'
-import { message } from 'ant-design-vue'
 import type { Shop } from '@/types/api'
 
 const themeStore = useThemeStore()
@@ -16,6 +16,11 @@ onMounted(() => {
 const loading = ref(false)
 const shops = ref<Shop[]>([])
 const pagination = ref({ page: 1, size: 10, total: 0 })
+const keyword = ref('')
+const statusFilter = ref<number | undefined>(ShopStatus.PENDING)
+const rejectModalVisible = ref(false)
+const rejectReason = ref('')
+const currentRejectShopId = ref('')
 
 async function loadShops() {
   loading.value = true
@@ -33,14 +38,35 @@ async function loadShops() {
   }
 }
 
-async function handleAudit(shopId: string, status: number) {
-  try {
-    await auditShop(shopId, status)
-    message.success(status === ShopStatus.APPROVED ? '已通过审核' : '已拒绝')
-    loadShops()
-  } catch (e) {
-    throw e
+function handleAudit(shopId: string, status: number) {
+  if (status === ShopStatus.REJECTED) {
+    currentRejectShopId.value = shopId
+    rejectReason.value = ''
+    rejectModalVisible.value = true
+    return
   }
+  Modal.confirm({
+    title: '确认通过',
+    content: '确定要通过该店铺的申请吗？',
+    okText: '确认',
+    cancelText: '取消',
+    async onOk() {
+      await auditShop(shopId, status)
+      message.success('已通过')
+      loadShops()
+    },
+  })
+}
+
+async function handleRejectSubmit() {
+  if (!rejectReason.value.trim()) {
+    message.warning('请填写拒绝原因')
+    return
+  }
+  await auditShop(currentRejectShopId.value, ShopStatus.REJECTED, rejectReason.value.trim())
+  message.success('已拒绝')
+  rejectModalVisible.value = false
+  loadShops()
 }
 
 function getStatusTag(status: number) {
@@ -147,6 +173,33 @@ function formatDate(date?: string) {
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
+
+      <!-- 拒绝弹窗 -->
+      <div class="modal-overlay" v-if="rejectModalVisible" @click.self="rejectModalVisible = false">
+        <div class="reject-modal cyber-card">
+          <div class="modal-header">
+            <h3><i class="fas fa-times-circle" style="color:var(--red);margin-right:8px;"></i>拒绝店铺申请</h3>
+            <button class="modal-close" @click="rejectModalVisible = false"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>拒绝原因 <span class="required">*</span></label>
+              <textarea
+                v-model="rejectReason"
+                class="cyber-input"
+                placeholder="请输入拒绝原因，将告知店铺申请人"
+                rows="4"
+                maxlength="500"
+              ></textarea>
+              <span class="char-count">{{ rejectReason.length }}/500</span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="cyber-btn" @click="rejectModalVisible = false">取消</button>
+            <button class="cyber-btn-danger" @click="handleRejectSubmit">确认拒绝</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -220,5 +273,103 @@ function formatDate(date?: string) {
 .text-muted {
   color: var(--text-muted);
   font-size: 12px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reject-modal {
+  width: 420px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.reject-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.reject-modal .modal-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px;
+}
+
+.modal-close:hover { color: var(--text-primary); }
+
+.reject-modal .modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.form-group .required { color: var(--red); }
+
+.form-group textarea {
+  resize: none;
+  border-radius: 8px;
+}
+
+.char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.cyber-btn-danger {
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--red);
+  background: transparent;
+  color: var(--red);
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.cyber-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
 }
 </style>

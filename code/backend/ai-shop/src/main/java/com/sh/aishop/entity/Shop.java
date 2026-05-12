@@ -15,4 +15,5 @@ public class Shop extends BaseEntity<Shop> {
     private String description;
     private Integer status;
     private Integer isActive;
+    private String rejectReason;
 }
