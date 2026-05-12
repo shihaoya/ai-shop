@@ -36,7 +36,7 @@ function isActive(path: string): boolean {
 </script>
 
 <template>
-  <div class="admin-layout">
+  <div class="operator-layout">
     <!-- Header -->
     <header class="cyber-header">
       <div class="left">
@@ -100,9 +100,16 @@ function isActive(path: string): boolean {
 </template>
 
 <style scoped>
-.admin-layout {
+.operator-layout {
   min-height: 100vh;
   position: relative;
+}
+
+.main-content {
+  margin-left: calc(var(--sidebar-width, 200px) + 16px);
+  margin-top: 68px;
+  padding: 20px;
+  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :global(.cyber-sidebar.collapsed),

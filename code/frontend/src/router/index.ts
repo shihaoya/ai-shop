@@ -3,6 +3,9 @@ import type { RouteRecordRaw } from 'vue-router'
 import { setupRouterGuard } from './guards'
 
 const routes: RouteRecordRaw[] = [
+  // 根路径重定向到登录
+  { path: '/', redirect: '/login' },
+
   // 认证页（无布局，居中玻璃卡片）
   {
     path: '/login',

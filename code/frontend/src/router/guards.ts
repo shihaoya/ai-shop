@@ -22,7 +22,7 @@ export function setupRouterGuard(router: Router) {
     }
 
     // 已登录但状态异常（待审核/冻结）-> 登出并提示
-    if (token && userStore.status !== 2 && !to.meta.guest) {
+    if (token && userStore.userInfo && userStore.status !== 2 && !to.meta.guest) {
       if (userStore.status === 1) {
         // 待审核
       } else if (userStore.status === 3) {

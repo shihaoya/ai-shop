@@ -22,7 +22,15 @@ request.interceptors.response.use(
   (response) => {
     const res = response.data
     if (res.code !== 200) {
-      message.error(res.message || '请求失败')
+      // 认证令牌无效（1005）视为未登录，跳转登录页
+      if (res.code === 1005) {
+        const userStore = useUserStore()
+        userStore.logout()
+        router.push('/login')
+        message.error('登录已过期，请重新登录')
+      } else {
+        message.error(res.message || '请求失败')
+      }
       return Promise.reject(new Error(res.message))
     }
     return res

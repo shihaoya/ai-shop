@@ -105,6 +105,13 @@ function isActive(path: string): boolean {
   position: relative;
 }
 
+.main-content {
+  margin-left: calc(var(--sidebar-width, 200px) + 16px);
+  margin-top: 68px;
+  padding: 20px;
+  transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Ensure collapsed sidebar overflow is visible for tooltips */
 :global(.cyber-sidebar.collapsed),
 :global(.cyber-sidebar.collapsed .cyber-nav) {

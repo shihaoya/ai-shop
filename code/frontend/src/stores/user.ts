@@ -2,17 +2,23 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import type { UserInfo } from '@/types/api'
-
-interface LoginParams {
-  username: string
-  password: string
-}
+import { authApi } from '@/api/auth'
+import type { UserInfo, LoginParams } from '@/types/api'
 
 export const useUserStore = defineStore('user', () => {
   const router = useRouter()
+  const USER_INFO_KEY = 'user-info'
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref<UserInfo | null>(null)
+  const userInfo = ref<UserInfo | null>(
+    (() => {
+      try {
+        const saved = localStorage.getItem(USER_INFO_KEY)
+        return saved ? JSON.parse(saved) : null
+      } catch {
+        return null
+      }
+    })()
+  )
 
   const role = computed(() => userInfo.value?.role)
   const status = computed(() => userInfo.value?.status)
@@ -28,41 +34,16 @@ export const useUserStore = defineStore('user', () => {
 
   async function login(params: LoginParams) {
     try {
-      // 模拟登录（实际应调用 API）
-      // const res = await authApi.login(params)
-      // token.value = res.data.token
-      // userInfo.value = res.data.userInfo
-
-      // 模拟返回
-      if (params.username === 'admin' && params.password === 'admin123') {
-        token.value = 'mock-token-admin'
-        userInfo.value = {
-          id: '1',
-          username: 'admin',
-          nickname: '管理员',
-          role: 1,
-          status: 2,
-          points: 0,
-        }
-        localStorage.setItem('token', token.value)
-        message.success('登录成功')
-        router.push(homePath.value)
-      } else if (params.username && params.password) {
-        token.value = 'mock-token-user'
-        userInfo.value = {
-          id: '2',
-          username: params.username,
-          nickname: params.username,
-          role: 3,
-          status: 2,
-          points: 1000,
-        }
-        localStorage.setItem('token', token.value)
-        message.success('登录成功')
-        router.push(homePath.value)
-      } else {
-        message.error('用户名或密码错误')
-      }
+      const res = await authApi.login(params)
+      console.log('登录响应:', res)
+      token.value = res.data.token
+      userInfo.value = res.data.userinfo
+      console.log('userInfo after login:', userInfo.value)
+      console.log('homePath:', homePath.value)
+      localStorage.setItem('token', token.value)
+      localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo.value))
+      message.success('登录成功')
+      await router.push(homePath.value)
     } catch (error: any) {
       message.error(error.message || '登录失败')
     }
@@ -70,18 +51,20 @@ export const useUserStore = defineStore('user', () => {
 
   async function fetchUserInfo() {
     try {
-      // 模拟获取用户信息
-      // const res = await authApi.getUserInfo()
-      // userInfo.value = res.data
+      const res = await authApi.getUserInfo()
+      userInfo.value = res.data
+      localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo.value))
     } catch (error) {
       console.error('获取用户信息失败', error)
     }
   }
 
   function logout() {
+    authApi.logout().catch(console.error)
     token.value = ''
     userInfo.value = null
     localStorage.removeItem('token')
+    localStorage.removeItem(USER_INFO_KEY)
     router.push('/login')
   }
 

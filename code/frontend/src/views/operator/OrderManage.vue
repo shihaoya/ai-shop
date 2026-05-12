@@ -15,7 +15,7 @@ onMounted(() => {
     <div class="cyber-bg-orb" style="width:500px;height:500px;top:-150px;right:-150px;background:rgba(99,102,241,0.10);"></div>
     <div class="cyber-bg-orb" style="width:400px;height:400px;bottom:10%;left:-100px;background:rgba(236,72,153,0.06);"></div>
 
-    <main class="main-content">
+    <div class="page-content">
       <div class="page-head">
         <h2><span class="accent-line"></span>订单管理</h2>
       </div>
@@ -26,6 +26,6 @@ onMounted(() => {
           <p style="font-size:16px;">订单管理 - 功能开发中</p>
         </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
