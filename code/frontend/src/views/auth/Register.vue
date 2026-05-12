@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
+import { authApi } from '@/api/auth'
+import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
 
 const router = useRouter()
 
@@ -30,8 +32,17 @@ async function handleRegister() {
 
   loading.value = true
   try {
+    await authApi.register({
+      username: form.value.username,
+      nickname: form.value.nickname,
+      password: form.value.password,
+      confirmPassword: form.value.confirmPassword,
+      inviteCode: form.value.inviteCode,
+    })
     message.success('注册成功，请等待审核')
     router.push('/login')
+  } catch (error: any) {
+    message.error(error.message || '注册失败')
   } finally {
     loading.value = false
   }
@@ -39,8 +50,8 @@ async function handleRegister() {
 </script>
 
 <template>
-  <div id="page-login">
-    <!-- 背景 -->
+  <div id="page-register">
+    <!-- BG -->
     <div class="cyber-bg-grid"></div>
     <div class="cyber-bg-orb" style="width:400px;height:400px;top:-100px;right:-100px;background:rgba(99,102,241,0.12);"></div>
     <div class="cyber-bg-orb" style="width:300px;height:300px;bottom:10%;left:-80px;background:rgba(236,72,153,0.08);"></div>
@@ -124,11 +135,14 @@ async function handleRegister() {
         </div>
       </form>
     </div>
+
+    <!-- 主题切换按钮 -->
+    <ThemeToggleBtn />
   </div>
 </template>
 
 <style scoped>
-#page-login {
+#page-register {
   min-height: 100vh;
   display: flex;
   align-items: center;

@@ -33,7 +33,8 @@ request.interceptors.response.use(
       }
       return Promise.reject(new Error(res.message))
     }
-    return res
+    // 返回内部真实数据（解包装）
+    return res.data
   },
   (error) => {
     if (error.response?.status === 401) {

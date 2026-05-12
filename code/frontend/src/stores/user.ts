@@ -36,8 +36,8 @@ export const useUserStore = defineStore('user', () => {
     try {
       const res = await authApi.login(params)
       console.log('登录响应:', res)
-      token.value = res.data.token
-      userInfo.value = res.data.userinfo
+      token.value = res.token
+      userInfo.value = res.userinfo
       console.log('userInfo after login:', userInfo.value)
       console.log('homePath:', homePath.value)
       localStorage.setItem('token', token.value)
@@ -52,7 +52,7 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUserInfo() {
     try {
       const res = await authApi.getUserInfo()
-      userInfo.value = res.data
+      userInfo.value = res
       localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo.value))
     } catch (error) {
       console.error('获取用户信息失败', error)

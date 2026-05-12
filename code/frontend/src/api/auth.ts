@@ -1,20 +1,20 @@
 import request from './request'
-import type { ApiResult, LoginParams, RegisterParams, UserInfo } from '@/types/api'
+import type { LoginParams, RegisterParams, UserInfo } from '@/types/api'
 
 export const authApi = {
-  login(data: LoginParams) {
-    return request.post<ApiResult<{ token: string; userInfo: UserInfo }>>('/auth/login', data)
+  login(data: LoginParams): Promise<{ token: string; userinfo: UserInfo }> {
+    return request.post<{ token: string; userinfo: UserInfo }>('/auth/login', data) as any
   },
-  register(data: RegisterParams) {
-    return request.post<ApiResult<UserInfo>>('/auth/register', data)
+  register(data: RegisterParams): Promise<UserInfo> {
+    return request.post<UserInfo>('/auth/register', data) as any
   },
-  updatePassword(data: { oldPassword: string; newPassword: string }) {
-    return request.put<ApiResult<null>>('/auth/password', data)
+  updatePassword(data: { oldPassword: string; newPassword: string }): Promise<null> {
+    return request.put<null>('/auth/password', data) as any
   },
-  logout() {
-    return request.post<ApiResult<null>>('/auth/logout')
+  logout(): Promise<null> {
+    return request.post<null>('/auth/logout') as any
   },
-  getUserInfo() {
-    return request.get<ApiResult<UserInfo & { points?: number }>>('/auth/info')
+  getUserInfo(): Promise<UserInfo & { points?: number }> {
+    return request.get<UserInfo & { points?: number }>('/auth/info') as any
   },
 }
