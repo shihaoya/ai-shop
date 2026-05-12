@@ -45,9 +45,7 @@ const fetchData = async () => {
     } else {
       message.error('获取积分流水失败')
     }
-  } catch (e: any) {
-    console.error('获取积分流水失败:', e)
-    message.error(e?.message || (e as Error)?.message || '获取积分流水失败')
+  } catch (e) {
     throw e
   } finally {
     loading.value = false

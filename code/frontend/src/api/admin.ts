@@ -1,7 +1,7 @@
 import request from './request'
 import type { PageResult, PageRequest, Shop, UserInfo } from '@/types/api'
 
-type AdminListResponse<T> = { records: T[]; total: number; page: number; size: number }
+type AdminListResponse<T> = { list: T[]; total: number; page: number; pageSize: number }
 type InviteCodeItem = { id: string; code: string; role: number; creatorId: string; status: number; createdAt?: string }
 
 // 店铺列表
@@ -35,11 +35,11 @@ export function rejectUser(userId: string | number): Promise<null> {
 }
 
 // 获取邀请码
-export function getInviteCode(): Promise<InviteCodeItem[]> {
-  return request.get<InviteCodeItem[]>('/admin/invite-code') as any
+export function getInviteCode(): Promise<string | null> {
+  return request.get<string | null>('/admin/invite-code') as any
 }
 
 // 生成邀请码
-export function createInviteCode(): Promise<{ code: string }> {
-  return request.post<{ code: string }>('/admin/invite-code') as any
+export function createInviteCode(): Promise<string> {
+  return request.post<string>('/admin/invite-code') as any
 }

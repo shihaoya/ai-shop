@@ -1,7 +1,7 @@
 import request from './request'
 import type { PageRequest, Product, Order, Address, PointsLog, Message } from '@/types/api'
 
-type ListResponse<T> = { records: T[]; total: number; page: number; size: number }
+type ListResponse<T> = { list: T[]; total: number; page: number; size: number }
 
 // ============ 商品 ============
 export function getProducts(params: PageRequest): Promise<ListResponse<Product>> {

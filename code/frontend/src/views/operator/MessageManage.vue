@@ -31,9 +31,7 @@ async function loadMessages() {
       id: String(m.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    console.error('加载消息列表失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载失败')
+  } catch (e) {
     throw e
   } finally {
     loading.value = false

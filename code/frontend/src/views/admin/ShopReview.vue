@@ -20,13 +20,13 @@ async function loadShops() {
   loading.value = true
   try {
     const res = await getShops({ page: pagination.value.page, size: pagination.value.size })
-    shops.value = res.records.map(s => ({
+    shops.value = res.list.map(s => ({
       ...s,
       id: String(s.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e.message || '加载失败')
+  } catch (e) {
+    throw e
   } finally {
     loading.value = false
   }
@@ -37,8 +37,8 @@ async function handleAudit(shopId: string, status: number) {
     await auditShop(shopId, status)
     message.success(status === 1 ? '已通过审核' : '已拒绝')
     loadShops()
-  } catch (e: any) {
-    message.error(e.message || '操作失败')
+  } catch (e) {
+    throw e
   }
 }
 

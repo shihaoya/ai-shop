@@ -6,10 +6,10 @@ export interface ApiResult<T = any> {
 }
 
 export interface PageResult<T> {
-  records: T[]
+  list: T[]
   total: number
   page: number
-  size: number
+  pageSize: number
 }
 
 // 分页请求

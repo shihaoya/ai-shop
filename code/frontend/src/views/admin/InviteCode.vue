@@ -1,163 +1,111 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getInviteCode, createInviteCode } from '@/api/admin'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 
 const themeStore = useThemeStore()
-
-onMounted(() => {
-  themeStore.init()
-  loadCodes()
-})
+themeStore.init()
 
 const loading = ref(false)
-const codes = ref<{ id: string; code: string; role: number; creatorId: string; status: number; createdAt?: string }[]>([])
+const currentCode = ref<string | null>(null)
+const createdAt = ref<string | null>(null)
 
 async function loadCodes() {
   loading.value = true
   try {
-    const res = await getInviteCode()
-    codes.value = res || []
+    const code = await getInviteCode()
+    currentCode.value = code || null
+    createdAt.value = code ? new Date().toISOString() : null
   } catch (e: any) {
-    message.error(e.message || '加载失败')
+    message.error(e?.message || '加载失败')
   } finally {
     loading.value = false
   }
 }
 
-async function handleCreate() {
-  try {
-    const res = await createInviteCode()
-    message.success('邀请码生成成功')
-    codes.value.unshift({
-      id: Date.now().toString(),
-      code: res.code || '',
-      role: 1,
-      creatorId: '',
-      status: 0,
-      createdAt: new Date().toISOString()
+async function handleGenerate() {
+  if (currentCode.value) {
+    Modal.confirm({
+      title: '确认生成新邀请码？',
+      content: '生成后旧邀请码将立即失效，是否继续？',
+      okText: '确认生成',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk() {
+        doGenerate()
+      },
     })
-  } catch (e: any) {
-    message.error(e.message || '生成失败')
+  } else {
+    await doGenerate()
   }
 }
 
-function copyCode(code: string) {
-  navigator.clipboard.writeText(code).then(() => {
+async function doGenerate() {
+  loading.value = true
+  try {
+    const code = await createInviteCode()
+    currentCode.value = code
+    createdAt.value = new Date().toISOString()
+    message.success('邀请码已生成')
+  } catch (e: any) {
+    message.error(e?.message || '生成失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+function copyCode() {
+  if (!currentCode.value) return
+  navigator.clipboard.writeText(currentCode.value).then(() => {
     message.success('已复制到剪贴板')
   }).catch(() => {
     message.error('复制失败')
   })
 }
 
-function getStatusTag(status: number) {
-  const map: Record<number, { text: string; class: string }> = {
-    0: { text: '未使用', class: 'green' },
-    1: { text: '已使用', class: 'gray' },
-  }
-  return map[status] || { text: '未知', class: 'gray' }
-}
-
-function formatDate(date?: string) {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('zh-CN')
-}
+loadCodes()
 </script>
 
 <template>
   <div id="page-invite-code">
-    <!-- BG -->
     <div class="cyber-bg-grid"></div>
     <div class="cyber-bg-orb" style="width:500px;height:500px;top:-150px;right:-150px;background:rgba(99,102,241,0.10);"></div>
     <div class="cyber-bg-orb" style="width:400px;height:400px;bottom:10%;left:-100px;background:rgba(236,72,153,0.06);"></div>
 
     <div class="page-content">
-      <!-- Page Head -->
       <div class="page-head">
         <h2><span class="accent-line"></span>邀请码管理</h2>
-        <div class="actions">
-          <button class="cyber-btn" @click="loadCodes">
-            <i class="fas fa-sync-alt" style="margin-right:5px;"></i>刷新
-          </button>
-          <button class="cyber-btn-primary" @click="handleCreate">
-            <i class="fas fa-plus" style="margin-right:5px;"></i>生成邀请码
-          </button>
-        </div>
       </div>
 
-      <!-- Stats Row -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
-          <div class="stat-info">
-            <span class="stat-num">{{ codes.length }}</span>
-            <span class="stat-label">总邀请码</span>
+      <!-- 邀请码卡片 -->
+      <div class="invite-card" :class="{ 'has-code': !!currentCode }">
+        <div class="invite-card-inner">
+          <div class="invite-icon">
+            <i class="fas fa-qrcode"></i>
           </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-          <div class="stat-info">
-            <span class="stat-num">{{ codes.filter(c => c.status === 0).length }}</span>
-            <span class="stat-label">未使用</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon orange"><i class="fas fa-check"></i></div>
-          <div class="stat-info">
-            <span class="stat-num">{{ codes.filter(c => c.status === 1).length }}</span>
-            <span class="stat-label">已使用</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Table Card -->
-      <div class="table-card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>邀请码</th>
-                <th>状态</th>
-                <th>使用者</th>
-                <th>创建时间</th>
-                <th>操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in codes" :key="item.id">
-                <td>
-                  <code class="code-cell" @click="copyCode(item.code)">
-                    {{ item.code }}
-                    <i class="fas fa-copy copy-icon"></i>
-                  </code>
-                </td>
-                <td>
-                  <span class="status-tag" :class="getStatusTag(item.status).class">
-                    <span class="dot"></span>{{ getStatusTag(item.status).text }}
-                  </span>
-                </td>
-                <td>-</td>
-                <td class="time-cell">{{ formatDate(item.createdAt) }}</td>
-                <td>
-                  <button class="action-btn" title="复制" @click="copyCode(item.code)">
-                    <i class="fas fa-copy"></i>
-                  </button>
-                </td>
-              </tr>
-              <tr v-if="codes.length === 0 && !loading">
-                <td colspan="5" class="empty-cell">
-                  <i class="fas fa-ticket-alt" style="font-size:32px;opacity:0.3;"></i>
-                  <p>暂无邀请码，点击上方按钮生成</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <template v-if="currentCode">
+            <div class="invite-code-display">{{ currentCode }}</div>
+            <div v-if="createdAt" class="invite-meta">生成于 {{ new Date(createdAt).toLocaleString('zh-CN') }}</div>
+            <div class="invite-actions">
+              <button class="cyber-btn" @click="copyCode">
+                <i class="fas fa-copy"></i>复制邀请码
+              </button>
+              <button class="cyber-btn-primary" @click="handleGenerate" :disabled="loading">
+                <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>生成新码
+              </button>
+            </div>
+          </template>
 
-        <!-- Loading -->
-        <div v-if="loading" class="loading-mask">
-          <i class="fas fa-spinner fa-spin"></i>
+          <template v-else>
+            <div class="invite-empty">暂无可用邀请码</div>
+            <div class="invite-actions">
+              <button class="cyber-btn-primary" @click="handleGenerate" :disabled="loading">
+                <i class="fas fa-plus" :class="{ 'fa-spin': loading }"></i>生成邀请码
+              </button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -167,112 +115,159 @@ function formatDate(date?: string) {
 <style scoped>
 #page-invite-code {
   min-height: 100vh;
+  padding: 24px;
+}
+.cyber-bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+.cyber-bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+.page-content {
   position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
 }
-
-.stats-row {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 18px;
+.page-head {
+  margin-bottom: 32px;
 }
-
-.stat-card {
-  background: linear-gradient(145deg, var(--bg-card), var(--bg-surface));
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius);
-  padding: 16px 20px;
+.page-head h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 14px;
-  flex: 1;
+  gap: 10px;
 }
-
-.stat-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-sm);
-  background: rgba(var(--accent-rgb), 0.10);
-  color: var(--accent-light);
+.accent-line {
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 2px;
+}
+.invite-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 48px 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease-out;
 }
-
-.stat-icon.green {
-  background: rgba(16, 185, 129, 0.10);
-  color: var(--green);
+.invite-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: borderGlow 3s ease-in-out infinite;
 }
-
-.stat-icon.orange {
-  background: rgba(245, 158, 11, 0.10);
-  color: var(--orange);
+.invite-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.12);
 }
-
-.stat-info {
+.invite-card.has-code {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.10);
+}
+.invite-card-inner {
+  text-align: center;
   display: flex;
   flex-direction: column;
-}
-
-.stat-num {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.code-cell {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--accent-light);
-  cursor: pointer;
-  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 10px;
-  background: rgba(var(--accent-rgb), 0.08);
-  border-radius: var(--radius-xs);
-  border: 1px solid rgba(var(--accent-rgb), 0.15);
+  gap: 16px;
+  width: 100%;
 }
-
-.code-cell:hover {
-  background: rgba(var(--accent-rgb), 0.15);
-}
-
-.copy-icon {
-  font-size: 12px;
-  opacity: 0.6;
-}
-
-.time-cell {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.empty-cell {
-  text-align: center;
-  padding: 40px !important;
-  color: var(--text-muted);
-}
-
-.empty-cell i {
-  display: block;
-  margin-bottom: 8px;
-}
-
-.loading-mask {
-  position: absolute;
-  inset: 0;
-  background: rgba(7, 8, 22, 0.6);
+.invite-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(99,102,241,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  color: var(--accent);
+  color: #6366f1;
+  margin-bottom: 8px;
+}
+.invite-code-display {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #6366f1;
+  font-family: 'Courier New', monospace;
+  background: rgba(99,102,241,0.06);
+  border: 1px dashed rgba(99,102,241,0.3);
+  border-radius: 8px;
+  padding: 16px 32px;
+  user-select: all;
+}
+.invite-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.invite-empty {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+.invite-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.cyber-btn,
+.cyber-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.cyber-btn:hover {
+  border-color: rgba(99,102,241,0.4);
+  color: #6366f1;
+}
+.cyber-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: transparent;
+  color: #fff;
+}
+.cyber-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.cyber-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 </style>

@@ -26,13 +26,14 @@ async function loadMessages() {
       page: pagination.value.page,
       size: pagination.value.size
     })
-    messages.value = res.records.map(m => ({
+    messages.value = res.list.map(m => ({
       ...m,
       id: String(m.id)
     }))
     pagination.value.total = res.total
   } catch (e: any) {
-    message.error(e.message || '加载失败')
+    message.error(e?.message || (e as Error)?.message || '加载失败')
+    throw e
   } finally {
     loading.value = false
   }
@@ -46,7 +47,8 @@ async function handleMessageClick(msg: Message) {
       // 刷新列表
       await loadMessages()
     } catch (e: any) {
-      message.error(e.message || '标记已读失败')
+      message.error(e?.message || (e as Error)?.message || '标记已读失败')
+      throw e
     }
   }
 }

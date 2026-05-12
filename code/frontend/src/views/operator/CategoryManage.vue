@@ -23,9 +23,7 @@ async function loadCategories() {
       ...c,
       id: String(c.id)
     }))
-  } catch (e: any) {
-    console.error('加载分类失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载分类失败')
+  } catch (e) {
     throw e
   } finally {
     loading.value = false
@@ -89,9 +87,7 @@ function handleDelete(category: Category) {
         await deleteCategory(category.id)
         message.success('删除成功')
         loadCategories()
-      } catch (e: any) {
-        console.error('删除分类失败:', e)
-        message.error(e?.message || (e as Error)?.message || '删除失败')
+      } catch (e) {
         throw e
       }
     }

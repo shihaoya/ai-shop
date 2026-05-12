@@ -28,7 +28,6 @@ async function loadUsers() {
     pagination.value.total = res.total
   } catch (e: any) {
     console.error('加载待审核用户列表失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载失败')
     throw e
   } finally {
     loading.value = false
@@ -40,9 +39,7 @@ async function handleApprove(userId: string) {
     await approveUser(userId)
     message.success('已通过审核')
     loadUsers()
-  } catch (e: any) {
-    console.error('审批通过操作失败:', e)
-    message.error(e?.message || (e as Error)?.message || '操作失败')
+  } catch (e) {
     throw e
   }
 }
@@ -52,9 +49,7 @@ async function handleReject(userId: string) {
     await rejectUser(userId)
     message.success('已拒绝')
     loadUsers()
-  } catch (e: any) {
-    console.error('拒绝用户操作失败:', e)
-    message.error(e?.message || (e as Error)?.message || '操作失败')
+  } catch (e) {
     throw e
   }
 }

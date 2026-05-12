@@ -44,8 +44,9 @@ export const useUserStore = defineStore('user', () => {
       localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo.value))
       message.success('登录成功')
       await router.push(homePath.value)
-    } catch (error: any) {
-      message.error(error.message || '登录失败')
+    } catch (error) {
+      // 错误已在 request 拦截器中提示，此处不再重复提示
+      // 仅阻止 loading 状态即可
     }
   }
 

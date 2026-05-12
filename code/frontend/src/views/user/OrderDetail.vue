@@ -21,21 +21,6 @@ const order = ref<Order | null>(null)
 // 订单ID（雪花ID转String）
 const orderId = computed(() => String(route.params.id))
 
-async function loadOrderDetail() {
-  loading.value = true
-  try {
-    const res = await getOrder(orderId.value)
-    order.value = {
-      ...res,
-      id: String(res.id)
-    }
-  } catch (e: any) {
-    message.error(e.message || '加载订单详情失败')
-  } finally {
-    loading.value = false
-  }
-}
-
 // 状态信息映射
 const statusInfo = computed(() => {
   const map: Record<number, { text: string; tagClass: string; icon: string }> = {
@@ -54,6 +39,19 @@ const canCancel = computed(() => order.value?.status === 1)
 // 是否可确认收货（状态3可确认）
 const canComplete = computed(() => order.value?.status === 3)
 
+async function loadOrderDetail() {
+  loading.value = true
+  try {
+    const res = await getOrder(orderId.value)
+    order.value = {
+      ...res,
+      id: String(res.id)
+    }
+  } catch (e) {
+    throw e
+  }
+}
+
 // 取消订单
 async function handleCancel() {
   if (!order.value) return
@@ -61,8 +59,8 @@ async function handleCancel() {
     await closeOrder(orderId.value)
     message.success('订单已取消')
     loadOrderDetail()
-  } catch (e: any) {
-    message.error(e.message || '取消订单失败')
+  } catch (e) {
+    throw e
   }
 }
 
@@ -73,8 +71,8 @@ async function handleComplete() {
     await completeOrder(orderId.value)
     message.success('已确认收货')
     loadOrderDetail()
-  } catch (e: any) {
-    message.error(e.message || '确认收货失败')
+  } catch (e) {
+    throw e
   }
 }
 

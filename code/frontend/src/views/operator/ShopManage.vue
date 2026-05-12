@@ -51,10 +51,8 @@ async function loadMyShop() {
     } else {
       shop.value = null
     }
-  } catch (e: any) {
-    console.error('加载失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载失败')
-    throw e // 让错误继续传播，不要静默吞掉
+  } catch (e) {
+    throw e
   } finally {
     loading.value = false
   }
@@ -76,9 +74,7 @@ async function handleApply() {
     message.success('申请已提交，请等待审核')
     applyModalVisible.value = false
     loadMyShop()
-  } catch (e: any) {
-    console.error('提交店铺申请失败:', e)
-    message.error(e?.message || (e as Error)?.message || '申请失败')
+  } catch (e) {
     throw e
   } finally {
     applyLoading.value = false

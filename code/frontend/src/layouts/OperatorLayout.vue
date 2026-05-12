@@ -1,38 +1,18 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
+import { RouterView } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
 import { useSidebarStore } from '@/stores/sidebar'
+import { useSidebarMenu } from '@/composables/useSidebarMenu'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
 
 const themeStore = useThemeStore()
 const sidebarStore = useSidebarStore()
-const route = useRoute()
+const { items: navItems, currentLabel, isActive } = useSidebarMenu('/operator')
 
 onMounted(() => {
   themeStore.init()
 })
-
-interface NavItem {
-  label: string
-  icon: string
-  badge?: string
-  path: string
-}
-
-const navItems: NavItem[] = [
-  { label: '我的店铺', icon: 'fa-store', path: '/operator/shop' },
-  { label: '商品管理', icon: 'fa-box', path: '/operator/products' },
-  { label: '订单管理', icon: 'fa-receipt', badge: '5', path: '/operator/orders' },
-  { label: '用户管理', icon: 'fa-users', path: '/operator/users' },
-  { label: '分类管理', icon: 'fa-tags', path: '/operator/categories' },
-  { label: '消息中心', icon: 'fa-envelope', path: '/operator/messages' },
-  { label: '邀请码', icon: 'fa-qrcode', path: '/operator/invite-code' },
-]
-
-function isActive(path: string): boolean {
-  return route.path.startsWith(path)
-}
 </script>
 
 <template>
@@ -42,7 +22,7 @@ function isActive(path: string): boolean {
       <div class="left">
         <div class="brand">P</div>
         <div class="breadcrumb">
-          {{ navItems.find(n => isActive(n.path))?.label || '店铺运营' }}
+          {{ currentLabel || '店铺运营' }}
         </div>
       </div>
       <div class="right">
@@ -80,7 +60,6 @@ function isActive(path: string): boolean {
           <div class="active-glow" :style="{ display: isActive(item.path) ? 'block' : 'none' }"></div>
           <i :class="['fas', item.icon, 'icon']"></i>
           <span class="label">{{ item.label }}</span>
-          <span v-if="item.badge" class="badge">{{ item.badge }}</span>
         </RouterLink>
       </nav>
     </aside>

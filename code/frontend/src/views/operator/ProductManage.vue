@@ -58,9 +58,7 @@ async function handleToggleStatus(product: Product) {
     await updateProduct(product.id, { status: newStatus })
     message.success(newStatus === 1 ? '上架成功' : '下架成功')
     loadProducts()
-  } catch (e: any) {
-    console.error('切换商品上下架状态失败:', e)
-    message.error(e?.message || (e as Error)?.message || '操作失败')
+  } catch (e) {
     throw e
   }
 }
@@ -70,9 +68,7 @@ async function handleDelete(productId: string) {
     await deleteProduct(productId)
     message.success('删除成功')
     loadProducts()
-  } catch (e: any) {
-    console.error('删除商品失败:', e)
-    message.error(e?.message || (e as Error)?.message || '删除失败')
+  } catch (e) {
     throw e
   }
 }

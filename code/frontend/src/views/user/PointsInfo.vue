@@ -24,8 +24,8 @@ async function loadPoints() {
   try {
     const res = await getPoints()
     currentPoints.value = res.points
-  } catch (e: any) {
-    message.error(e.message || '获取积分失败')
+  } catch (e) {
+    throw e
   } finally {
     pointsLoading.value = false
   }
@@ -38,13 +38,14 @@ async function loadPointsLog() {
       page: pagination.value.page,
       size: pagination.value.size
     })
-    pointsLog.value = res.records.map(log => ({
+    pointsLog.value = res.list.map(log => ({
       ...log,
       id: String(log.id)
     }))
     pagination.value.total = res.total
   } catch (e: any) {
-    message.error(e.message || '获取积分记录失败')
+    message.error(e?.message || (e as Error)?.message || '获取积分记录失败')
+    throw e
   } finally {
     loading.value = false
   }

@@ -86,8 +86,6 @@ async function loadProduct() {
       message.error('加载商品信息失败')
     }
   } catch (e) {
-    console.error('加载商品失败', e)
-    message.error('加载商品信息失败')
     throw e
   } finally {
     initLoading.value = false

@@ -1,38 +1,18 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
+import { RouterView } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
 import { useSidebarStore } from '@/stores/sidebar'
+import { useSidebarMenu } from '@/composables/useSidebarMenu'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
 
 const themeStore = useThemeStore()
 const sidebarStore = useSidebarStore()
-const route = useRoute()
+const { items: navItems, currentLabel, isActive } = useSidebarMenu('/admin')
 
 onMounted(() => {
   themeStore.init()
 })
-
-interface NavItem {
-  label: string
-  icon: string
-  badge?: string
-  path: string
-}
-
-const navItems: NavItem[] = [
-  { label: '店铺管理', icon: 'fa-store', badge: '3', path: '/admin/shops' },
-  { label: '用户管理', icon: 'fa-users', path: '/admin/users' },
-  { label: '商品管理', icon: 'fa-box', path: '/admin/products' },
-  { label: '订单管理', icon: 'fa-receipt', badge: '12', path: '/admin/orders' },
-  { label: '分类管理', icon: 'fa-tags', path: '/admin/categories' },
-  { label: '消息中心', icon: 'fa-envelope', path: '/admin/messages' },
-  { label: '邀请码', icon: 'fa-qrcode', path: '/admin/invites' },
-]
-
-function isActive(path: string): boolean {
-  return route.path.startsWith(path)
-}
 </script>
 
 <template>
@@ -80,7 +60,6 @@ function isActive(path: string): boolean {
           <div class="active-glow" :style="{ display: isActive(item.path) ? 'block' : 'none' }"></div>
           <i :class="['fas', item.icon, 'icon']"></i>
           <span class="label">{{ item.label }}</span>
-          <span v-if="item.badge" class="badge">{{ item.badge }}</span>
         </RouterLink>
       </nav>
     </aside>

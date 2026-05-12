@@ -19,9 +19,7 @@ async function loadCodes() {
   try {
     const res = await getInviteCode()
     codes.value = res || []
-  } catch (e: any) {
-    console.error('加载邀请码列表失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载失败')
+  } catch (e) {
     throw e
   } finally {
     loading.value = false

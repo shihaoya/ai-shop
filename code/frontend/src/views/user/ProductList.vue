@@ -25,13 +25,13 @@ async function loadProducts() {
       page: pagination.value.page,
       size: pagination.value.size
     })
-    products.value = res.records.map(p => ({
+    products.value = res.list.map(p => ({
       ...p,
       id: String(p.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e.message || '加载失败')
+  } catch (e) {
+    throw e
   } finally {
     loading.value = false
   }

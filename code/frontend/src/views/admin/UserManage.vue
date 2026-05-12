@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getUsers, changeUserStatus, approveUser, rejectUser } from '@/api/admin'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import type { UserInfo } from '@/types/api'
 
 const themeStore = useThemeStore()
@@ -29,13 +29,13 @@ async function loadUsers() {
     if (statusFilter.value !== undefined) params.status = statusFilter.value
 
     const res = await getUsers(params)
-    users.value = res.records.map(u => ({
+    users.value = res.list.map(u => ({
       ...u,
       id: String(u.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e.message || '加载失败')
+  } catch (e) {
+    throw e
   } finally {
     loading.value = false
   }
@@ -55,33 +55,46 @@ function handleReset() {
 }
 
 async function handleStatusChange(userId: string, status: number) {
-  try {
-    await changeUserStatus(userId, status)
-    message.success('状态已更新')
-    loadUsers()
-  } catch (e: any) {
-    message.error(e.message || '操作失败')
-  }
+  const actionText = status === 3 ? '冻结' : '启用'
+  Modal.confirm({
+    title: `确认${actionText}`,
+    content: `确定要${actionText}该用户吗？`,
+    okText: '确认',
+    cancelText: '取消',
+    async onOk() {
+      await changeUserStatus(userId, status)
+      message.success('状态已更新')
+      loadUsers()
+    }
+  })
 }
 
 async function handleApprove(userId: string) {
-  try {
-    await approveUser(userId)
-    message.success('已审批通过')
-    loadUsers()
-  } catch (e: any) {
-    message.error(e.message || '操作失败')
-  }
+  Modal.confirm({
+    title: '确认审批通过',
+    content: '确定要通过该用户的注册申请吗？',
+    okText: '确认',
+    cancelText: '取消',
+    async onOk() {
+      await approveUser(userId)
+      message.success('已审批通过')
+      loadUsers()
+    }
+  })
 }
 
 async function handleReject(userId: string) {
-  try {
-    await rejectUser(userId)
-    message.success('已拒绝')
-    loadUsers()
-  } catch (e: any) {
-    message.error(e.message || '操作失败')
-  }
+  Modal.confirm({
+    title: '确认拒绝',
+    content: '确定要拒绝该用户的注册申请吗？',
+    okText: '确认',
+    cancelText: '取消',
+    async onOk() {
+      await rejectUser(userId)
+      message.success('已拒绝')
+      loadUsers()
+    }
+  })
 }
 
 function getRoleTag(role: number) {

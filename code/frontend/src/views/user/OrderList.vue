@@ -37,13 +37,13 @@ async function loadOrders() {
       size: pagination.value.size,
       status: selectedStatus.value
     })
-    orders.value = res.records.map(o => ({
+    orders.value = res.list.map(o => ({
       ...o,
       id: String(o.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e.message || '加载失败')
+  } catch (e) {
+    throw e
   } finally {
     loading.value = false
   }

@@ -33,8 +33,8 @@ async function loadAddresses() {
   try {
     const res = await getAddresses()
     addressList.value = res.map(toAddressItem)
-  } catch {
-    message.error('获取地址失败')
+  } catch (e) {
+    throw e
   } finally {
     loading.value = false
   }
