@@ -5,6 +5,7 @@ import { getMyShop, applyShop, changeShopStatus } from '@/api/operator'
 import { message, Modal } from 'ant-design-vue'
 import type { Shop } from '@/types/api'
 import { useOperatorShop } from '@/composables/useOperatorShop'
+import { ShopStatus, ShopStatusText, ShopStatusClass, ShopActiveStatus, ShopActiveStatusText, ShopActiveStatusClass } from '@/types/enums'
 
 const { setHasShop } = useOperatorShop()
 
@@ -21,24 +22,11 @@ const applyModalVisible = ref(false)
 const applyForm = ref({ name: '', description: '' })
 const applyLoading = ref(false)
 
-// 店铺审核状态 0=待审核, 1=通过, 2=拒绝
-const reviewStatusMap: Record<number, { text: string; class: string }> = {
-  0: { text: '待审核', class: 'orange' },
-  1: { text: '已通过', class: 'green' },
-  2: { text: '已拒绝', class: 'red' },
-}
-
-// 营业状态 isActive: 0=歇业, 1=营业
-const activeStatusMap: Record<number, { text: string; class: string }> = {
-  0: { text: '歇业中', class: 'gray' },
-  1: { text: '营业中', class: 'green' },
-}
-
 // 判断店铺状态
 const shopStatus = computed(() => {
   if (!shop.value) return 'none' // 无店铺
-  if (shop.value.status === 0) return 'pending' // 待审核
-  if (shop.value.status === 2) return 'rejected' // 被拒绝
+  if (shop.value.status === ShopStatus.PENDING) return 'pending' // 待审核
+  if (shop.value.status === ShopStatus.REJECTED) return 'rejected' // 被拒绝
   return 'approved' // 已通过
 })
 
@@ -184,15 +172,15 @@ function handleToggleStatus() {
           <div class="shop-title">
             <h3>{{ shop?.name }}</h3>
             <div class="shop-status-line">
-              <span class="status-tag" :class="shop?.status === 1 ? activeStatusMap[shop?.isActive ?? 0].class : reviewStatusMap[shop?.status ?? 0].class">
-                <i :class="shop?.status === 1
-                  ? (shop?.isActive === 1 ? 'fas fa-power-off' : 'fas fa-moon')
-                  : (shop?.status === 0 ? 'fas fa-hourglass-half' : 'fas fa-times-circle')"
+              <span class="status-tag" :class="shop?.status === ShopStatus.APPROVED ? (ShopActiveStatusClass[shop!.isActive] ?? '') : (ShopStatusClass[shop!.status] ?? '')">
+                <i :class="shop?.status === ShopStatus.APPROVED
+                  ? (shop!.isActive === ShopActiveStatus.OPEN ? 'fas fa-power-off' : 'fas fa-moon')
+                  : (shop!.status === ShopStatus.PENDING ? 'fas fa-hourglass-half' : 'fas fa-times-circle')"
                    style="margin-right:5px;"></i>
-                {{ shop?.status === 1 ? activeStatusMap[shop?.isActive ?? 0].text : reviewStatusMap[shop?.status ?? 0].text }}
+                {{ shop?.status === ShopStatus.APPROVED ? (ShopActiveStatusText[shop!.isActive] ?? '') : (ShopStatusText[shop!.status] ?? '') }}
               </span>
-              <span v-if="shop?.status === 0" class="hint-text">等待管理员审核</span>
-              <span v-if="shop?.status === 2" class="hint-text error">审核未通过</span>
+              <span v-if="shop?.status === ShopStatus.PENDING" class="hint-text">等待管理员审核</span>
+              <span v-if="shop?.status === ShopStatus.REJECTED" class="hint-text error">审核未通过</span>
             </div>
           </div>
         </div>
@@ -212,19 +200,19 @@ function handleToggleStatus() {
           </div>
         </div>
 
-        <div class="shop-actions" v-if="shop?.status === 1">
+        <div class="shop-actions" v-if="shop?.status === ShopStatus.APPROVED">
           <button
             class="cyber-btn-primary"
             @click="handleToggleStatus"
-            :class="shop?.isActive === 1 ? 'cyber-btn-warning' : 'cyber-btn-success'"
+            :class="shop?.isActive === ShopActiveStatus.OPEN ? 'cyber-btn-warning' : 'cyber-btn-success'"
           >
-            <i :class="shop?.isActive === 1 ? 'fas fa-moon' : 'fas fa-power-off'" style="margin-right:5px;"></i>
-            {{ shop?.isActive === 1 ? '设置为歇业' : '设置为营业' }}
+            <i :class="shop?.isActive === ShopActiveStatus.OPEN ? 'fas fa-moon' : 'fas fa-power-off'" style="margin-right:5px;"></i>
+            {{ shop?.isActive === ShopActiveStatus.OPEN ? '设置为歇业' : '设置为营业' }}
           </button>
         </div>
 
-        <div v-if="shop?.status !== 1" class="shop-actions" style="margin-top:16px;">
-          <button v-if="shop?.status === 2" class="cyber-btn-primary" @click="openApplyModal">
+        <div v-if="shop?.status !== ShopStatus.APPROVED" class="shop-actions" style="margin-top:16px;">
+          <button v-if="shop?.status === ShopStatus.REJECTED" class="cyber-btn-primary" @click="openApplyModal">
             <i class="fas fa-redo" style="margin-right:5px;"></i>重新申请
           </button>
         </div>

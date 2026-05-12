@@ -70,13 +70,17 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> auditShop(Long shopId, Integer status) {
+    public Result<?> auditShop(Long shopId, Integer statusCode) {
         Shop shop = shopMapper.selectById(shopId);
         if (shop == null) {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
         }
 
-        shop.setStatus(status);
+        ShopStatus status = ShopStatus.fromCode(statusCode);
+        if (status == null) {
+            return Result.fail(ResultCode.FAIL, "无效的审核状态");
+        }
+        shop.setStatus(status.getCode());
         shopMapper.updateById(shop);
         return Result.success();
     }

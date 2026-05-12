@@ -52,7 +52,9 @@ export interface Shop {
   description?: string
   ownerId?: string
   ownerName?: string
-  status: number     // 0=待审核, 1=通过, 2=拒绝
+  operatorId?: string
+  operatorName?: string
+  status: number     // 1=待审核, 2=通过, 3=拒绝, 4=禁用
   isActive: number   // 0=歇业, 1=营业
   createdAt?: string
   updatedAt?: string

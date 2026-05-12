@@ -82,11 +82,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> changeShopStatus(Long operatorId, Integer isActive) {
-        Shop shop = shopMapper.selectOne(new LambdaQueryWrapper<Shop>()
-                .eq(Shop::getOperatorId, operatorId)
-                .eq(Shop::getDeleted, 0));
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         shop.setIsActive(isActive);
@@ -96,9 +94,9 @@ public class OperatorService {
 
     // ============ 分类管理 ============
     public Result<?> getCategories(Long operatorId) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         List<Category> categories = categoryMapper.selectList(new LambdaQueryWrapper<Category>()
@@ -119,9 +117,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> createCategory(Long operatorId, String name, Integer sort) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Category category = new Category();
@@ -136,9 +134,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> updateCategory(Long categoryId, Long operatorId, String name, Integer sort) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Category category = categoryMapper.selectById(categoryId);
@@ -155,9 +153,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> deleteCategory(Long categoryId, Long operatorId) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Category category = categoryMapper.selectById(categoryId);
@@ -171,9 +169,9 @@ public class OperatorService {
 
     // ============ 商品管理 ============
     public Result<?> getProducts(Long operatorId, PageRequest pageRequest) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
@@ -195,9 +193,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> createProduct(Long operatorId, Map<String, Object> params) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Product product = new Product();
@@ -211,9 +209,9 @@ public class OperatorService {
     }
 
     public Result<?> getProduct(Long operatorId, Long productId) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Product product = productMapper.selectById(productId);
@@ -226,9 +224,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> updateProduct(Long operatorId, Long productId, Map<String, Object> params) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Product product = productMapper.selectById(productId);
@@ -243,9 +241,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> deleteProduct(Long operatorId, Long productId) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         Product product = productMapper.selectById(productId);
@@ -293,9 +291,9 @@ public class OperatorService {
 
     // ============ 订单管理 ============
     public Result<?> getOrders(Long operatorId, PageRequest pageRequest, Integer status) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
@@ -408,9 +406,9 @@ public class OperatorService {
 
     // ============ 用户管理 ============
     public Result<?> getUsers(Long operatorId, PageRequest pageRequest) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         // 查找属于该店铺的普通用户
@@ -451,9 +449,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> adjustPoints(Long operatorId, Long userId, Integer amount, String remark) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         User user = userMapper.selectById(userId);
@@ -493,9 +491,9 @@ public class OperatorService {
     }
 
     public Result<?> getPointsLog(Long operatorId, Long userId, PageRequest pageRequest) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         LambdaQueryWrapper<Points> wrapper = new LambdaQueryWrapper<>();
@@ -525,9 +523,9 @@ public class OperatorService {
 
     @Transactional
     public Result<?> approveUser(Long operatorId, Long userId) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         User user = userMapper.selectById(userId);
@@ -584,9 +582,9 @@ public class OperatorService {
     // ============ 创建/导入用户 ============
     @Transactional
     public Result<?> createUser(Long operatorId, String username, String nickname, String password) {
-        Shop shop = getShopByOperatorId(operatorId);
+        Shop shop = getApprovedShop(operatorId);
         if (shop == null) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
         User exist = userMapper.selectOne(new LambdaQueryWrapper<User>()
@@ -655,7 +653,7 @@ public class OperatorService {
         return shopMapper.selectOne(new LambdaQueryWrapper<Shop>()
                 .eq(Shop::getOperatorId, operatorId)
                 .eq(Shop::getDeleted, 0)
-                .eq(Shop::getStatus, 1));
+                .eq(Shop::getStatus, ShopStatus.APPROVED.getCode()));
     }
 
     private Order getOrderByOperatorId(Long operatorId, Long orderId) {

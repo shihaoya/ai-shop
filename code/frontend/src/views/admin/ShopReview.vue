@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getShops, auditShop } from '@/api/admin'
+import { ShopStatus, ShopStatusText, ShopStatusClass } from '@/types/enums'
 import { message } from 'ant-design-vue'
 import type { Shop } from '@/types/api'
 
@@ -35,7 +36,7 @@ async function loadShops() {
 async function handleAudit(shopId: string, status: number) {
   try {
     await auditShop(shopId, status)
-    message.success(status === 1 ? '已通过审核' : '已拒绝')
+    message.success(status === ShopStatus.APPROVED ? '已通过审核' : '已拒绝')
     loadShops()
   } catch (e) {
     throw e
@@ -43,12 +44,10 @@ async function handleAudit(shopId: string, status: number) {
 }
 
 function getStatusTag(status: number) {
-  const map: Record<number, { text: string; class: string }> = {
-    0: { text: '待审核', class: 'orange' },
-    1: { text: '已通过', class: 'green' },
-    2: { text: '已拒绝', class: 'red' },
+  return {
+    text: ShopStatusText[status as keyof typeof ShopStatusText] || '未知',
+    class: ShopStatusClass[status as keyof typeof ShopStatusClass] || 'gray',
   }
-  return map[status] || { text: '未知', class: 'gray' }
 }
 
 function formatDate(date?: string) {
@@ -97,7 +96,7 @@ function formatDate(date?: string) {
                   <strong>{{ shop.name }}</strong>
                   <p v-if="shop.description" class="desc">{{ shop.description }}</p>
                 </td>
-                <td>{{ shop.ownerName || '-' }}</td>
+                <td>{{ shop.operatorName || '-' }}</td>
                 <td>
                   <span class="status-tag" :class="getStatusTag(shop.status).class">
                     <span class="dot"></span>{{ getStatusTag(shop.status).text }}
@@ -110,11 +109,11 @@ function formatDate(date?: string) {
                 </td>
                 <td class="time-cell">{{ formatDate(shop.createdAt) }}</td>
                 <td>
-                  <template v-if="shop.status === 0">
-                    <button class="action-btn green" title="通过" @click="handleAudit(shop.id, 1)">
+                  <template v-if="shop.status === ShopStatus.PENDING">
+                    <button class="action-btn green" title="通过" @click="handleAudit(shop.id, ShopStatus.APPROVED)">
                       <i class="fas fa-check"></i>
                     </button>
-                    <button class="action-btn red" title="拒绝" @click="handleAudit(shop.id, 2)">
+                    <button class="action-btn red" title="拒绝" @click="handleAudit(shop.id, ShopStatus.REJECTED)">
                       <i class="fas fa-times"></i>
                     </button>
                   </template>
