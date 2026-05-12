@@ -20,7 +20,7 @@ public class AiShopApplication {
             System.out.println();
             System.out.println("┌─────────────────────────────────────────────────────────┐");
             System.out.println("│                                                         │");
-            System.out.println("│   Swagger UI:   http://localhost:18780/swagger-ui.html   │");
+            System.out.println("│   Knife4j UI:  http://localhost:18780/doc.html          │");
             System.out.println("│   API Docs:    http://localhost:18780/v3/api-docs        │");
             System.out.println("│                                                         │");
             System.out.println("└─────────────────────────────────────────────────────────┘");

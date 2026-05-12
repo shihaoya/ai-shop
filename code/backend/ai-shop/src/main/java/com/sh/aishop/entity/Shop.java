@@ -3,9 +3,11 @@ package com.sh.aishop.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import java.time.LocalDateTime;
 
 @Data
+@EqualsAndHashCode(callSuper = false)
 @TableName("shop")
 public class Shop extends BaseEntity<Shop> {
     private Long operatorId;

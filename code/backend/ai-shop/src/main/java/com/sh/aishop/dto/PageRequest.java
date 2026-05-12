@@ -1,11 +1,23 @@
 package com.sh.aishop.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "分页请求参数")
 public class PageRequest {
+    @Schema(description = "页码，从1开始", example = "1")
     private Integer page = 1;
+    
+    @Schema(description = "每页数量", example = "10")
     private Integer pageSize = 10;
+    
+    @Schema(description = "搜索关键词")
     private String keyword;
-    private Integer role;    // 角色筛选：1=管理员，2=店铺用户，3=普通用户
-    private Integer status;  // 状态筛选：1=待审核，2=正常，3=已冻结
+    
+    @Schema(description = "角色筛选：1管理员 2店铺运营 3普通用户", example = "3")
+    private Integer role;
+    
+    @Schema(description = "状态筛选：1待审核 2正常 3冻结", example = "2")
+    private Integer status;
 
     public Integer getPage() { return page; }
     public void setPage(Integer page) { this.page = page; }

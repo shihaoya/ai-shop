@@ -5,6 +5,8 @@ import com.sh.aishop.dto.PageRequest;
 import com.sh.aishop.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,20 +22,36 @@ public class UserController {
     private UserService userService;
 
     @Operation(summary = "商品列表", description = "分页获取可购买的商品列表")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "获取成功"),
+        @ApiResponse(responseCode = "401", description = "未授权")
+    })
     @GetMapping("/products")
-    public Result<?> getProducts(PageRequest pageRequest) {
+    public Result<?> getProducts(
+            @Parameter(description = "分页参数") PageRequest pageRequest) {
         return userService.getProducts(pageRequest);
     }
 
     @Operation(summary = "商品详情", description = "获取单个商品的详细信息")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "获取成功"),
+        @ApiResponse(responseCode = "404", description = "商品不存在")
+    })
     @GetMapping("/products/{id}")
-    public Result<?> getProduct(@PathVariable("id") Long id) {
+    public Result<?> getProduct(
+            @Parameter(description = "商品ID", required = true, example = "1234567890") @PathVariable("id") Long id) {
         return userService.getProduct(id);
     }
 
     @Operation(summary = "创建订单", description = "用户购买商品创建订单")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "订单创建成功"),
+        @ApiResponse(responseCode = "400", description = "参数错误或库存不足"),
+        @ApiResponse(responseCode = "401", description = "未授权")
+    })
     @PostMapping("/orders")
-    public Result<?> createOrder(HttpServletRequest request, @RequestBody Map<String, Object> params) {
+    public Result<?> createOrder(HttpServletRequest request, 
+                                 @Parameter(description = "订单参数：productId(商品ID), quantity(数量), addressId(地址ID，可选)") @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
         Long productId = Long.valueOf(params.get("productId").toString());
         Integer quantity = Integer.valueOf(params.getOrDefault("quantity", 1).toString());
@@ -42,16 +60,26 @@ public class UserController {
     }
 
     @Operation(summary = "订单列表", description = "获取当前用户的订单列表，可按状态筛选")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "获取成功"),
+        @ApiResponse(responseCode = "401", description = "未授权")
+    })
     @GetMapping("/orders")
     public Result<?> getOrders(HttpServletRequest request, PageRequest pageRequest,
-                              @Parameter(description = "订单状态：0已下单 1已确认 2已发货 3已完成 4已取消") @RequestParam(required = false) Integer status) {
+                              @Parameter(description = "订单状态：1已下单 2已确认 3已发货 4已完成 5已关闭", example = "1") @RequestParam(required = false) Integer status) {
         Long userId = (Long) request.getAttribute("userId");
         return userService.getOrders(userId, pageRequest, status);
     }
 
     @Operation(summary = "订单详情", description = "获取订单详细信息")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "获取成功"),
+        @ApiResponse(responseCode = "404", description = "订单不存在")
+    })
     @GetMapping("/orders/{id}")
-    public Result<?> getOrder(@PathVariable("id") Long id, HttpServletRequest request) {
+    public Result<?> getOrder(
+            @Parameter(description = "订单ID", required = true) @PathVariable("id") Long id, 
+            HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return userService.getOrder(userId, id);
     }

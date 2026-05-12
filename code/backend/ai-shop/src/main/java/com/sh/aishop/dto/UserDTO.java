@@ -1,11 +1,25 @@
 package com.sh.aishop.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "用户信息")
 public class UserDTO {
+    @Schema(description = "用户ID", example = "1234567890")
     private String id;
+    
+    @Schema(description = "用户名", example = "zhangsan")
     private String username;
+    
+    @Schema(description = "昵称", example = "张三")
     private String nickname;
+    
+    @Schema(description = "角色：1管理员 2店铺运营 3普通用户", example = "3")
     private Integer role;
+    
+    @Schema(description = "状态：1待审核 2正常 3冻结", example = "2")
     private Integer status;
+    
+    @Schema(description = "积分余额", example = "1000")
     private String pointsBalance; // 积分余额，String类型避免精度丢失
 
     // getters and setters

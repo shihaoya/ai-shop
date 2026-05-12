@@ -1,20 +1,27 @@
 package com.sh.aishop.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
+@Schema(description = "用户注册请求")
 public class RegisterRequest {
+    @Schema(description = "用户名", example = "zhangsan", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "用户名不能为空")
     private String username;
 
+    @Schema(description = "昵称", example = "张三", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "昵称不能为空")
     private String nickname;
 
+    @Schema(description = "密码", example = "123456", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "密码不能为空")
     private String password;
 
+    @Schema(description = "确认密码", example = "123456", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "确认密码不能为空")
     private String confirmPassword;
 
+    @Schema(description = "邀请码", example = "ABC123", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "邀请码不能为空")
     private String inviteCode;
 
