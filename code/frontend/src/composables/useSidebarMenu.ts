@@ -1,5 +1,5 @@
 import { useRouter, useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { computed, type Ref } from 'vue'
 
 export interface SidebarItem {
   label: string
@@ -7,23 +7,32 @@ export interface SidebarItem {
   path: string
 }
 
-export function useSidebarMenu(basePath: string) {
+const MINIMAL_MENU_PATHS = ['/operator/shop', '/operator/messages']
+
+export function useSidebarMenu(basePath: string, hasShop: Ref<boolean> | boolean = true) {
   const router = useRouter()
   const route = useRoute()
 
   const prefix = basePath.endsWith('/') ? basePath : basePath + '/'
+  const hasShopRef = computed(() => typeof hasShop === 'boolean' ? hasShop : hasShop.value)
 
   const items = computed<SidebarItem[]>(() => {
     // 从所有已注册路由中筛选出以 basePath/ 开头且标记了 sidebar 的
     // 不依赖父路由的 children 属性（Vue Router 4 getRoutes 返回扁平列表）
-    return router
+    let routes = router
       .getRoutes()
       .filter(r => r.path.startsWith(prefix) && r.meta?.sidebar)
-      .map(r => ({
-        label: (r.meta?.title as string) || '',
-        icon: (r.meta?.icon as string) || 'fa-circle',
-        path: r.path,
-      }))
+
+    // 无店铺时只显示核心页面
+    if (!hasShopRef.value) {
+      routes = routes.filter(r => MINIMAL_MENU_PATHS.includes(r.path))
+    }
+
+    return routes.map(r => ({
+      label: (r.meta?.title as string) || '',
+      icon: (r.meta?.icon as string) || 'fa-circle',
+      path: r.path,
+    }))
   })
 
   const currentLabel = computed(() =>

@@ -16,7 +16,7 @@ function loadTheme(): ThemeState {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) return JSON.parse(saved)
   } catch { /* ignore */ }
-  return { mode: 'dark', accentColor: DEFAULT_ACCENT }
+  return { mode: 'auto', accentColor: DEFAULT_ACCENT }
 }
 
 function getSystemMode(): 'light' | 'dark' {

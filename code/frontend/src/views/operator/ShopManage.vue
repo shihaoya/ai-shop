@@ -4,6 +4,9 @@ import { useThemeStore } from '@/stores/theme'
 import { getMyShop, applyShop, changeShopStatus } from '@/api/operator'
 import { message, Modal } from 'ant-design-vue'
 import type { Shop } from '@/types/api'
+import { useOperatorShop } from '@/composables/useOperatorShop'
+
+const { setHasShop } = useOperatorShop()
 
 const themeStore = useThemeStore()
 
@@ -42,12 +45,20 @@ const shopStatus = computed(() => {
 async function loadMyShop() {
   loading.value = true
   try {
-    const res = await getMyShop()
-    if (res) {
+    const res: any = await getMyShop()
+    if (res && res.hasShop === false) {
+      shop.value = null
+      setHasShop(false)
+    } else if (res) {
       shop.value = {
-        ...res,
-        id: String(res.id)
+        id: String(res.id),
+        name: res.name,
+        description: res.description,
+        status: res.status,
+        isActive: res.isActive,
+        createdAt: res.createdAt,
       }
+      setHasShop(true)
     } else {
       shop.value = null
     }
@@ -124,45 +135,47 @@ function handleToggleStatus() {
         </div>
       </div>
 
-      <!-- 无店铺 - 申请入口 -->
-      <div v-if="shopStatus === 'none'" class="no-shop-card">
-        <div class="no-shop-icon">
-          <i class="fas fa-store"></i>
+      <!-- 无店铺 - 开通入口 -->
+      <div v-if="shopStatus === 'none'" class="open-shop-card">
+        <div class="open-shop-banner">
+          <div class="banner-glow"></div>
+          <div class="banner-icon">
+            <i class="fas fa-store"></i>
+          </div>
+          <h3>暂无店铺</h3>
+          <p>开通店铺后，您可以发布商品、管理订单、查看数据报表</p>
         </div>
-        <h3>您还没有申请店铺</h3>
-        <p>成为店铺用户后，您可以发布商品、管理订单等功能</p>
-        <button class="cyber-btn-primary" @click="openApplyModal">
-          <i class="fas fa-plus" style="margin-right:5px;"></i>申请店铺
+
+        <div class="open-shop-features">
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fas fa-box-open"></i></div>
+            <div class="feature-text">
+              <strong>商品管理</strong>
+              <span>发布和管理您的商品库存</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fas fa-receipt"></i></div>
+            <div class="feature-text">
+              <strong>订单处理</strong>
+              <span>实时查看和处理用户订单</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="feature-text">
+              <strong>数据报表</strong>
+              <span>查看销售数据和经营状况</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="cyber-btn-primary open-shop-btn" @click="openApplyModal">
+          <i class="fas fa-rocket" style="margin-right:8px;"></i>立刻开通
         </button>
       </div>
 
-      <!-- 待审核状态 -->
-      <div v-else-if="shopStatus === 'pending'" class="pending-card">
-        <div class="pending-icon">
-          <i class="fas fa-clock"></i>
-        </div>
-        <h3>店铺申请正在审核中</h3>
-        <p>您的店铺申请已提交，请耐心等待管理员审核</p>
-        <div class="status-info">
-          <span class="status-tag" :class="reviewStatusMap[0].class">
-            <i class="fas fa-hourglass-half" style="margin-right:5px;"></i>{{ reviewStatusMap[0].text }}
-          </span>
-        </div>
-      </div>
-
-      <!-- 被拒绝状态 -->
-      <div v-else-if="shopStatus === 'rejected'" class="rejected-card">
-        <div class="rejected-icon">
-          <i class="fas fa-times-circle"></i>
-        </div>
-        <h3>店铺申请被拒绝</h3>
-        <p>抱歉，您的店铺申请未通过审核</p>
-        <button class="cyber-btn-primary" @click="openApplyModal">
-          <i class="fas fa-redo" style="margin-right:5px;"></i>重新申请
-        </button>
-      </div>
-
-      <!-- 已通过 - 显示店铺信息和营业状态切换 -->
+      <!-- 店铺信息（审核中/被拒/已通过都显示） -->
       <div v-else class="shop-info-card cyber-card" v-loading="loading">
         <div class="shop-header">
           <div class="shop-avatar">
@@ -170,10 +183,17 @@ function handleToggleStatus() {
           </div>
           <div class="shop-title">
             <h3>{{ shop?.name }}</h3>
-            <span class="status-tag" :class="activeStatusMap[shop?.isActive ?? 0].class">
-              <i :class="shop?.isActive === 1 ? 'fas fa-power-off' : 'fas fa-moon'" style="margin-right:5px;"></i>
-              {{ activeStatusMap[shop?.isActive ?? 0].text }}
-            </span>
+            <div class="shop-status-line">
+              <span class="status-tag" :class="shop?.status === 1 ? activeStatusMap[shop?.isActive ?? 0].class : reviewStatusMap[shop?.status ?? 0].class">
+                <i :class="shop?.status === 1
+                  ? (shop?.isActive === 1 ? 'fas fa-power-off' : 'fas fa-moon')
+                  : (shop?.status === 0 ? 'fas fa-hourglass-half' : 'fas fa-times-circle')"
+                   style="margin-right:5px;"></i>
+                {{ shop?.status === 1 ? activeStatusMap[shop?.isActive ?? 0].text : reviewStatusMap[shop?.status ?? 0].text }}
+              </span>
+              <span v-if="shop?.status === 0" class="hint-text">等待管理员审核</span>
+              <span v-if="shop?.status === 2" class="hint-text error">审核未通过</span>
+            </div>
           </div>
         </div>
 
@@ -192,7 +212,7 @@ function handleToggleStatus() {
           </div>
         </div>
 
-        <div class="shop-actions">
+        <div class="shop-actions" v-if="shop?.status === 1">
           <button
             class="cyber-btn-primary"
             @click="handleToggleStatus"
@@ -200,6 +220,12 @@ function handleToggleStatus() {
           >
             <i :class="shop?.isActive === 1 ? 'fas fa-moon' : 'fas fa-power-off'" style="margin-right:5px;"></i>
             {{ shop?.isActive === 1 ? '设置为歇业' : '设置为营业' }}
+          </button>
+        </div>
+
+        <div v-if="shop?.status !== 1" class="shop-actions" style="margin-top:16px;">
+          <button v-if="shop?.status === 2" class="cyber-btn-primary" @click="openApplyModal">
+            <i class="fas fa-redo" style="margin-right:5px;"></i>重新申请
           </button>
         </div>
       </div>
@@ -300,7 +326,119 @@ function handleToggleStatus() {
   gap: 10px;
 }
 
-/* 无店铺卡片 */
+/* 开通店铺卡片 */
+.open-shop-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 48px 40px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.open-shop-banner {
+  position: relative;
+  margin-bottom: 36px;
+}
+
+.banner-glow {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.banner-icon {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 36px;
+  color: var(--accent);
+}
+
+.open-shop-banner h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 10px;
+}
+
+.open-shop-banner p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.open-shop-features {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 36px;
+  justify-content: center;
+}
+
+.feature-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 12px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(var(--accent-rgb), 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feature-text strong {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.feature-text span {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.open-shop-btn {
+  padding: 12px 40px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
 .no-shop-card,
 .pending-card,
 .rejected-card {
@@ -392,6 +530,21 @@ function handleToggleStatus() {
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 8px;
+}
+
+.shop-status-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hint-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.hint-text.error {
+  color: var(--red);
 }
 
 .shop-detail {

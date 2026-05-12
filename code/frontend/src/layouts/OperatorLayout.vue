@@ -4,11 +4,13 @@ import { RouterView } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
 import { useSidebarStore } from '@/stores/sidebar'
 import { useSidebarMenu } from '@/composables/useSidebarMenu'
+import { useOperatorShop } from '@/composables/useOperatorShop'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
 
 const themeStore = useThemeStore()
 const sidebarStore = useSidebarStore()
-const { items: navItems, currentLabel, isActive } = useSidebarMenu('/operator')
+const { hasShop } = useOperatorShop()
+const { items: navItems, currentLabel, isActive } = useSidebarMenu('/operator', hasShop.value)
 
 onMounted(() => {
   themeStore.init()

@@ -650,6 +650,14 @@ public class OperatorService {
                 .eq(Shop::getOperatorId, operatorId).eq(Shop::getDeleted, 0));
     }
 
+    // 仅返回已审核通过的店铺（status === 1）
+    private Shop getApprovedShop(Long operatorId) {
+        return shopMapper.selectOne(new LambdaQueryWrapper<Shop>()
+                .eq(Shop::getOperatorId, operatorId)
+                .eq(Shop::getDeleted, 0)
+                .eq(Shop::getStatus, 1));
+    }
+
     private Order getOrderByOperatorId(Long operatorId, Long orderId) {
         Shop shop = getShopByOperatorId(operatorId);
         if (shop == null) return null;

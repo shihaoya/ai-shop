@@ -49,8 +49,8 @@ export interface RegisterParams {
 export interface Shop {
   id: string
   name: string
-  description: string
-  ownerId: string
+  description?: string
+  ownerId?: string
   ownerName?: string
   status: number     // 0=待审核, 1=通过, 2=拒绝
   isActive: number   // 0=歇业, 1=营业

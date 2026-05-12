@@ -4,8 +4,8 @@ import type { PageRequest, Shop, Product, Category, Order, UserInfo, PointsLog, 
 type ListResponse<T> = { list: T[]; total: number; page: number; pageSize: number }
 
 // ============ 店铺 ============
-export function getMyShop(): Promise<Shop> {
-  return request.get<Shop>('/operator/shop') as any
+export function getMyShop(): Promise<any> {
+  return request.get<any>('/operator/shop') as any
 }
 
 export function applyShop(name: string, description: string): Promise<Shop> {

@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getInviteCode, createInviteCode } from '@/api/operator'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 
 const themeStore = useThemeStore()
 
@@ -12,13 +12,21 @@ onMounted(() => {
 })
 
 const loading = ref(false)
-const codes = ref<{ code: string; status: number; usedBy?: string; createdAt?: string }[]>([])
+const currentCode = ref<string>('')
+const createdAt = ref<string>('')
 
 async function loadCodes() {
   loading.value = true
   try {
-    const res = await getInviteCode()
-    codes.value = res || []
+    const res: any = await getInviteCode()
+    // 后端返回 { code, status, usedBy, createdAt }
+    if (res && res.code) {
+      currentCode.value = res.code
+      createdAt.value = res.createdAt || ''
+    } else {
+      currentCode.value = ''
+      createdAt.value = ''
+    }
   } catch (e) {
     throw e
   } finally {
@@ -26,38 +34,46 @@ async function loadCodes() {
   }
 }
 
-async function handleCreate() {
+async function doGenerate() {
+  loading.value = true
   try {
-    await createInviteCode()
-    message.success('邀请码生成成功')
-    loadCodes()
+    const res: any = await createInviteCode()
+    currentCode.value = res.code || res
+    createdAt.value = new Date().toISOString()
+    message.success('邀请码已生成')
   } catch (e: any) {
-    console.error('生成邀请码失败:', e)
-    message.error(e?.message || (e as Error)?.message || '生成失败')
-    throw e
+    message.error(e?.message || '生成失败')
+  } finally {
+    loading.value = false
   }
 }
 
-function copyCode(code: string) {
-  navigator.clipboard.writeText(code).then(() => {
+function handleGenerate() {
+  if (currentCode.value) {
+    Modal.confirm({
+      title: '确认生成新码',
+      content: '生成新码后旧码将立即失效，是否继续？',
+      okText: '确认',
+      cancelText: '取消',
+      async onOk() {
+        await doGenerate()
+      },
+    })
+  } else {
+    doGenerate()
+  }
+}
+
+function copyCode() {
+  if (!currentCode.value) return
+  navigator.clipboard.writeText(currentCode.value).then(() => {
     message.success('已复制到剪贴板')
   }).catch(() => {
     message.error('复制失败')
   })
 }
 
-function getStatusTag(status: number) {
-  const map: Record<number, { text: string; class: string }> = {
-    0: { text: '未使用', class: 'green' },
-    1: { text: '已使用', class: 'gray' },
-  }
-  return map[status] || { text: '未知', class: 'gray' }
-}
-
-function formatDate(date?: string) {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('zh-CN')
-}
+loadCodes()
 </script>
 
 <template>
@@ -68,97 +84,38 @@ function formatDate(date?: string) {
     <div class="cyber-bg-orb" style="width:400px;height:400px;bottom:10%;left:-100px;background:rgba(236,72,153,0.06);"></div>
 
     <div class="page-content">
-      <!-- Page Head -->
       <div class="page-head">
         <h2><span class="accent-line"></span>邀请码管理</h2>
-        <div class="actions">
-          <button class="cyber-btn" @click="loadCodes" :disabled="loading">
-            <i class="fas fa-sync-alt" style="margin-right:5px;"></i>刷新
-          </button>
-          <button class="cyber-btn-primary" @click="handleCreate">
-            <i class="fas fa-plus" style="margin-right:5px;"></i>生成邀请码
-          </button>
-        </div>
       </div>
 
-      <!-- Stats Row -->
-      <div class="stats-row">
-        <div class="stat-card cyber-card">
-          <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#818cf8;">
-            <i class="fas fa-ticket-alt"></i>
+      <!-- 邀请码卡片 -->
+      <div class="invite-card" :class="{ 'has-code': !!currentCode }">
+        <div class="invite-card-inner">
+          <div class="invite-icon">
+            <i class="fas fa-qrcode"></i>
           </div>
-          <div class="stat-info">
-            <span class="stat-label">总邀请码</span>
-            <span class="stat-value">{{ codes.length }}</span>
-          </div>
-        </div>
-        <div class="stat-card cyber-card">
-          <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-label">已使用</span>
-            <span class="stat-value">{{ codes.filter(c => c.status === 1).length }}</span>
-          </div>
-        </div>
-        <div class="stat-card cyber-card">
-          <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-label">未使用</span>
-            <span class="stat-value">{{ codes.filter(c => c.status === 0).length }}</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Invite Code List -->
-      <div class="code-list-card cyber-card" v-loading="loading">
-        <div class="list-header">
-          <h3><i class="fas fa-list" style="margin-right:8px;"></i>邀请码列表</h3>
-        </div>
-
-        <div class="code-table" v-if="codes.length > 0">
-          <div class="table-head">
-            <span class="col-code">邀请码</span>
-            <span class="col-status">状态</span>
-            <span class="col-user">使用者</span>
-            <span class="col-time">创建时间</span>
-            <span class="col-action">操作</span>
-          </div>
-          <div class="table-body">
-            <div class="table-row" v-for="item in codes" :key="item.code">
-              <span class="col-code">
-                <span class="code-value" @click="copyCode(item.code)">
-                  <i class="fas fa-copy" style="margin-right:5px;"></i>{{ item.code }}
-                </span>
-              </span>
-              <span class="col-status">
-                <span class="status-tag" :class="getStatusTag(item.status).class">
-                  <i :class="item.status === 0 ? 'fas fa-circle' : 'fas fa-check'" style="margin-right:5px;font-size:8px;"></i>
-                  {{ getStatusTag(item.status).text }}
-                </span>
-              </span>
-              <span class="col-user">
-                {{ item.usedBy || '-' }}
-              </span>
-              <span class="col-time">
-                {{ formatDate(item.createdAt) }}
-              </span>
-              <span class="col-action">
-                <button class="action-btn" @click="copyCode(item.code)" title="复制">
-                  <i class="fas fa-copy"></i>
-                </button>
-              </span>
+          <template v-if="currentCode">
+            <div class="invite-code-display">{{ currentCode }}</div>
+            <div v-if="createdAt" class="invite-meta">生成于 {{ new Date(createdAt).toLocaleString('zh-CN') }}</div>
+            <div class="invite-actions">
+              <button class="cyber-btn" @click="copyCode">
+                <i class="fas fa-copy"></i>复制邀请码
+              </button>
+              <button class="cyber-btn-primary" @click="handleGenerate" :disabled="loading">
+                <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>生成新码
+              </button>
             </div>
-          </div>
-        </div>
+          </template>
 
-        <!-- Empty -->
-        <div class="empty-state" v-else>
-          <i class="fas fa-ticket-alt"></i>
-          <p>暂无邀请码</p>
-          <span>点击"生成邀请码"按钮创建一个</span>
+          <template v-else>
+            <div class="invite-empty">暂无可用邀请码</div>
+            <div class="invite-actions">
+              <button class="cyber-btn-primary" @click="handleGenerate" :disabled="loading">
+                <i class="fas fa-plus" :class="{ 'fa-spin': loading }"></i>生成邀请码
+              </button>
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -197,280 +154,145 @@ function formatDate(date?: string) {
 .page-content {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 600px;
   margin: 0 auto;
 }
-
 .page-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
-
 .page-head h2 {
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
   display: flex;
   align-items: center;
+  gap: 10px;
 }
-
 .accent-line {
+  display: inline-block;
   width: 4px;
   height: 20px;
-  background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
   border-radius: 2px;
-  margin-right: 12px;
 }
-
-.actions {
-  display: flex;
-  gap: 12px;
-}
-
-.cyber-btn,
-.cyber-btn-primary {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  border: 1px solid var(--accent);
-}
-
-.cyber-btn {
-  background: transparent;
-  color: var(--accent);
-}
-
-.cyber-btn:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.1);
-}
-
-.cyber-btn-primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
-  color: white;
-  border-color: var(--accent);
-}
-
-.cyber-btn-primary:hover {
-  box-shadow: var(--accent-glow-hover);
-}
-
-.cyber-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.invite-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 48px 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.4s ease-out;
 }
-
-.stat-info {
+.invite-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: borderGlow 3s ease-in-out infinite;
+}
+.invite-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.12);
+}
+.invite-card.has-code {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.10);
+}
+.invite-card-inner {
+  text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.cyber-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-}
-
-.code-list-card {
-  padding: 0;
-  overflow: hidden;
-}
-
-.list-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.list-header h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.code-table {
+  align-items: center;
+  gap: 16px;
   width: 100%;
 }
-
-.table-head {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr 0.5fr;
-  padding: 12px 20px;
-  background: rgba(99, 102, 241, 0.08);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.table-body {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1.5fr 0.5fr;
-  padding: 14px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  align-items: center;
-  transition: background 0.2s ease;
-}
-
-.table-row:hover {
-  background: rgba(99, 102, 241, 0.04);
-}
-
-.col-code {
-  color: var(--text-primary);
-}
-
-.code-value {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  background: rgba(99, 102, 241, 0.1);
-  border-radius: 6px;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.code-value:hover {
-  background: rgba(99, 102, 241, 0.2);
-  box-shadow: var(--accent-glow);
-}
-
-.col-status .status-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.status-tag.green {
-  background: rgba(16, 185, 129, 0.15);
-  color: #10b981;
-}
-
-.status-tag.gray {
-  background: rgba(107, 114, 128, 0.15);
-  color: #9ca3af;
-}
-
-.col-user,
-.col-time {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.col-action {
-  display: flex;
-  justify-content: center;
-}
-
-.action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
+.invite-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(99,102,241,0.1);
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 24px;
+  color: #6366f1;
+  margin-bottom: 8px;
 }
-
-.action-btn:hover {
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--accent);
-  border-color: var(--accent);
+.invite-code-display {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #6366f1;
+  font-family: 'Courier New', monospace;
+  background: rgba(99,102,241,0.06);
+  border: 1px dashed rgba(99,102,241,0.3);
+  border-radius: 8px;
+  padding: 16px 32px;
+  user-select: all;
 }
-
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
+.invite-meta {
+  font-size: 12px;
+  color: var(--text-muted);
 }
-
-.empty-state i {
-  font-size: 48px;
-  color: rgba(255, 255, 255, 0.1);
-  margin-bottom: 16px;
-}
-
-.empty-state p {
+.invite-empty {
   font-size: 16px;
+  color: var(--text-muted);
+}
+.invite-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.cyber-btn,
+.cyber-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
   color: var(--text-primary);
-  margin: 0 0 8px 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
 }
-
-.empty-state span {
-  font-size: 13px;
-  color: var(--text-secondary);
+.cyber-btn:hover {
+  border-color: rgba(99,102,241,0.4);
+  color: #6366f1;
 }
-
-@media (max-width: 768px) {
-  .stats-row {
-    grid-template-columns: 1fr;
-  }
-
-  .table-head,
-  .table-row {
-    grid-template-columns: 2fr 1fr 1fr;
-  }
-
-  .col-time,
-  .col-user {
-    display: none;
-  }
+.cyber-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: transparent;
+  color: #fff;
+}
+.cyber-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+}
+.cyber-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes borderGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 </style>
