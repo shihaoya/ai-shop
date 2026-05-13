@@ -24,10 +24,13 @@ request.interceptors.response.use(
     if (res.code !== 200) {
       // 认证令牌无效（1005）或用户不存在（1003）视为未登录，跳转登录页
       if (res.code === 1005 || res.code === 1003) {
-        const userStore = useUserStore()
-        userStore.logout()
-        router.push('/login')
-        message.error('登录已过期，请重新登录')
+        // 避免在登录页触发循环 logout
+        if (router.currentRoute.value.name !== 'Login') {
+          const userStore = useUserStore()
+          userStore.logout()
+          router.push('/login')
+          message.error('登录已过期，请重新登录')
+        }
       } else {
         message.error(res.message || '请求失败')
       }
@@ -38,10 +41,13 @@ request.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      const userStore = useUserStore()
-      userStore.logout()
-      router.push('/login')
-      message.error('登录已过期，请重新登录')
+      // 避免在登录页触发循环 logout
+      if (router.currentRoute.value.name !== 'Login') {
+        const userStore = useUserStore()
+        userStore.logout()
+        router.push('/login')
+        message.error('登录已过期，请重新登录')
+      }
     } else {
       message.error(error.response?.data?.message || error.message || '网络异常')
     }

@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
-import { adjustPoints, getUsers, approveUser, rejectUser } from '@/api/operator'
+import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser } from '@/api/operator'
 import { useThemeStore } from '@/stores/theme'
-import type { UserInfo } from '@/types/api'
+import type { UserInfo, PointsLog } from '@/types/api'
+import { PointsTypeText } from '@/types/enums'
 
 const themeStore = useThemeStore()
-const router = useRouter()
 
 onMounted(() => {
   themeStore.init()
@@ -23,6 +22,12 @@ const searchQuery = ref('')
 const adjustModalVisible = ref(false)
 const adjustForm = ref({ userId: '', username: '', amount: 0, remark: '' })
 const adjustLoading = ref(false)
+
+// 积分流水弹窗
+const pointsLogVisible = ref(false)
+const pointsLogList = ref<PointsLog[]>([])
+const pointsLogLoading = ref(false)
+const currentLogUser = ref('')
 
 async function loadUsers() {
   loading.value = true
@@ -74,6 +79,24 @@ function openAdjustModal(user: UserInfo) {
 async function handleAdjustPoints() {
   if (!adjustForm.value.amount) {
     message.warning('请输入积分数量')
+    return
+  }
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      Modal.confirm({
+        title: '确认调整积分',
+        content: `确定要为用户 ${adjustForm.value.username} 调整 ${adjustForm.value.amount > 0 ? '+' : ''}${adjustForm.value.amount} 积分吗？${adjustForm.value.remark ? `\n备注：${adjustForm.value.remark}` : ''}`,
+        okText: '确认调整',
+        cancelText: '取消',
+        onOk: () => resolve(),
+        onCancel: () => reject(new Error('cancel')),
+      })
+    })
+  } catch (e: any) {
+    if (e?.message !== 'cancel') {
+      message.error(e?.message || (e as Error)?.message || '调整失败')
+    }
     return
   }
 
@@ -136,8 +159,20 @@ async function handleReject(userId: string) {
   }
 }
 
-function goToPointsLog(userId: string) {
-  router.push({ name: 'OpUserPointsLog', params: { id: userId } })
+async function openPointsLogModal(userId: string, username: string) {
+  currentLogUser.value = username
+  pointsLogVisible.value = true
+  pointsLogLoading.value = true
+  try {
+    const res = await getPointsLog(userId, { page: 1, size: 100 })
+    pointsLogList.value = (res.list || []).map((item: PointsLog) => ({
+      ...item,
+    }))
+  } catch {
+    message.error('获取积分流水失败')
+  } finally {
+    pointsLogLoading.value = false
+  }
 }
 
 function getStatusTag(status: number) {
@@ -225,7 +260,7 @@ function formatDate(date?: string) {
                   <button v-if="user.status !== 1" class="action-btn accent" title="调整积分" @click="openAdjustModal(user)">
                     <i class="fas fa-coins"></i>
                   </button>
-                  <button v-if="user.status !== 1" class="action-btn" title="积分流水" @click="goToPointsLog(user.id)">
+                  <button v-if="user.status !== 1" class="action-btn" title="积分流水" @click="openPointsLogModal(user.id, user.username)">
                     <i class="fas fa-history"></i>
                   </button>
                 </td>
@@ -260,7 +295,7 @@ function formatDate(date?: string) {
     </div>
 
     <!-- 调整积分弹窗 -->
-    <div class="modal-overlay" v-if="adjustModalVisible" @click.self="adjustModalVisible = false">
+    <div class="modal-overlay" v-if="adjustModalVisible">
       <div class="modal-card">
         <div class="modal-header">
           <h3><i class="fas fa-coins" style="margin-right:8px;color:var(--accent);"></i>调整积分</h3>
@@ -305,6 +340,55 @@ function formatDate(date?: string) {
             <i v-if="adjustLoading" class="fas fa-spinner fa-spin" style="margin-right:5px;"></i>
             确认调整
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 积分流水弹窗 -->
+    <div class="modal-overlay" v-if="pointsLogVisible">
+      <div class="modal-card" style="min-width:700px;max-width:900px;max-height:85vh;">
+        <div class="modal-header">
+          <h3><i class="fas fa-history" style="margin-right:8px;color:var(--accent);"></i>积分流水 - {{ currentLogUser }}</h3>
+          <button class="modal-close" @click="pointsLogVisible = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" style="overflow-y:auto;max-height:calc(85vh - 130px);">
+          <div v-if="pointsLogLoading" style="text-align:center;padding:40px;color:var(--text-muted);">
+            <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+            <p style="margin-top:10px;">加载中...</p>
+          </div>
+          <div v-else-if="pointsLogList.length === 0" style="text-align:center;padding:40px;color:var(--text-muted);">
+            <i class="fas fa-inbox" style="font-size:32px;opacity:0.3;"></i>
+            <p style="margin-top:10px;">暂无积分流水</p>
+          </div>
+          <table v-else style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-subtle);">
+                <th style="padding:10px 16px;text-align:left;color:var(--text-muted);font-size:12px;white-space:nowrap;">时间</th>
+                <th style="padding:10px 16px;text-align:left;color:var(--text-muted);font-size:12px;white-space:nowrap;">类型</th>
+                <th style="padding:10px 16px;text-align:right;color:var(--text-muted);font-size:12px;white-space:nowrap;">数额</th>
+                <th style="padding:10px 16px;text-align:right;color:var(--text-muted);font-size:12px;white-space:nowrap;">余额</th>
+                <th style="padding:10px 16px;text-align:left;color:var(--text-muted);font-size:12px;">备注</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="log in pointsLogList" :key="log.id" style="border-bottom:1px solid var(--border-subtle);">
+                <td style="padding:10px 16px;font-size:12px;color:var(--text-muted);font-family:var(--font-mono);white-space:nowrap;">{{ formatDate(log.createdAt) }}</td>
+                <td style="padding:10px 16px;font-size:13px;color:var(--text-primary);white-space:nowrap;">{{ PointsTypeText[log.type] ?? (log.amount > 0 ? '增加' : '扣除') }}</td>
+                <td style="padding:10px 16px;text-align:right;font-size:14px;font-weight:600;">
+                  <span :style="{ color: log.amount > 0 ? 'var(--success)' : 'var(--danger)' }">
+                    {{ log.amount > 0 ? '+' : '' }}{{ log.amount }}
+                  </span>
+                </td>
+                <td style="padding:10px 16px;text-align:right;font-size:13px;color:var(--text-primary);white-space:nowrap;">{{ log.balance ?? '-' }}</td>
+                <td style="padding:10px 16px;font-size:12px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ log.remark || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button class="cyber-btn" @click="pointsLogVisible = false">关闭</button>
         </div>
       </div>
     </div>
