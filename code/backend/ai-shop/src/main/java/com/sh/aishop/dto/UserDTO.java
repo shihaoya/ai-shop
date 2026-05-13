@@ -22,6 +22,9 @@ public class UserDTO {
     @Schema(description = "积分余额", example = "1000")
     private String pointsBalance; // 积分余额，String类型避免精度丢失
 
+    @Schema(description = "注册时间", example = "2024-01-01 12:00:00")
+    private String createdAt;
+
     // getters and setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -35,4 +38,6 @@ public class UserDTO {
     public void setStatus(Integer status) { this.status = status; }
     public String getPointsBalance() { return pointsBalance; }
     public void setPointsBalance(String pointsBalance) { this.pointsBalance = pointsBalance; }
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

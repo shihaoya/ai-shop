@@ -446,6 +446,7 @@ public class OperatorService {
             dto.setNickname(u.getNickname());
             dto.setRole(u.getRole());
             dto.setStatus(u.getStatus());
+            dto.setCreatedAt(u.getCreatedAt() != null ? u.getCreatedAt().toString() : null);
             // 查询积分
             Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
                     .eq(Points::getUserId, u.getId())
@@ -551,6 +552,39 @@ public class OperatorService {
         userMapper.updateById(user);
 
         sendOrderMessage(userId, null, "您的账号已审核通过");
+
+        return Result.success();
+    }
+
+    @Transactional
+    public Result<?> rejectUser(Long operatorId, Long userId) {
+        Shop shop = getApprovedShop(operatorId);
+        if (shop == null) {
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
+        }
+
+        User user = userMapper.selectById(userId);
+        if (user == null || !user.getParentId().equals(operatorId)) {
+            return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
+        }
+        if (user.getStatus() != UserStatus.PENDING.getCode()) {
+            return Result.fail(ResultCode.FAIL, "用户不是待审核状态");
+        }
+
+        // 软删除用户
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getId, userId).set(User::getDeleted, 1);
+        userMapper.update(null, updateWrapper);
+
+        // 作废该用户的邀请码
+        InviteCode code = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
+                .eq(InviteCode::getCreatorId, userId)
+                .eq(InviteCode::getStatus, InviteCodeStatus.ACTIVE.getCode())
+                .eq(InviteCode::getDeleted, 0));
+        if (code != null) {
+            code.setStatus(InviteCodeStatus.INVALID.getCode());
+            inviteCodeMapper.updateById(code);
+        }
 
         return Result.success();
     }

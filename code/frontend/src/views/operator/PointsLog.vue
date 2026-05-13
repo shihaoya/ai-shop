@@ -208,6 +208,6 @@ onMounted(() => {
 }
 
 :deep(.cyber-table-row:hover) {
-  background: rgba(102, 126, 234, 0.05);
+  background: rgba(var(--accent-rgb), 0.05);
 }
 </style>

@@ -136,8 +136,8 @@ loadCodes()
   right: 0;
   bottom: 0;
   background-image:
-    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(var(--accent-rgb), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   z-index: 0;
@@ -172,7 +172,7 @@ loadCodes()
   display: inline-block;
   width: 4px;
   height: 20px;
-  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  background: linear-gradient(180deg, var(--accent), var(--accent-light));
   border-radius: 2px;
 }
 .invite-card {
@@ -219,22 +219,22 @@ loadCodes()
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(99,102,241,0.1);
+  background: rgba(var(--accent-rgb), 0.10);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  color: #6366f1;
+  color: var(--accent);
   margin-bottom: 8px;
 }
 .invite-code-display {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: 4px;
-  color: #6366f1;
+  color: var(--accent);
   font-family: 'Courier New', monospace;
-  background: rgba(99,102,241,0.06);
-  border: 1px dashed rgba(99,102,241,0.3);
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px dashed rgba(var(--accent-rgb), 0.30);
   border-radius: 8px;
   padding: 16px 32px;
   user-select: all;
@@ -268,18 +268,18 @@ loadCodes()
   transition: all 0.2s;
 }
 .cyber-btn:hover {
-  border-color: rgba(99,102,241,0.4);
-  color: #6366f1;
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .cyber-btn-primary {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   border-color: transparent;
   color: #fff;
 }
 .cyber-btn-primary:hover {
   opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.30);
 }
 .cyber-btn-primary:disabled {
   opacity: 0.6;

@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
-import { adjustPoints, getUsers } from '@/api/operator'
+import { adjustPoints, getUsers, approveUser, rejectUser } from '@/api/operator'
 import { useThemeStore } from '@/stores/theme'
 import type { UserInfo } from '@/types/api'
 
@@ -92,6 +92,50 @@ async function handleAdjustPoints() {
   }
 }
 
+async function handleApprove(userId: string) {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      Modal.confirm({
+        title: '确认通过',
+        content: '确定要通过该用户的注册申请吗？',
+        okText: '确认',
+        cancelText: '取消',
+        onOk: () => resolve(),
+        onCancel: () => reject(new Error('cancel'))
+      })
+    })
+    await approveUser(userId)
+    message.success('已通过审核')
+    loadUsers()
+  } catch (e: any) {
+    if (e?.message !== 'cancel') {
+      message.error(e?.message || (e as Error)?.message || '操作失败')
+    }
+  }
+}
+
+async function handleReject(userId: string) {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      Modal.confirm({
+        title: '确认拒绝',
+        content: '确定要拒绝该用户的注册申请吗？拒绝后将软删除该用户。',
+        okText: '确认',
+        cancelText: '取消',
+        onOk: () => resolve(),
+        onCancel: () => reject(new Error('cancel'))
+      })
+    })
+    await rejectUser(userId)
+    message.success('已拒绝')
+    loadUsers()
+  } catch (e: any) {
+    if (e?.message !== 'cancel') {
+      message.error(e?.message || (e as Error)?.message || '操作失败')
+    }
+  }
+}
+
 function goToPointsLog(userId: string) {
   router.push({ name: 'OpUserPointsLog', params: { id: userId } })
 }
@@ -150,7 +194,6 @@ function formatDate(date?: string) {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>用户名</th>
                 <th>昵称</th>
                 <th>积分</th>
@@ -161,7 +204,6 @@ function formatDate(date?: string) {
             </thead>
             <tbody>
               <tr v-for="user in users" :key="user.id">
-                <td class="id-cell">{{ user.id }}</td>
                 <td><strong>{{ user.username }}</strong></td>
                 <td>{{ user.nickname }}</td>
                 <td>
@@ -174,16 +216,22 @@ function formatDate(date?: string) {
                 </td>
                 <td class="time-cell">{{ formatDate(user.createdAt) }}</td>
                 <td>
-                  <button class="action-btn accent" title="调整积分" @click="openAdjustModal(user)">
+                  <button v-if="user.status === 1" class="action-btn green" title="通过" @click="handleApprove(user.id)">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button v-if="user.status === 1" class="action-btn red" title="拒绝" @click="handleReject(user.id)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  <button v-if="user.status !== 1" class="action-btn accent" title="调整积分" @click="openAdjustModal(user)">
                     <i class="fas fa-coins"></i>
                   </button>
-                  <button class="action-btn" title="积分流水" @click="goToPointsLog(user.id)">
+                  <button v-if="user.status !== 1" class="action-btn" title="积分流水" @click="goToPointsLog(user.id)">
                     <i class="fas fa-history"></i>
                   </button>
                 </td>
               </tr>
               <tr v-if="users.length === 0 && !loading">
-                <td colspan="7" class="empty-cell">
+                <td colspan="6" class="empty-cell">
                   <i class="fas fa-inbox" style="font-size:32px;opacity:0.3;"></i>
                   <p>暂无数据</p>
                 </td>

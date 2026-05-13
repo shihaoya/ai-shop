@@ -217,7 +217,7 @@ function handleDelete(category: Category) {
 .accent-line {
   width: 4px;
   height: 20px;
-  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  background: var(--accent);
   border-radius: 2px;
 }
 
@@ -231,8 +231,8 @@ function handleDelete(category: Category) {
   align-items: center;
   justify-content: center;
   padding: 8px 16px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
   font-size: 13px;
@@ -241,23 +241,23 @@ function handleDelete(category: Category) {
 }
 
 .cyber-btn:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
+  background: var(--bg-hover);
+  border-color: var(--border-color);
 }
 
 .cyber-btn-primary {
   background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3));
-  border-color: rgba(99,102,241,0.5);
+  border-color: var(--accent);
 }
 
 .cyber-btn-primary:hover {
   background: linear-gradient(135deg, rgba(99,102,241,0.5), rgba(139,92,246,0.5));
-  border-color: rgba(99,102,241,0.7);
+  border-color: var(--accent);
 }
 
 .table-card {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -272,7 +272,7 @@ table {
 }
 
 th {
-  background: rgba(255,255,255,0.03);
+  background: var(--bg-secondary);
   padding: 14px 16px;
   text-align: left;
   font-size: 12px;
@@ -280,14 +280,14 @@ th {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--border-color);
 }
 
 td {
   padding: 14px 16px;
   font-size: 13px;
   color: var(--text-primary);
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border-color);
 }
 
 tr:last-child td {
@@ -295,6 +295,6 @@ tr:last-child td {
 }
 
 tr:hover td {
-  background: rgba(255,255,255,0.02);
+  background: var(--bg-hover);
 }
 </style>

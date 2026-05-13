@@ -36,7 +36,7 @@ async function loadMyShop() {
     const res: any = await getMyShop()
     if (res && res.hasShop === false) {
       shop.value = null
-      setHasShop(false)
+      setHasShop(false, null)
     } else if (res) {
       shop.value = {
         id: String(res.id),
@@ -46,7 +46,7 @@ async function loadMyShop() {
         isActive: res.isActive,
         createdAt: res.createdAt,
       }
-      setHasShop(true)
+      setHasShop(true, res.status ?? null)
     } else {
       shop.value = null
     }
@@ -164,7 +164,7 @@ function handleToggleStatus() {
       </div>
 
       <!-- 店铺信息（审核中/被拒/已通过都显示） -->
-      <div v-else class="shop-info-card cyber-card" v-loading="loading">
+      <div v-else class="shop-info-card cyber-card">
         <div class="shop-header">
           <div class="shop-avatar">
             <i class="fas fa-store"></i>

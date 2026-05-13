@@ -6,14 +6,22 @@ import { useSidebarStore } from '@/stores/sidebar'
 import { useSidebarMenu } from '@/composables/useSidebarMenu'
 import { useOperatorShop } from '@/composables/useOperatorShop'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
+import { getMyShop } from '@/api/operator'
 
 const themeStore = useThemeStore()
 const sidebarStore = useSidebarStore()
-const { hasShop } = useOperatorShop()
-const { items: navItems, currentLabel, isActive } = useSidebarMenu('/operator', hasShop.value)
+const { hasShop, shopStatus, setHasShop } = useOperatorShop()
+const { items: navItems, currentLabel, isActive } = useSidebarMenu('/operator', hasShop, shopStatus)
 
-onMounted(() => {
+onMounted(async () => {
   themeStore.init()
+  // 根据店铺审核状态自动加载菜单
+  try {
+    const shop = await getMyShop()
+    setHasShop(!!shop && !!shop.id, shop?.status ?? null)
+  } catch {
+    setHasShop(false, null)
+  }
 })
 </script>
 

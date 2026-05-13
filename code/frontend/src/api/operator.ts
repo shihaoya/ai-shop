@@ -104,6 +104,10 @@ export function approveUser(userId: string | number): Promise<null> {
   return request.put<null>(`/operator/users/${userId}/approve`) as any
 }
 
+export function rejectUser(userId: string | number): Promise<null> {
+  return request.put<null>(`/operator/users/${userId}/reject`) as any
+}
+
 export function createUser(username: string, nickname: string, password: string): Promise<UserInfo> {
   return request.post<UserInfo>('/operator/users/create', { username, nickname, password }) as any
 }

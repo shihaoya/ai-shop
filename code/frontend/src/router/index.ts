@@ -48,7 +48,6 @@ const routes: RouteRecordRaw[] = [
       { path: 'orders', name: 'OpOrders', component: () => import('@/views/operator/OrderManage.vue'), meta: { title: '订单管理', sidebar: true, icon: 'fa-receipt' } },
       { path: 'orders/:id', name: 'OpOrderDetail', component: () => import('@/views/operator/OrderDetail.vue'), meta: { title: '订单详情' } },
       { path: 'users', name: 'OpUsers', component: () => import('@/views/operator/UserPoints.vue'), meta: { title: '用户管理', sidebar: true, icon: 'fa-users' } },
-      { path: 'users/approve', name: 'OpUserApprove', component: () => import('@/views/operator/UserApprove.vue'), meta: { title: '用户审核' } },
       { path: 'users/:id/points', name: 'OpUserPointsLog', component: () => import('@/views/operator/PointsLog.vue'), meta: { title: '积分流水' } },
       { path: 'invite-code', name: 'OpInviteCode', component: () => import('@/views/operator/InviteCodeManage.vue'), meta: { title: '邀请码', sidebar: true, icon: 'fa-qrcode' } },
       { path: 'messages', name: 'OpMessages', component: () => import('@/views/operator/MessageManage.vue'), meta: { title: '消息', sidebar: true, icon: 'fa-envelope' } },

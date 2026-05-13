@@ -1,5 +1,6 @@
 import { useRouter, useRoute } from 'vue-router'
 import { computed, type Ref } from 'vue'
+import { ShopStatus } from '@/types/enums'
 
 export interface SidebarItem {
   label: string
@@ -9,12 +10,13 @@ export interface SidebarItem {
 
 const MINIMAL_MENU_PATHS = ['/operator/shop', '/operator/messages']
 
-export function useSidebarMenu(basePath: string, hasShop: Ref<boolean> | boolean = true) {
+export function useSidebarMenu(basePath: string, hasShop: Ref<boolean> | boolean = true, shopStatus: Ref<number | null> | number | null = null) {
   const router = useRouter()
   const route = useRoute()
 
   const prefix = basePath.endsWith('/') ? basePath : basePath + '/'
   const hasShopRef = computed(() => typeof hasShop === 'boolean' ? hasShop : hasShop.value)
+  const statusRef = computed(() => typeof shopStatus === 'number' || shopStatus === null ? shopStatus : (shopStatus as Ref<number | null>)?.value ?? null)
 
   const items = computed<SidebarItem[]>(() => {
     // 从所有已注册路由中筛选出以 basePath/ 开头且标记了 sidebar 的
@@ -23,8 +25,9 @@ export function useSidebarMenu(basePath: string, hasShop: Ref<boolean> | boolean
       .getRoutes()
       .filter(r => r.path.startsWith(prefix) && r.meta?.sidebar)
 
-    // 无店铺时只显示核心页面
-    if (!hasShopRef.value) {
+    const status = statusRef.value
+    // 待审核/被拒/禁用状态也只显示核心页面
+    if (!hasShopRef.value || status === ShopStatus.PENDING || status === ShopStatus.REJECTED || status === ShopStatus.DISABLED) {
       routes = routes.filter(r => MINIMAL_MENU_PATHS.includes(r.path))
     }
 

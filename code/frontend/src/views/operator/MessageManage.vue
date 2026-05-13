@@ -149,8 +149,8 @@ function formatDate(date?: string) {
   right: 0;
   bottom: 0;
   background-image:
-    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--border-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   z-index: 0;
@@ -203,10 +203,10 @@ function formatDate(date?: string) {
 
 .unread-badge {
   padding: 6px 16px;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
-  color: #ef4444;
+  color: var(--red);
   font-size: 14px;
   font-weight: 500;
 }
@@ -216,7 +216,6 @@ function formatDate(date?: string) {
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
-  backdrop-filter: blur(10px);
 }
 
 .message-list {
@@ -245,7 +244,7 @@ function formatDate(date?: string) {
 
 .message-item.unread {
   border-left: 3px solid var(--accent);
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), transparent);
+  background: var(--bg-secondary);
 }
 
 .message-icon {
@@ -305,10 +304,10 @@ function formatDate(date?: string) {
 
 .status-unread {
   padding: 4px 10px;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  color: #ef4444;
+  color: var(--red);
   font-size: 12px;
   font-weight: 500;
 }
@@ -396,11 +395,11 @@ function formatDate(date?: string) {
 }
 
 .message-row:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--bg-hover);
 }
 
 .message-row.unread {
-  background: rgba(99, 102, 241, 0.05);
+  background: var(--bg-secondary);
 }
 
 .message-row.unread td {
@@ -417,9 +416,9 @@ function formatDate(date?: string) {
 }
 
 .read-dot.unread {
-  background: #ef4444;
+  background: var(--red);
   opacity: 1;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  box-shadow: var(--accent-glow);
 }
 
 .title-cell {
@@ -434,10 +433,10 @@ function formatDate(date?: string) {
   display: inline-block;
   padding: 2px 8px;
   font-size: 12px;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: var(--bg-secondary);
+  color: var(--red);
   border-radius: 4px;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid var(--border-color);
 }
 
 .content-cell {
@@ -466,7 +465,7 @@ function formatDate(date?: string) {
   justify-content: flex-end;
   gap: 16px;
   padding: 16px 20px;
-  border-top: 1px solid rgba(99, 102, 241, 0.15);
+  border-top: 1px solid var(--border-color);
 }
 
 .total-text {
@@ -486,8 +485,8 @@ function formatDate(date?: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
   cursor: pointer;
@@ -495,7 +494,7 @@ function formatDate(date?: string) {
 }
 
 .page-btn:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.2);
+  background: var(--bg-hover);
   border-color: var(--accent);
 }
 
@@ -513,8 +512,8 @@ function formatDate(date?: string) {
 
 .page-size-select {
   padding: 6px 12px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-primary);
   font-size: 14px;

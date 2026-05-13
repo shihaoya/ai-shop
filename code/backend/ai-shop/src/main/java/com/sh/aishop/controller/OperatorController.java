@@ -220,6 +220,13 @@ public class OperatorController {
         return operatorService.approveUser(userId, id);
     }
 
+    @Operation(summary = "拒绝用户", description = "拒绝普通用户注册申请（软删除）")
+    @PutMapping("/users/{id}/reject")
+    public Result<?> rejectUser(@PathVariable("id") Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return operatorService.rejectUser(userId, id);
+    }
+
     @Operation(summary = "我的邀请码", description = "获取当前运营人员的邀请码")
     @GetMapping("/invite-code")
     public Result<?> getInviteCode(HttpServletRequest request) {
