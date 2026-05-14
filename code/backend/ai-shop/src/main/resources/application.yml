@@ -50,3 +50,24 @@ knife4j:
 # Server
 server:
   port: 18780
+
+# 文件上传配置
+upload:
+  enabled: true
+  storage-type: local  # local / oss
+  local:
+    base-path: /uploads
+    access-path: /api/file/
+  oss:
+    enabled: false
+    endpoint: ""
+    bucket: ""
+    access-key: ""
+    secret-key: ""
+    domain: ""
+  allowed-extensions:
+    - jpg
+    - jpeg
+    - png
+    - gif
+  max-size: 10485760

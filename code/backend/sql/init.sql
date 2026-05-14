@@ -196,6 +196,30 @@ CREATE TABLE `message` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='消息表';
 
 -- ============================================
+-- 10. file_record 文件记录表
+-- ============================================
+CREATE TABLE `file_record` (
+  `id` BIGINT NOT NULL COMMENT '雪花ID，主键',
+  `file_name` VARCHAR(255) NOT NULL COMMENT '原始文件名',
+  `file_path` VARCHAR(500) NOT NULL COMMENT '存储路径',
+  `file_size` BIGINT NOT NULL COMMENT '文件大小(字节)',
+  `file_type` VARCHAR(50) NOT NULL COMMENT '文件MIME类型',
+  `file_ext` VARCHAR(20) NOT NULL COMMENT '文件扩展名',
+  `storage_type` TINYINT NOT NULL DEFAULT 1 COMMENT '存储类型: 1=本地 2=OSS',
+  `business_type` VARCHAR(50) COMMENT '业务类型: product, avatar, etc.',
+  `business_id` BIGINT COMMENT '关联业务ID',
+  `url` VARCHAR(500) COMMENT '访问URL',
+  `deleted` TINYINT DEFAULT 0 COMMENT '0=未删除 1=已删除',
+  `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `created_by` BIGINT COMMENT '创建人ID',
+  `updated_by` BIGINT COMMENT '更新人ID',
+  PRIMARY KEY (`id`),
+  INDEX `idx_business` (`business_type`, `business_id`),
+  INDEX `idx_storage_type` (`storage_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件记录表';
+
+-- ============================================
 -- 预置管理员账号
 -- 用户名：admin，密码：admin123
 -- 密码为 BCrypt 加密后的值

@@ -8,6 +8,9 @@ public class ResultCode {
     public static final int NOT_FOUND = 404;
     public static final int SERVER_ERROR = 500;
 
+    // 数据相关 500-599
+    public static final int DATA_NOT_FOUND = 501;
+
     // 认证模块 1000-1099
     public static final int USERNAME_PASSWORD_ERROR = 1001;
     public static final int USER_DISABLED = 1002;

@@ -126,13 +126,27 @@ export interface Address {
 export interface PointsLog {
   id: string
   userId: string
-  type: number        // 1=增加, 2=扣除
   amount: number
   balance: number
+  type: number      // 1=发放, 2=扣除, 3=兑换, 4=退款
   remark?: string
   operatorId?: string
-  operatorName?: string
-  createdAt?: string
+  createdAt: string
+}
+
+// ============ 文件记录 ============
+export interface FileRecord {
+  id: string
+  fileName: string
+  filePath: string
+  fileSize: number
+  fileType: string
+  fileExt: string
+  storageType: number  // 1=本地, 2=OSS
+  businessType: string
+  businessId: number
+  url: string
+  createdAt: string
 }
 
 // ============ 邀请码 ============

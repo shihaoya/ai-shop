@@ -36,6 +36,10 @@ public class Result<T> implements Serializable {
         return r;
     }
 
+    public static <T> Result<T> fail(int code) {
+        return fail(code, "操作失败");
+    }
+
     public static <T> Result<T> fail(String message) {
         return fail(ResultCode.FAIL, message);
     }
