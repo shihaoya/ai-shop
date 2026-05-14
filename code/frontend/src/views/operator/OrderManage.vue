@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getOrders } from '@/api/operator'
-import { message } from 'ant-design-vue'
+import { getOrders, confirmOrder, shipOrder, completeOrder } from '@/api/operator'
+import { message, Modal } from 'ant-design-vue'
 import type { Order } from '@/types/api'
+import { OrderStatus, OrderStatusText, OrderStatusClass } from '@/types/enums'
+import { useOperatorShop } from '@/composables/useOperatorShop'
 
 const themeStore = useThemeStore()
+const { isApproved } = useOperatorShop()
 
 onMounted(() => {
-  themeStore.init()
   loadOrders()
 })
 
@@ -20,16 +22,21 @@ const selectedStatus = ref<number | undefined>(undefined)
 // 状态筛选选项
 const statusOptions = [
   { value: undefined, label: '全部' },
-  { value: 1, label: '已下单' },
-  { value: 2, label: '已确认' },
-  { value: 3, label: '已发货' },
-  { value: 4, label: '已完成' },
-  { value: 5, label: '已关闭' },
+  { value: OrderStatus.PENDING, label: OrderStatusText[OrderStatus.PENDING] },
+  { value: OrderStatus.CONFIRMED, label: OrderStatusText[OrderStatus.CONFIRMED] },
+  { value: OrderStatus.SHIPPED, label: OrderStatusText[OrderStatus.SHIPPED] },
+  { value: OrderStatus.COMPLETED, label: OrderStatusText[OrderStatus.COMPLETED] },
+  { value: OrderStatus.CLOSED, label: OrderStatusText[OrderStatus.CLOSED] },
 ]
 
 // 订单详情弹框
 const detailVisible = ref(false)
 const currentOrder = ref<Order | null>(null)
+
+// 发货弹框
+const shipVisible = ref(false)
+const shipForm = ref({ carrier: '', trackingNo: '' })
+const shipLoading = ref(false)
 
 async function loadOrders() {
   loading.value = true
@@ -74,19 +81,85 @@ function viewDetail(order: Order) {
 }
 
 function getStatusTag(status: number) {
-  const map: Record<number, { text: string; class: string }> = {
-    1: { text: '已下单', class: 'blue' },
-    2: { text: '已确认', class: 'cyan' },
-    3: { text: '已发货', class: 'orange' },
-    4: { text: '已完成', class: 'green' },
-    5: { text: '已关闭', class: 'gray' },
+  return {
+    text: OrderStatusText[status] || '未知',
+    class: OrderStatusClass[status] || 'gray',
   }
-  return map[status] || { text: '未知', class: 'gray' }
 }
 
 function formatDate(date?: string) {
   if (!date) return '-'
   return new Date(date).toLocaleString('zh-CN')
+}
+
+// 订单操作
+function openShipModal(order: Order) {
+  currentOrder.value = order
+  shipForm.value = { carrier: '', trackingNo: '' }
+  shipVisible.value = true
+}
+
+async function handleConfirm(order: Order) {
+  Modal.confirm({
+    title: '确认订单',
+    content: `确定要确认订单 "${order.orderNo}" 吗？`,
+    okText: '确认',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        await confirmOrder(order.id)
+        message.success('订单已确认')
+        loadOrders()
+      } catch (e: any) {
+        message.error(e?.message || '操作失败')
+        throw e
+      }
+    },
+  })
+}
+
+async function handleShip() {
+  if (!shipForm.value.carrier.trim()) {
+    message.warning('请输入物流公司')
+    return
+  }
+  if (!shipForm.value.trackingNo.trim()) {
+    message.warning('请输入物流单号')
+    return
+  }
+  if (!currentOrder.value) return
+
+  shipLoading.value = true
+  try {
+    await shipOrder(currentOrder.value.id, shipForm.value.trackingNo.trim(), shipForm.value.carrier.trim())
+    message.success('已发货')
+    shipVisible.value = false
+    loadOrders()
+  } catch (e: any) {
+    message.error(e?.message || '操作失败')
+    throw e
+  } finally {
+    shipLoading.value = false
+  }
+}
+
+async function handleComplete(order: Order) {
+  Modal.confirm({
+    title: '完成订单',
+    content: `确定将订单 "${order.orderNo}" 标记为已完成吗？`,
+    okText: '确认',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        await completeOrder(order.id)
+        message.success('订单已完成')
+        loadOrders()
+      } catch (e: any) {
+        message.error(e?.message || '操作失败')
+        throw e
+      }
+    },
+  })
 }
 </script>
 
@@ -106,6 +179,12 @@ function formatDate(date?: string) {
             <i class="fas fa-sync-alt" style="margin-right:5px;"></i>刷新
           </button>
         </div>
+      </div>
+
+      <!-- 警告 Banner -->
+      <div v-if="!isApproved()" class="warning-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>您的店铺尚未通过审核，暂时无法管理订单</span>
       </div>
 
       <!-- Filter Card -->
@@ -139,7 +218,7 @@ function formatDate(date?: string) {
                 <th>积分</th>
                 <th>状态</th>
                 <th>时间</th>
-                <th style="width:80px;">操作</th>
+                <th style="width:140px;">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -158,9 +237,35 @@ function formatDate(date?: string) {
                 </td>
                 <td class="time-cell">{{ formatDate(order.createdAt) }}</td>
                 <td>
-                  <button class="action-btn cyan" title="查看详情" @click="viewDetail(order)">
-                    <i class="fas fa-eye"></i>
-                  </button>
+                  <div class="action-btns">
+                    <button class="action-btn cyan" title="查看详情" @click="viewDetail(order)">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      v-if="order.status === OrderStatus.PENDING"
+                      class="action-btn green"
+                      title="确认订单"
+                      @click="handleConfirm(order)"
+                    >
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button
+                      v-if="order.status === OrderStatus.CONFIRMED"
+                      class="action-btn purple"
+                      title="发货"
+                      @click="openShipModal(order)"
+                    >
+                      <i class="fas fa-truck"></i>
+                    </button>
+                    <button
+                      v-if="order.status === OrderStatus.SHIPPED"
+                      class="action-btn green"
+                      title="完成订单"
+                      @click="handleComplete(order)"
+                    >
+                      <i class="fas fa-flag-checkered"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
               <tr v-if="orders.length === 0 && !loading">
@@ -252,6 +357,45 @@ function formatDate(date?: string) {
               <label>下单时间</label>
               <span>{{ formatDate(currentOrder.createdAt) }}</span>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ship Modal -->
+    <div class="modal-overlay" v-if="shipVisible" @click.self="shipVisible = false">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3><span class="accent-line"></span>发货</h3>
+          <button class="modal-close" @click="shipVisible = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-item">
+            <label>物流公司</label>
+            <input
+              v-model="shipForm.carrier"
+              type="text"
+              placeholder="请输入物流公司名称"
+              class="cyber-input"
+            />
+          </div>
+          <div class="form-item">
+            <label>物流单号</label>
+            <input
+              v-model="shipForm.trackingNo"
+              type="text"
+              placeholder="请输入物流单号"
+              class="cyber-input"
+            />
+          </div>
+          <div class="modal-actions">
+            <button class="cyber-btn" @click="shipVisible = false">取消</button>
+            <button class="cyber-btn-primary" :disabled="shipLoading" @click="handleShip">
+              <i v-if="shipLoading" class="fas fa-spinner fa-spin"></i>
+              <span v-else>确认发货</span>
+            </button>
           </div>
         </div>
       </div>
@@ -376,9 +520,11 @@ function formatDate(date?: string) {
 }
 
 .table-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
+  background: rgba(13, 15, 36, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
   overflow: hidden;
   margin-bottom: 20px;
   position: relative;
@@ -391,32 +537,37 @@ function formatDate(date?: string) {
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 13px;
 }
 
 thead {
-  background: var(--bg-secondary);
+  background: rgba(var(--accent-rgb), 0.03);
 }
 
 th {
-  padding: 14px 16px;
+  padding: 12px 14px;
   text-align: left;
-  font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border-color);
+  letter-spacing: 0.8px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 td {
-  padding: 14px 16px;
-  font-size: 13px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.05);
   color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+tbody tr {
+  transition: all 0.2s ease;
 }
 
 tbody tr:hover {
-  background: var(--bg-hover);
+  background: rgba(var(--accent-rgb), 0.04);
 }
 
 .id-cell {
@@ -482,6 +633,30 @@ tbody tr:hover {
 .action-btn.green:hover { border-color: var(--green); color: var(--green); box-shadow: 0 0 15px rgba(34, 197, 94, 0.25); }
 .action-btn.red:hover { border-color: var(--red); color: var(--red); box-shadow: 0 0 15px rgba(239, 68, 68, 0.25); }
 .action-btn.cyan:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 15px rgba(34, 211, 238, 0.25); }
+.action-btn.purple:hover { border-color: var(--purple); color: var(--purple); box-shadow: 0 0 15px rgba(168, 85, 247, 0.25); }
+
+.action-btns {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 8px;
+  color: #f59e0b;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.warning-banner i {
+  font-size: 18px;
+}
 
 .empty-cell {
   text-align: center;

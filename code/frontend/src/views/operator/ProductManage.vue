@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
+import { useUserStore } from '@/stores/user'
+import { useOperatorShop } from '@/composables/useOperatorShop'
 import { getProducts, deleteProduct } from '@/api/operator'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
+import { ProductStatus, ProductStatusText, ProductStatusClass } from '@/types/enums'
 import type { Product } from '@/types/api'
 
 const themeStore = useThemeStore()
+const userStore = useUserStore()
 const router = useRouter()
+const { isApproved } = useOperatorShop()
+
+// 店铺审核状态
+const shopApproved = computed(() => isApproved())
 
 onMounted(() => {
   themeStore.init()
@@ -51,34 +59,52 @@ function handleEdit(productId: string) {
 }
 
 async function handleToggleStatus(product: Product) {
-  const newStatus = product.status === 1 ? 0 : 1
-  try {
-    // 导入 updateProduct 来切换状态
-    const { updateProduct } = await import('@/api/operator')
-    await updateProduct(product.id, { status: newStatus })
-    message.success(newStatus === 1 ? '上架成功' : '下架成功')
-    loadProducts()
-  } catch (e) {
-    throw e
-  }
+  const newStatus = product.status === ProductStatus.ON ? ProductStatus.OFF : ProductStatus.ON
+  const actionText = newStatus === ProductStatus.ON ? '上架' : '下架'
+
+  Modal.confirm({
+    title: `确认${actionText}`,
+    content: `确定要将商品"${product.name}"设置为${actionText}状态吗？`,
+    okText: '确认',
+    cancelText: '取消',
+    maskClosable: false,
+    onOk: async () => {
+      try {
+        const { updateProduct } = await import('@/api/operator')
+        await updateProduct(product.id, { status: newStatus })
+        message.success(`${actionText}成功`)
+        loadProducts()
+      } catch (e) {
+        throw e
+      }
+    }
+  })
 }
 
 async function handleDelete(productId: string) {
-  try {
-    await deleteProduct(productId)
-    message.success('删除成功')
-    loadProducts()
-  } catch (e) {
-    throw e
-  }
+  Modal.confirm({
+    title: '确认删除',
+    content: '确定要删除该商品吗？删除后不可恢复。',
+    okText: '确认删除',
+    okType: 'danger',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        await deleteProduct(productId)
+        message.success('删除成功')
+        loadProducts()
+      } catch (e) {
+        throw e
+      }
+    }
+  })
 }
 
 function getStatusTag(status: number) {
-  const map: Record<number, { text: string; class: string }> = {
-    0: { text: '已下架', class: 'red' },
-    1: { text: '已上架', class: 'green' },
+  return {
+    text: ProductStatusText[status] || '未知',
+    class: ProductStatusClass[status] || 'gray'
   }
-  return map[status] || { text: '未知', class: 'gray' }
 }
 
 function getTypeTag(type: string) {
@@ -98,6 +124,15 @@ function getTypeTag(type: string) {
     <div class="cyber-bg-orb" style="width:400px;height:400px;bottom:10%;left:-100px;background:rgba(236,72,153,0.06);"></div>
 
     <div class="page-content">
+      <!-- 店铺未审核通过警告 -->
+      <div v-if="!shopApproved" class="warning-banner">
+        <div class="warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="warning-text">
+          <strong>店铺尚未审核通过</strong>
+          <span>您的店铺仍在审核中，暂时无法进行商品管理操作。</span>
+        </div>
+      </div>
+
       <!-- Page Head -->
       <div class="page-head">
         <h2><span class="accent-line"></span>商品管理</h2>
@@ -105,7 +140,7 @@ function getTypeTag(type: string) {
           <button class="cyber-btn" @click="loadProducts">
             <i class="fas fa-sync-alt" style="margin-right:5px;"></i>刷新
           </button>
-          <button class="cyber-btn cyber-btn-primary" @click="handleAdd">
+          <button class="cyber-btn cyber-btn-primary" :disabled="!isApproved()" @click="handleAdd">
             <i class="fas fa-plus" style="margin-right:5px;"></i>新增商品
           </button>
         </div>
@@ -156,17 +191,18 @@ function getTypeTag(type: string) {
                 </td>
                 <td>
                   <div class="action-btns">
-                    <button class="cyber-btn-sm" @click="handleEdit(product.id)">
+                    <button class="cyber-btn-sm" :disabled="!isApproved()" @click="handleEdit(product.id)">
                       <i class="fas fa-edit"></i>
                     </button>
                     <button
                       class="cyber-btn-sm"
                       :class="product.status === 1 ? 'cyber-btn-warning' : 'cyber-btn-success'"
+                      :disabled="!isApproved()"
                       @click="handleToggleStatus(product)"
                     >
                       <i :class="product.status === 1 ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
                     </button>
-                    <button class="cyber-btn-sm cyber-btn-danger" @click="handleDelete(product.id)">
+                    <button class="cyber-btn-sm cyber-btn-danger" :disabled="!isApproved()" @click="handleDelete(product.id)">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
@@ -318,5 +354,46 @@ function getTypeTag(type: string) {
   background: rgba(156,163,175,0.15);
   color: #9ca3af;
   border: 1px solid rgba(156,163,175,0.3);
+}
+
+.warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(234,88,12,0.08));
+  border: 1px solid rgba(249,115,22,0.35);
+  border-radius: 10px;
+  color: #f97316;
+}
+
+.warning-banner .warning-icon {
+  font-size: 20px;
+  color: #f97316;
+}
+
+.warning-banner .warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.warning-banner .warning-text strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ea580c;
+}
+
+.warning-banner .warning-text span {
+  font-size: 13px;
+  color: #fb923c;
+}
+
+.cyber-btn:disabled,
+.cyber-btn-sm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 </style>

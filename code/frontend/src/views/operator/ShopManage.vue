@@ -172,12 +172,13 @@ function handleToggleStatus() {
           <div class="shop-title">
             <h3>{{ shop?.name }}</h3>
             <div class="shop-status-line">
-              <span class="status-tag" :class="shop?.status === ShopStatus.APPROVED ? (ShopActiveStatusClass[shop!.isActive] ?? '') : (ShopStatusClass[shop!.status] ?? '')">
-                <i :class="shop?.status === ShopStatus.APPROVED
-                  ? (shop!.isActive === ShopActiveStatus.OPEN ? 'fas fa-power-off' : 'fas fa-moon')
-                  : (shop!.status === ShopStatus.PENDING ? 'fas fa-hourglass-half' : 'fas fa-times-circle')"
-                   style="margin-right:5px;"></i>
-                {{ shop?.status === ShopStatus.APPROVED ? (ShopActiveStatusText[shop!.isActive] ?? '') : (ShopStatusText[shop!.status] ?? '') }}
+              <span class="status-tag" :class="ShopActiveStatusClass[shop!.isActive] ?? ''">
+                <i :class="shop!.isActive === ShopActiveStatus.OPEN ? 'fas fa-power-off' : 'fas fa-moon'" style="margin-right:5px;"></i>
+                {{ ShopActiveStatusText[shop!.isActive] }}
+              </span>
+              <span class="status-tag" :class="ShopStatusClass[shop!.status] ?? ''">
+                <i class="fas fa-shield-alt" style="margin-right:5px;"></i>
+                {{ ShopStatusText[shop!.status] }}
               </span>
               <span v-if="shop?.status === ShopStatus.PENDING" class="hint-text">等待管理员审核</span>
               <span v-if="shop?.status === ShopStatus.REJECTED" class="hint-text error">审核未通过</span>
@@ -189,10 +190,6 @@ function handleToggleStatus() {
           <div class="detail-row" v-if="shop?.description">
             <span class="detail-label">店铺描述</span>
             <span class="detail-value">{{ shop.description || '-' }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">店铺ID</span>
-            <span class="detail-value id-value">{{ shop?.id }}</span>
           </div>
           <div class="detail-row" v-if="shop?.createdAt">
             <span class="detail-label">创建时间</span>
@@ -222,13 +219,6 @@ function handleToggleStatus() {
         </div>
       </div>
 
-      <!-- 审核状态说明 -->
-      <div v-if="shopStatus === 'approved'" class="status-legend">
-        <h4>审核状态</h4>
-        <div class="legend-items">
-          <span class="status-tag green"><i class="fas fa-check" style="margin-right:5px;"></i>已通过</span>
-        </div>
-      </div>
     </div>
 
     <!-- 申请店铺弹窗 -->

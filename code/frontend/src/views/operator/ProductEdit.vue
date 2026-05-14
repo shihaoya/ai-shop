@@ -5,10 +5,12 @@ import { useThemeStore } from '@/stores/theme'
 import { getProduct, createProduct, updateProduct, getCategories } from '@/api/operator'
 import { message } from 'ant-design-vue'
 import type { Product, Category } from '@/types/api'
+import { useOperatorShop } from '@/composables/useOperatorShop'
 
 const route = useRoute()
 const router = useRouter()
 const themeStore = useThemeStore()
+const { isApproved } = useOperatorShop()
 
 // 判断是新增还是编辑
 const isEdit = computed(() => !!route.params.id)
@@ -94,6 +96,12 @@ async function loadProduct() {
 
 // 保存商品
 async function handleSave() {
+  // 店铺审核校验
+  if (!isApproved()) {
+    message.error('您的店铺尚未审核通过，暂时无法添加或编辑商品')
+    return
+  }
+
   // 表单验证
   if (!form.value.name.trim()) {
     message.error('请输入商品名称')
@@ -157,6 +165,12 @@ function handleBack() {
     <div class="cyber-bg-orb" style="width:400px;height:400px;bottom:10%;left:-100px;background:rgba(236,72,153,0.06);"></div>
 
     <div class="page-content">
+      <!-- 店铺未审核通过提示 -->
+      <div v-if="!isApproved()" class="shop-status-banner">
+        <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
+        您的店铺尚未审核通过，暂时无法添加或编辑商品
+      </div>
+
       <div class="page-head">
         <h2><span class="accent-line"></span>{{ pageTitle }}</h2>
         <button class="cyber-btn" @click="handleBack">
