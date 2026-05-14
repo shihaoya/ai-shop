@@ -1,21 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { message, Modal } from 'ant-design-vue'
+import { getProducts, createProduct, updateProduct, deleteProduct, getCategories } from '@/api/operator'
+import AnimatedSelect from '@/components/AnimatedSelect.vue'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useOperatorShop } from '@/composables/useOperatorShop'
-import { getProducts, deleteProduct } from '@/api/operator'
-import { message, Modal } from 'ant-design-vue'
 import { ProductStatus, ProductStatusText, ProductStatusClass } from '@/types/enums'
-import type { Product } from '@/types/api'
+import type { Product, Category } from '@/types/api'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
 const router = useRouter()
 const { isApproved } = useOperatorShop()
-
-// 店铺审核状态
-const shopApproved = computed(() => isApproved())
 
 onMounted(() => {
   themeStore.init()
@@ -24,6 +22,7 @@ onMounted(() => {
 
 const loading = ref(false)
 const products = ref<Product[]>([])
+const categories = ref<Category[]>([])
 const pagination = ref({ page: 1, size: 10, total: 0 })
 
 async function loadProducts() {
@@ -36,26 +35,132 @@ async function loadProducts() {
     }))
     pagination.value.total = res.total
   } catch (e: any) {
-    console.error('加载商品列表失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载失败')
-    throw e
+    message.error(e?.message || '加载商品失败')
   } finally {
     loading.value = false
   }
 }
 
-function handlePageChange(page: number, size: number) {
+const categoryOptions = computed(() =>
+  categories.value.map(c => ({ label: c.name, value: c.id }))
+)
+
+async function loadCategories() {
+  try {
+    const res = await getCategories()
+    categories.value = res.map((c: Category) => ({
+      ...c,
+      id: String(c.id)
+    }))
+  } catch (e: any) {
+    message.error(e?.message || '加载分类失败')
+  }
+}
+
+async function ensureCategories() {
+  if (categories.value.length === 0) {
+    await loadCategories()
+  }
+}
+
+function handlePageChange(page: number) {
   pagination.value.page = page
-  pagination.value.size = size
   loadProducts()
 }
 
-function handleAdd() {
-  router.push('/operator/product-edit')
+// 新增商品弹框
+const modalVisible = ref(false)
+const modalTitle = ref('新增商品')
+const editingProduct = ref<Product | null>(null)
+const formState = ref({
+  name: '',
+  categoryId: '',
+  type: 1,
+  price: 0,
+  stock: 0,
+  limitPerUser: 0,
+  mainImage: '',
+  description: ''
+})
+const submitLoading = ref(false)
+
+async function openAddModal() {
+  await ensureCategories()
+  modalTitle.value = '新增商品'
+  editingProduct.value = null
+  formState.value = {
+    name: '',
+    categoryId: categories.value[0]?.id || '',
+    type: 1,
+    price: 0,
+    stock: 0,
+    limitPerUser: 0,
+    mainImage: '',
+    description: ''
+  }
+  modalVisible.value = true
 }
 
-function handleEdit(productId: string) {
-  router.push(`/operator/product-edit?id=${productId}`)
+async function openEditModal(product: Product) {
+  await ensureCategories()
+  modalTitle.value = '编辑商品'
+  editingProduct.value = product
+  formState.value = {
+    name: product.name,
+    categoryId: String(product.categoryId),
+    type: Number(product.type),
+    price: product.price,
+    stock: product.stock,
+    limitPerUser: (product as any).limitPerUser || 0,
+    mainImage: (product as any).mainImage || '',
+    description: product.description || ''
+  }
+  modalVisible.value = true
+}
+
+async function handleSubmit() {
+  if (!formState.value.name.trim()) {
+    message.warning('请输入商品名称')
+    return
+  }
+  if (!formState.value.categoryId) {
+    message.warning('请选择分类')
+    return
+  }
+  if (formState.value.price <= 0) {
+    message.warning('请输入有效的积分价格')
+    return
+  }
+  if (formState.value.stock < 0) {
+    message.warning('库存不能为负数')
+    return
+  }
+  submitLoading.value = true
+  try {
+    const data = {
+      name: formState.value.name.trim(),
+      categoryId: formState.value.categoryId,
+      type: Number(formState.value.type),
+      price: Number(formState.value.price),
+      stock: Number(formState.value.stock),
+      limitPerUser: Number(formState.value.limitPerUser) || 0,
+      mainImage: formState.value.mainImage.trim() || undefined,
+      description: formState.value.description.trim() || undefined
+    }
+    if (editingProduct.value) {
+      await updateProduct(editingProduct.value.id, data)
+      message.success('商品更新成功')
+    } else {
+      await createProduct(data)
+      message.success('商品创建成功')
+    }
+    modalVisible.value = false
+    loadProducts()
+  } catch (e: any) {
+    message.error(e?.message || '操作失败')
+  } finally {
+    submitLoading.value = false
+  }
 }
 
 async function handleToggleStatus(product: Product) {
@@ -70,31 +175,30 @@ async function handleToggleStatus(product: Product) {
     maskClosable: false,
     onOk: async () => {
       try {
-        const { updateProduct } = await import('@/api/operator')
         await updateProduct(product.id, { status: newStatus })
         message.success(`${actionText}成功`)
         loadProducts()
-      } catch (e) {
-        throw e
+      } catch (e: any) {
+        message.error(e?.message || `${actionText}失败`)
       }
     }
   })
 }
 
-async function handleDelete(productId: string) {
+function handleDelete(product: Product) {
   Modal.confirm({
     title: '确认删除',
-    content: '确定要删除该商品吗？删除后不可恢复。',
+    content: `确定要删除商品「${product.name}」吗？删除后不可恢复。`,
     okText: '确认删除',
     okType: 'danger',
     cancelText: '取消',
     onOk: async () => {
       try {
-        await deleteProduct(productId)
+        await deleteProduct(product.id)
         message.success('删除成功')
         loadProducts()
-      } catch (e) {
-        throw e
+      } catch (e: any) {
+        message.error(e?.message || '删除失败')
       }
     }
   })
@@ -107,12 +211,13 @@ function getStatusTag(status: number) {
   }
 }
 
-function getTypeTag(type: string) {
-  const map: Record<string, { text: string; class: string }> = {
-    virtual: { text: '虚拟', class: 'blue' },
-    physical: { text: '实物', class: 'orange' },
+function getTypeTag(type: string | number) {
+  const t = Number(type)
+  const map: Record<number, { text: string; class: string }> = {
+    1: { text: '虚拟', class: 'blue' },
+    2: { text: '实物', class: 'orange' },
   }
-  return map[type] || { text: type, class: 'gray' }
+  return map[t] || { text: String(type), class: 'gray' }
 }
 </script>
 
@@ -124,13 +229,10 @@ function getTypeTag(type: string) {
     <div class="cyber-bg-orb" style="width:400px;height:400px;bottom:10%;left:-100px;background:rgba(236,72,153,0.06);"></div>
 
     <div class="page-content">
-      <!-- 店铺未审核通过警告 -->
-      <div v-if="!shopApproved" class="warning-banner">
-        <div class="warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="warning-text">
-          <strong>店铺尚未审核通过</strong>
-          <span>您的店铺仍在审核中，暂时无法进行商品管理操作。</span>
-        </div>
+      <!-- 店铺未审核通过提示 -->
+      <div v-if="userStore.token && !isApproved()" class="shop-status-banner">
+        <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>
+        您的店铺尚未审核通过，暂时无法管理商品
       </div>
 
       <!-- Page Head -->
@@ -140,7 +242,7 @@ function getTypeTag(type: string) {
           <button class="cyber-btn" @click="loadProducts">
             <i class="fas fa-sync-alt" style="margin-right:5px;"></i>刷新
           </button>
-          <button class="cyber-btn cyber-btn-primary" :disabled="!isApproved()" @click="handleAdd">
+          <button class="cyber-btn cyber-btn-primary" :disabled="!isApproved()" @click="openAddModal">
             <i class="fas fa-plus" style="margin-right:5px;"></i>新增商品
           </button>
         </div>
@@ -152,30 +254,31 @@ function getTypeTag(type: string) {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
                 <th>商品名称</th>
                 <th>分类</th>
                 <th>类型</th>
                 <th>价格</th>
                 <th>库存</th>
                 <th>状态</th>
-                <th>操作</th>
+                <th style="width:200px;">操作</th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-if="loading">
-                <td colspan="8" style="text-align:center;padding:40px;">
-                  <i class="fas fa-spinner fa-spin" style="font-size:24px;color:var(--text-secondary);"></i>
+            <tbody v-if="loading">
+              <tr>
+                <td colspan="7" class="empty-cell">加载中...</td>
+              </tr>
+            </tbody>
+            <tbody v-else-if="products.length === 0">
+              <tr>
+                <td colspan="7" class="empty-cell">
+                  <i class="fas fa-box-open" style="font-size:32px;opacity:0.3;"></i>
+                  <p>暂无商品数据</p>
                 </td>
               </tr>
-              <tr v-else-if="products.length === 0">
-                <td colspan="8" style="text-align:center;padding:40px;color:var(--text-secondary);">
-                  暂无商品数据
-                </td>
-              </tr>
+            </tbody>
+            <tbody v-else>
               <tr v-for="product in products" :key="product.id">
-                <td>{{ product.id }}</td>
-                <td>{{ product.name }}</td>
+                <td><strong>{{ product.name }}</strong></td>
                 <td>{{ product.categoryName || '-' }}</td>
                 <td>
                   <span :class="['tag', getTypeTag(product.type).class]">
@@ -190,48 +293,114 @@ function getTypeTag(type: string) {
                   </span>
                 </td>
                 <td>
-                  <div class="action-btns">
-                    <button class="cyber-btn-sm" :disabled="!isApproved()" @click="handleEdit(product.id)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button
-                      class="cyber-btn-sm"
-                      :class="product.status === 1 ? 'cyber-btn-warning' : 'cyber-btn-success'"
-                      :disabled="!isApproved()"
-                      @click="handleToggleStatus(product)"
-                    >
-                      <i :class="product.status === 1 ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
-                    </button>
-                    <button class="cyber-btn-sm cyber-btn-danger" :disabled="!isApproved()" @click="handleDelete(product.id)">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </div>
+                  <button class="action-btn accent" :disabled="!isApproved()" @click="openEditModal(product)" title="编辑">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="action-btn"
+                    :class="product.status === ProductStatus.ON ? 'warning' : 'success'"
+                    style="margin-left:8px;"
+                    :disabled="!isApproved()"
+                    @click="handleToggleStatus(product)"
+                    :title="product.status === ProductStatus.ON ? '下架' : '上架'"
+                  >
+                    <i :class="product.status === ProductStatus.ON ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+                  </button>
+                  <button class="action-btn red" style="margin-left:8px;" @click="handleDelete(product)" title="删除">
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Pagination -->
-        <div class="pagination-wrap" v-if="pagination.total > 0">
-          <div class="pagination-info">
-            共 {{ pagination.total }} 条
+        <!-- Loading -->
+        <div v-if="loading" class="loading-mask">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-wrap" v-if="pagination.total > 0">
+        <div class="pagination-info">共 {{ pagination.total }} 条</div>
+        <div class="pagination-controls">
+          <button class="cyber-btn-sm" :disabled="pagination.page <= 1" @click="handlePageChange(pagination.page - 1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span class="page-info">{{ pagination.page }} / {{ Math.ceil(pagination.total / pagination.size) }}</span>
+          <button class="cyber-btn-sm" :disabled="pagination.page >= Math.ceil(pagination.total / pagination.size)" @click="handlePageChange(pagination.page + 1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增/编辑商品弹框 -->
+    <div class="modal-overlay" v-if="modalVisible" @click.self="modalVisible = false">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>{{ modalTitle }}</h3>
+          <button class="modal-close" @click="modalVisible = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品名称 <span style="color:#ef4444;">*</span></label>
+            <input v-model="formState.name" class="cyber-input" type="text" placeholder="请输入商品名称" style="width:100%;" />
           </div>
-          <div class="pagination-controls">
-            <button
-              class="cyber-btn-sm"
-              :disabled="pagination.page <= 1"
-              @click="handlePageChange(pagination.page - 1, pagination.size)"
-            >
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <span class="page-num">{{ pagination.page }} / {{ Math.ceil(pagination.total / pagination.size) }}</span>
-            <button
-              class="cyber-btn-sm"
-              :disabled="pagination.page >= Math.ceil(pagination.total / pagination.size)"
-              @click="handlePageChange(pagination.page + 1, pagination.size)"
-            >
-              <i class="fas fa-chevron-right"></i>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品分类 <span style="color:#ef4444;">*</span></label>
+            <AnimatedSelect
+              v-model="formState.categoryId"
+              :options="categoryOptions"
+              placeholder="请选择分类"
+              searchable
+            />
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">发货类型</label>
+            <div class="radio-group">
+              <label class="radio-item" :class="{ active: formState.type === 1 }">
+                <input type="radio" v-model.number="formState.type" :value="1" />
+                <span class="radio-dot"></span>
+                <span>虚拟</span>
+              </label>
+              <label class="radio-item" :class="{ active: formState.type === 2 }">
+                <input type="radio" v-model.number="formState.type" :value="2" />
+                <span class="radio-dot"></span>
+                <span>实物</span>
+              </label>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:16px;">
+            <div style="flex:1;">
+              <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">积分价格 <span style="color:#ef4444;">*</span></label>
+              <input v-model.number="formState.price" class="cyber-input" type="number" min="0" placeholder="0" style="width:100%;" />
+            </div>
+            <div style="flex:1;">
+              <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">库存</label>
+              <input v-model.number="formState.stock" class="cyber-input" type="number" min="0" placeholder="0" style="width:100%;" />
+            </div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品图片URL</label>
+            <input v-model="formState.mainImage" class="cyber-input" type="text" placeholder="可选，图片URL" style="width:100%;" />
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">每人限购数量</label>
+            <input v-model.number="formState.limitPerUser" class="cyber-input" type="number" min="0" placeholder="0表示不限购" style="width:100%;" />
+          </div>
+          <div style="margin-bottom:20px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品描述</label>
+            <textarea v-model="formState.description" class="cyber-textarea" placeholder="可选，商品描述" rows="3" style="width:100%;resize:none;"></textarea>
+          </div>
+          <div style="display:flex;gap:12px;justify-content:flex-end;">
+            <button class="cyber-btn" @click="modalVisible = false">取消</button>
+            <button class="cyber-btn cyber-btn-primary" :disabled="submitLoading" @click="handleSubmit">
+              <span v-if="submitLoading"><i class="fas fa-spinner fa-spin" style="margin-right:5px;"></i>提交中</span>
+              <span v-else>确认</span>
             </button>
           </div>
         </div>
@@ -241,159 +410,391 @@ function getTypeTag(type: string) {
 </template>
 
 <style scoped>
-.action-btns {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
+#page-product-manage {
+  min-height: 100vh;
+  position: relative;
 }
 
-.cyber-btn-sm {
-  padding: 4px 8px;
-  font-size: 12px;
-  border: 1px solid var(--border-color);
-  background: rgba(255,255,255,0.03);
-  color: var(--text-primary);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s;
+.page-content {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
 }
 
-.cyber-btn-sm:hover {
-  background: rgba(99,102,241,0.15);
-  border-color: var(--primary-color);
-}
-
-.cyber-btn-sm.cyber-btn-danger:hover {
-  background: rgba(239,68,68,0.15);
-  border-color: #ef4444;
-}
-
-.cyber-btn-sm.cyber-btn-success:hover {
-  background: rgba(34,197,94,0.15);
-  border-color: #22c55e;
-}
-
-.cyber-btn-sm.cyber-btn-warning:hover {
-  background: rgba(234,179,8,0.15);
-  border-color: #eab308;
-}
-
-.cyber-btn-sm:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.cyber-btn-primary {
-  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2));
-  border-color: var(--primary-color);
-}
-
-.cyber-btn-primary:hover {
-  background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.35));
-}
-
-.pagination-wrap {
+.page-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
+  margin-bottom: 24px;
 }
 
-.pagination-info {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.pagination-controls {
+.page-head h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.page-num {
-  color: var(--text-primary);
-  font-size: 14px;
-  min-width: 60px;
-  text-align: center;
+.accent-line {
+  width: 4px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 2px;
 }
 
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cyber-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cyber-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+.cyber-btn-primary {
+  background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3));
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cyber-btn-primary:hover {
+  background: linear-gradient(135deg, rgba(99,102,241,0.5), rgba(139,92,246,0.5));
+  border-color: var(--accent);
+}
+
+.cyber-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cyber-btn-sm {
+  padding: 5px 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.cyber-btn-sm:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+.cyber-btn-sm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cyber-btn-danger {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.cyber-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.cyber-btn-warning {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.cyber-btn-warning:hover {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #f59e0b;
+}
+
+.cyber-btn-success {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.cyber-btn-success:hover {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+}
+
+.cyber-input {
+  padding: 9px 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.cyber-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10), inset 0 0 10px rgba(var(--accent-rgb), 0.03);
+}
+
+.cyber-textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.cyber-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.10), inset 0 0 10px rgba(var(--accent-rgb), 0.03);
+}
+
+/* 店铺状态警告 */
+.shop-status-banner {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.10));
+  border: 1px solid rgba(249,115,22,0.4);
+  border-radius: var(--radius);
+  color: #f97316;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 分页 */
+.pagination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 0 8px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 8, 22, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius);
+  width: 520px;
+  max-width: 90vw;
+  box-shadow: var(--accent-glow), 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* Loading */
+.loading-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 8, 22, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--accent);
+}
+
+/* 操作按钮 */
+.action-btn {
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.action-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent);
+}
+
+.action-btn.accent:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--accent);
+}
+
+.action-btn.red:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.action-btn.warning:hover {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.action-btn.success:hover {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+/* 标签 */
 .tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 500;
 }
 
-.tag.green {
-  background: rgba(34,197,94,0.15);
-  color: #22c55e;
-  border: 1px solid rgba(34,197,94,0.3);
+.tag.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.tag.orange { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+.tag.green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.tag.red { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.tag.gray { background: rgba(156, 163, 175, 0.15); color: #9ca3af; }
+
+/* Empty */
+.empty-cell {
+  text-align: center;
+  padding: 40px !important;
+  color: var(--text-muted);
 }
 
-.tag.red {
-  background: rgba(239,68,68,0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239,68,68,0.3);
+.empty-cell i {
+  display: block;
+  margin-bottom: 8px;
 }
 
-.tag.orange {
-  background: rgba(234,179,8,0.15);
-  color: #eab308;
-  border: 1px solid rgba(234,179,8,0.3);
+/* Radio Group */
+.radio-group {
+  display: flex;
+  gap: 12px;
 }
 
-.tag.blue {
-  background: rgba(59,130,246,0.15);
-  color: #3b82f6;
-  border: 1px solid rgba(59,130,246,0.3);
+.radio-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
 }
 
-.tag.gray {
-  background: rgba(156,163,175,0.15);
-  color: #9ca3af;
-  border: 1px solid rgba(156,163,175,0.3);
+.radio-item:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+  background: rgba(var(--accent-rgb), 0.04);
 }
 
-.warning-banner {
+.radio-item.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.06), inset 0 0 10px rgba(var(--accent-rgb), 0.02);
+}
+
+.radio-item input[type="radio"] {
+  display: none;
+}
+
+.radio-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(234,88,12,0.08));
-  border: 1px solid rgba(249,115,22,0.35);
-  border-radius: 10px;
-  color: #f97316;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
-.warning-banner .warning-icon {
-  font-size: 20px;
-  color: #f97316;
-}
-
-.warning-banner .warning-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.warning-banner .warning-text strong {
-  font-size: 14px;
-  font-weight: 600;
-  color: #ea580c;
-}
-
-.warning-banner .warning-text span {
-  font-size: 13px;
-  color: #fb923c;
-}
-
-.cyber-btn:disabled,
-.cyber-btn-sm:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
+.radio-item.active .radio-dot {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 3px var(--bg-input);
+  background: var(--accent);
 }
 </style>

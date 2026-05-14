@@ -62,8 +62,11 @@ function getStatusTag(status: number) {
   return map[status] ?? { text: '未知', class: 'gray' }
 }
 
-function getTypeText(type: string) {
-  return type === 'virtual' ? '虚拟商品' : '实物商品'
+function getTypeText(type: string | number) {
+  const t = Number(type)
+  if (t === 1) return '虚拟'
+  if (t === 2) return '实物'
+  return String(type)
 }
 </script>
 

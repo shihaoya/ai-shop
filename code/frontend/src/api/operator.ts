@@ -41,10 +41,11 @@ export function getProducts(params: PageRequest): Promise<ListResponse<Product>>
 export function createProduct(data: {
   name: string
   categoryId: string | number
-  type: string
+  type: number
   price: number
   stock: number
-  image?: string
+  limitPerUser?: number
+  mainImage?: string
   description?: string
 }): Promise<Product> {
   return request.post<Product>('/operator/products', data) as any
@@ -54,7 +55,17 @@ export function getProduct(id: string | number): Promise<Product> {
   return request.get<Product>(`/operator/products/${id}`) as any
 }
 
-export function updateProduct(id: string | number, data: Partial<Product>): Promise<null> {
+export function updateProduct(id: string | number, data: {
+  name?: string
+  categoryId?: string | number
+  type?: number
+  price?: number
+  stock?: number
+  limitPerUser?: number
+  mainImage?: string
+  description?: string
+  status?: number
+}): Promise<null> {
   return request.put<null>(`/operator/products/${id}`, data) as any
 }
 

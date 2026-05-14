@@ -67,7 +67,7 @@ export interface Product {
   name: string
   categoryId: string
   categoryName?: string
-  type: string       // virtual/physical
+  type: string | number       // 1=虚拟, 2=实物
   price: number      // 积分价格
   pointsPrice?: number
   stock: number
@@ -75,6 +75,8 @@ export interface Product {
   description?: string
   status: number     // 0=下架, 1=上架
   createdAt?: string
+  limitPerUser?: number
+  mainImage?: string
 }
 
 export interface Category {
@@ -82,6 +84,7 @@ export interface Category {
   name: string
   sort: number
   shopId?: string
+  productCount?: number
 }
 
 // ============ 订单相关 ============

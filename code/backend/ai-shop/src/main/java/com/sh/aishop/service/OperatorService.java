@@ -120,6 +120,10 @@ public class OperatorService {
             map.put("id", c.getId().toString());
             map.put("name", c.getName());
             map.put("sort", c.getSort());
+            long count = productMapper.selectCount(new LambdaQueryWrapper<Product>()
+                    .eq(Product::getCategoryId, c.getId())
+                    .eq(Product::getDeleted, 0));
+            map.put("productCount", count);
             return map;
         }).collect(Collectors.toList());
 
@@ -285,6 +289,10 @@ public class OperatorService {
         dto.setId(p.getId().toString());
         dto.setShopId(p.getShopId().toString());
         dto.setCategoryId(p.getCategoryId() != null ? p.getCategoryId().toString() : null);
+        if (p.getCategoryId() != null) {
+            Category category = categoryMapper.selectById(p.getCategoryId());
+            dto.setCategoryName(category != null ? category.getName() : null);
+        }
         dto.setName(p.getName());
         dto.setType(p.getType());
         dto.setTypeDesc(p.getType() == ProductType.VIRTUAL.getCode() ? "虚拟" : "实体");

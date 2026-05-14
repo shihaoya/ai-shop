@@ -24,9 +24,10 @@ const categoryLoading = ref(false)
 const form = ref({
   name: '',
   categoryId: '',
-  type: 'physical' as string,
+  type: 2 as number,
   price: 0,
   stock: 0,
+  limitPerUser: 0,
   image: '',
   description: '',
 })
@@ -37,8 +38,8 @@ const initLoading = ref(false)
 
 // 商品类型选项
 const typeOptions = [
-  { value: 'physical', label: '实物商品' },
-  { value: 'virtual', label: '虚拟商品' },
+  { value: 1, label: '虚拟商品' },
+  { value: 2, label: '实物商品' },
 ]
 
 // 初始化
@@ -78,10 +79,11 @@ async function loadProduct() {
       form.value = {
         name: product.name || '',
         categoryId: String(product.categoryId || ''),
-        type: product.type || 'physical',
+        type: Number(product.type) || 2,
         price: product.price || 0,
         stock: product.stock || 0,
-        image: product.image || '',
+        limitPerUser: (product as any).limitPerUser || 0,
+        image: (product as any).mainImage || '',
         description: product.description || '',
       }
     } else {
@@ -124,18 +126,19 @@ async function handleSave() {
   try {
     const data = {
       name: form.value.name,
-      categoryId: Number(form.value.categoryId) || 0,
-      type: form.value.type,
+      categoryId: form.value.categoryId,
+      type: Number(form.value.type),
       price: Number(form.value.price) || 0,
       stock: Number(form.value.stock) || 0,
-      image: form.value.image,
-      description: form.value.description,
+      limitPerUser: Number(form.value.limitPerUser) || 0,
+      mainImage: form.value.image || undefined,
+      description: form.value.description || undefined,
     }
 
     let res
     if (isEdit.value) {
       const id = String(route.params.id)
-      res = await updateProduct(id, data as any)
+      res = await updateProduct(id, data)
       message.success('商品更新成功')
       router.push('/operator/products')
     } else {

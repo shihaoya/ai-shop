@@ -132,6 +132,7 @@ function handleDelete(category: Category) {
             <thead>
               <tr>
                 <th>分类名称</th>
+                <th>商品数量</th>
                 <th>排序</th>
                 <th style="width:160px;">操作</th>
               </tr>
@@ -139,6 +140,9 @@ function handleDelete(category: Category) {
             <tbody v-if="!loading && categories.length > 0">
               <tr v-for="category in categories" :key="category.id">
                 <td><strong>{{ category.name }}</strong></td>
+                <td>
+                  <span class="count-badge">{{ category.productCount ?? 0 }}</span>
+                </td>
                 <td>{{ category.sort }}</td>
                 <td>
                   <button class="action-btn accent" :disabled="!isApproved()" @click="openEditModal(category)" title="编辑">
@@ -152,12 +156,12 @@ function handleDelete(category: Category) {
             </tbody>
             <tbody v-else-if="loading">
               <tr>
-                <td colspan="3" class="empty-cell">加载中...</td>
+                <td colspan="4" class="empty-cell">加载中...</td>
               </tr>
             </tbody>
             <tbody v-else>
               <tr>
-                <td colspan="3" class="empty-cell">
+                <td colspan="4" class="empty-cell">
                   <i class="fas fa-folder-open" style="font-size:32px;opacity:0.3;"></i>
                   <p>暂无分类数据</p>
                 </td>
@@ -428,5 +432,19 @@ function handleDelete(category: Category) {
 .empty-cell i {
   display: block;
   margin-bottom: 8px;
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  background: rgba(var(--accent-rgb), 0.10);
+  color: var(--accent);
 }
 </style>
