@@ -46,6 +46,7 @@ export function createProduct(data: {
   stock: number
   limitPerUser?: number
   mainImage?: string
+  detailImages?: string
   description?: string
 }): Promise<Product> {
   return request.post<Product>('/operator/products', data) as any
@@ -63,6 +64,7 @@ export function updateProduct(id: string | number, data: {
   stock?: number
   limitPerUser?: number
   mainImage?: string
+  detailImages?: string
   description?: string
   status?: number
 }): Promise<null> {
@@ -124,12 +126,12 @@ export function createUser(username: string, nickname: string, password: string)
 }
 
 // ============ 邀请码 ============
-export function getInviteCode(): Promise<{ code: string; status: number; usedBy?: string; createdAt?: string }[]> {
-  return request.get<{ code: string; status: number; usedBy?: string; createdAt?: string }[]>('/operator/invite-code') as any
+export function getInviteCode(): Promise<string | null> {
+  return request.get<string | null>('/operator/invite-code') as any
 }
 
-export function createInviteCode(): Promise<{ code: string }> {
-  return request.post<{ code: string }>('/operator/invite-code') as any
+export function createInviteCode(): Promise<string> {
+  return request.post<string>('/operator/invite-code') as any
 }
 
 // ============ 消息 ============

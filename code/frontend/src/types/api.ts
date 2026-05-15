@@ -77,6 +77,8 @@ export interface Product {
   createdAt?: string
   limitPerUser?: number
   mainImage?: string
+  mainImageUrl?: string
+  detailImages?: string
 }
 
 export interface Category {

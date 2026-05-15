@@ -18,17 +18,18 @@ const createdAt = ref<string>('')
 async function loadCodes() {
   loading.value = true
   try {
-    const res: any = await getInviteCode()
-    // 后端返回 { code, status, usedBy, createdAt }
-    if (res && res.code) {
-      currentCode.value = res.code
-      createdAt.value = res.createdAt || ''
+    const code = await getInviteCode()
+    // 后端直接返回邀请码字符串（如 "C4578B3F"）或 null
+    if (code) {
+      currentCode.value = String(code)
+      createdAt.value = ''
     } else {
       currentCode.value = ''
       createdAt.value = ''
     }
   } catch (e) {
-    throw e
+    currentCode.value = ''
+    createdAt.value = ''
   } finally {
     loading.value = false
   }
@@ -37,8 +38,8 @@ async function loadCodes() {
 async function doGenerate() {
   loading.value = true
   try {
-    const res: any = await createInviteCode()
-    currentCode.value = res.code || res
+    const code = await createInviteCode()
+    currentCode.value = code || ''
     createdAt.value = new Date().toISOString()
     message.success('邀请码已生成')
   } catch (e: any) {

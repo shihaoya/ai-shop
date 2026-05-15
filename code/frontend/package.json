@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint src --ext .vue,.ts,.tsx"
   },
   "dependencies": {
     "@ant-design/icons-vue": "^7.0.1",
@@ -18,7 +20,6 @@
     "image-compressor.js": "^1.1.4",
     "pinia": "^3.0.4",
     "vue": "^3.5.34",
-    "vue-cropper": "^0.6.5",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {

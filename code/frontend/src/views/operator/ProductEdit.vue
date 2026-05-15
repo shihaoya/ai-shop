@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useThemeStore } from '@/stores/theme'
 import { getProduct, createProduct, updateProduct, getCategories } from '@/api/operator'
+import ImageUploader from '@/components/upload/ImageUploader.vue'
 import { message } from 'ant-design-vue'
 import type { Product, Category } from '@/types/api'
 import { useOperatorShop } from '@/composables/useOperatorShop'
@@ -28,7 +29,7 @@ const form = ref({
   price: 0,
   stock: 0,
   limitPerUser: 0,
-  image: '',
+  image: [] as string[],
   description: '',
 })
 
@@ -83,7 +84,7 @@ async function loadProduct() {
         price: product.price || 0,
         stock: product.stock || 0,
         limitPerUser: (product as any).limitPerUser || 0,
-        image: (product as any).mainImage || '',
+        image: (product as any).mainImage ? [(product as any).mainImage] : [],
         description: product.description || '',
       }
     } else {
@@ -131,7 +132,7 @@ async function handleSave() {
       price: Number(form.value.price) || 0,
       stock: Number(form.value.stock) || 0,
       limitPerUser: Number(form.value.limitPerUser) || 0,
-      mainImage: form.value.image || undefined,
+      mainImage: form.value.image[0] || undefined,
       description: form.value.description || undefined,
     }
 
@@ -242,14 +243,13 @@ function handleBack() {
             </div>
           </div>
 
-          <!-- 图片URL -->
+          <!-- 商品图片 -->
           <div class="form-item">
-            <label>图片URL</label>
-            <input
+            <label>商品图片</label>
+            <ImageUploader
               v-model="form.image"
-              type="text"
-              class="cyber-input"
-              placeholder="请输入图片链接（可选）"
+              businessType="product"
+              :maxCount="1"
             />
           </div>
 

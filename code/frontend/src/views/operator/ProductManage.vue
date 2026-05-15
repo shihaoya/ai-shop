@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { message, Modal } from 'ant-design-vue'
+import { message, Modal, Upload } from 'ant-design-vue'
+import { PlusOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons-vue'
 import { getProducts, createProduct, updateProduct, deleteProduct, getCategories } from '@/api/operator'
+import ImageUploader from '@/components/upload/ImageUploader.vue'
 import AnimatedSelect from '@/components/AnimatedSelect.vue'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
@@ -79,10 +81,21 @@ const formState = ref({
   price: 0,
   stock: 0,
   limitPerUser: 0,
-  mainImage: '',
+  mainImage: [] as string[],
+  detailImages: [] as string[],
   description: ''
 })
+
+
+/** 处理主图变更 */
+function onMainImageChange(val: string[]) {
+  formState.value.mainImage = val
+}
+
 const submitLoading = ref(false)
+
+// 视图切换
+const viewMode = ref<'table' | 'card'>('table')
 
 async function openAddModal() {
   await ensureCategories()
@@ -95,7 +108,8 @@ async function openAddModal() {
     price: 0,
     stock: 0,
     limitPerUser: 0,
-    mainImage: '',
+    mainImage: [],
+    detailImages: [],
     description: ''
   }
   modalVisible.value = true
@@ -105,6 +119,14 @@ async function openEditModal(product: Product) {
   await ensureCategories()
   modalTitle.value = '编辑商品'
   editingProduct.value = product
+  const rawMainImage = (product as any).mainImage
+  let detailIds: string[] = []
+  const rawDetail = (product as any).detailImages
+  if (rawDetail && rawDetail.trim()) {
+    detailIds = rawDetail.split(',').map((s: string) => s.trim()).filter((s: string) => !!s)
+  } else {
+    detailIds = []
+  }
   formState.value = {
     name: product.name,
     categoryId: String(product.categoryId),
@@ -112,7 +134,8 @@ async function openEditModal(product: Product) {
     price: product.price,
     stock: product.stock,
     limitPerUser: (product as any).limitPerUser || 0,
-    mainImage: (product as any).mainImage || '',
+    mainImage: rawMainImage ? [rawMainImage] : [],
+    detailImages: detailIds,
     description: product.description || ''
   }
   modalVisible.value = true
@@ -137,21 +160,37 @@ async function handleSubmit() {
   }
   submitLoading.value = true
   try {
-    const data = {
+    const isEdit = !!editingProduct.value
+    const data: Record<string, any> = {
       name: formState.value.name.trim(),
       categoryId: formState.value.categoryId,
       type: Number(formState.value.type),
       price: Number(formState.value.price),
       stock: Number(formState.value.stock),
       limitPerUser: Number(formState.value.limitPerUser) || 0,
-      mainImage: formState.value.mainImage.trim() || undefined,
       description: formState.value.description.trim() || undefined
     }
+    // 主图：ImageUploader 返回值是数组，但后端字段是单字符串，取第一个
+    const mainId = formState.value.mainImage?.[0] || null
+    if (isEdit) {
+      data.mainImage = mainId // 编辑时传 null 可清空
+    } else if (mainId) {
+      data.mainImage = mainId
+    }
+    // 详情图
+    const detailStr = formState.value.detailImages.length > 0
+      ? formState.value.detailImages.join(',')
+      : null
+    if (isEdit) {
+      data.detailImages = detailStr
+    } else if (detailStr) {
+      data.detailImages = detailStr
+    }
     if (editingProduct.value) {
-      await updateProduct(editingProduct.value.id, data)
+      await updateProduct(editingProduct.value.id, data as any)
       message.success('商品更新成功')
     } else {
-      await createProduct(data)
+      await createProduct(data as any)
       message.success('商品创建成功')
     }
     modalVisible.value = false
@@ -239,21 +278,28 @@ function getTypeTag(type: string | number) {
       <div class="page-head">
         <h2><span class="accent-line"></span>商品管理</h2>
         <div class="actions">
+          <button class="cyber-btn" :class="{ active: viewMode === 'table' }" @click="viewMode = 'table'" title="表格视图">
+            <i class="fas fa-table"></i>
+          </button>
+          <button class="cyber-btn" :class="{ active: viewMode === 'card' }" @click="viewMode = 'card'" title="卡片视图">
+            <i class="fas fa-th-large"></i>
+          </button>
           <button class="cyber-btn" @click="loadProducts">
-            <i class="fas fa-sync-alt" style="margin-right:5px;"></i>刷新
+            <i class="fas fa-sync-alt"></i>
           </button>
           <button class="cyber-btn cyber-btn-primary" :disabled="!isApproved()" @click="openAddModal">
-            <i class="fas fa-plus" style="margin-right:5px;"></i>新增商品
+            <i class="fas fa-plus"></i>新增商品
           </button>
         </div>
       </div>
 
-      <!-- Table Card -->
-      <div class="table-card">
+      <!-- 表格视图 -->
+      <div class="table-card" v-show="viewMode === 'table'">
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
+                <th style="width:60px;">图片</th>
                 <th>商品名称</th>
                 <th>分类</th>
                 <th>类型</th>
@@ -265,12 +311,12 @@ function getTypeTag(type: string | number) {
             </thead>
             <tbody v-if="loading">
               <tr>
-                <td colspan="7" class="empty-cell">加载中...</td>
+                <td colspan="8" class="empty-cell">加载中...</td>
               </tr>
             </tbody>
             <tbody v-else-if="products.length === 0">
               <tr>
-                <td colspan="7" class="empty-cell">
+                <td colspan="8" class="empty-cell">
                   <i class="fas fa-box-open" style="font-size:32px;opacity:0.3;"></i>
                   <p>暂无商品数据</p>
                 </td>
@@ -278,6 +324,16 @@ function getTypeTag(type: string | number) {
             </tbody>
             <tbody v-else>
               <tr v-for="product in products" :key="product.id">
+                <td>
+                  <img
+                    v-if="(product as any).mainImageUrl"
+                    :src="(product as any).mainImageUrl"
+                    class="table-thumb"
+                  />
+                  <div v-else class="table-thumb-placeholder">
+                    <i class="fas fa-box"></i>
+                  </div>
+                </td>
                 <td><strong>{{ product.name }}</strong></td>
                 <td>{{ product.categoryName || '-' }}</td>
                 <td>
@@ -321,6 +377,62 @@ function getTypeTag(type: string | number) {
         </div>
       </div>
 
+      <!-- 卡片视图 -->
+      <div v-show="viewMode === 'card'" class="product-grid">
+        <div v-if="loading" class="grid-loading">加载中...</div>
+        <template v-else-if="products.length === 0">
+          <div class="grid-empty">
+            <i class="fas fa-box-open" style="font-size:32px;opacity:0.3;"></i>
+            <p>暂无商品数据</p>
+          </div>
+        </template>
+        <div v-else v-for="product in products" :key="product.id" class="product-card">
+          <div class="card-img-wrap">
+            <img
+              v-if="(product as any).mainImageUrl"
+              :src="(product as any).mainImageUrl"
+              class="card-img"
+            />
+            <div v-else class="card-img-placeholder">
+              <i class="fas fa-box"></i>
+            </div>
+            <span :class="['card-status-tag', getStatusTag(product.status).class]">
+              {{ getStatusTag(product.status).text }}
+            </span>
+          </div>
+          <div class="card-body">
+            <div class="card-name">{{ product.name }}</div>
+            <div class="card-meta">
+              <span :class="['tag', getTypeTag(product.type).class]">
+                {{ getTypeTag(product.type).text }}
+              </span>
+              <span>{{ product.categoryName || '-' }}</span>
+            </div>
+            <div class="card-info">
+              <span><strong>{{ product.price }}</strong> 积分</span>
+              <span>库存: {{ product.stock }}</span>
+            </div>
+            <div class="card-actions">
+              <button class="action-btn accent" :disabled="!isApproved()" @click="openEditModal(product)" title="编辑">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button
+                class="action-btn"
+                :class="product.status === ProductStatus.ON ? 'warning' : 'success'"
+                :disabled="!isApproved()"
+                @click="handleToggleStatus(product)"
+                :title="product.status === ProductStatus.ON ? '下架' : '上架'"
+              >
+                <i :class="product.status === ProductStatus.ON ? 'fas fa-arrow-down' : 'fas fa-arrow-up'"></i>
+              </button>
+              <button class="action-btn red" @click="handleDelete(product)" title="删除">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Pagination -->
       <div class="pagination-wrap" v-if="pagination.total > 0">
         <div class="pagination-info">共 {{ pagination.total }} 条</div>
@@ -337,7 +449,7 @@ function getTypeTag(type: string | number) {
     </div>
 
     <!-- 新增/编辑商品弹框 -->
-    <div class="modal-overlay" v-if="modalVisible" @click.self="modalVisible = false">
+    <div class="modal-overlay" v-if="modalVisible">
       <div class="modal-card">
         <div class="modal-header">
           <h3>{{ modalTitle }}</h3>
@@ -384,25 +496,55 @@ function getTypeTag(type: string | number) {
               <input v-model.number="formState.stock" class="cyber-input" type="number" min="0" placeholder="0" style="width:100%;" />
             </div>
           </div>
+
+          <!-- 主图上传 -->
           <div style="margin-bottom:16px;">
-            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品图片URL</label>
-            <input v-model="formState.mainImage" class="cyber-input" type="text" placeholder="可选，图片URL" style="width:100%;" />
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品主图</label>
+            <ImageUploader
+              :modelValue="formState.mainImage"
+              @update:modelValue="onMainImageChange"
+              businessType="product"
+              :maxCount="1"
+            />
           </div>
+
+          <!-- 详情图上传 -->
+          <div style="margin-bottom:16px;">
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">详情图（最多10张）</label>
+            <ImageUploader
+              :modelValue="formState.detailImages"
+              @update:modelValue="(val) => formState.detailImages = val"
+              businessType="product"
+              :maxCount="10"
+            />
+          </div>
+
           <div style="margin-bottom:16px;">
             <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">每人限购数量</label>
             <input v-model.number="formState.limitPerUser" class="cyber-input" type="number" min="0" placeholder="0表示不限购" style="width:100%;" />
           </div>
-          <div style="margin-bottom:20px;">
+          <div style="margin-bottom:16px;">
             <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品描述</label>
             <textarea v-model="formState.description" class="cyber-textarea" placeholder="可选，商品描述" rows="3" style="width:100%;resize:none;"></textarea>
           </div>
-          <div style="display:flex;gap:12px;justify-content:flex-end;">
-            <button class="cyber-btn" @click="modalVisible = false">取消</button>
-            <button class="cyber-btn cyber-btn-primary" :disabled="submitLoading" @click="handleSubmit">
-              <span v-if="submitLoading"><i class="fas fa-spinner fa-spin" style="margin-right:5px;"></i>提交中</span>
-              <span v-else>确认</span>
-            </button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cyber-btn" @click="modalVisible = false">取消</button>
+          <button class="cyber-btn cyber-btn-primary" :disabled="submitLoading" @click="handleSubmit">
+            <span v-if="submitLoading"><i class="fas fa-spinner fa-spin" style="margin-right:5px;"></i>提交中</span>
+            <span v-else>确认</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- 详情图预览弹框 -->
+    <div v-if="previewVisible" class="modal-overlay" @click.self="previewVisible = false">
+      <div class="modal-card" style="max-width:800px;padding:0;background:transparent;box-shadow:none;">
+        <div style="position:relative;">
+          <button class="modal-close" @click="previewVisible = false" style="position:absolute;top:8px;right:8px;z-index:10;background:rgba(0,0,0,0.5);border-radius:50%;color:#fff;width:32px;height:32px;">
+            <i class="fas fa-times"></i>
+          </button>
+          <img :src="previewImageUrl" style="max-width:100%;max-height:80vh;border-radius:12px;" />
         </div>
       </div>
     </div>
@@ -470,6 +612,12 @@ function getTypeTag(type: string | number) {
 
 .cyber-btn-primary {
   background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.3));
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cyber-btn.active {
+  background: rgba(var(--accent-rgb), 0.12);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -609,6 +757,126 @@ function getTypeTag(type: string | number) {
   padding: 0 8px;
 }
 
+/* 表格缩略图 */
+.table-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+.table-thumb-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 18px;
+}
+
+/* 卡片网格 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+.grid-loading,
+.grid-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.product-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: all 0.25s ease;
+  animation: fadeInUp 0.35s ease-out;
+}
+.product-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.10);
+  transform: translateY(-2px);
+}
+.card-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: var(--bg-input);
+  overflow: hidden;
+}
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 36px;
+  opacity: 0.4;
+}
+.card-status-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.card-status-tag.blue { background: rgba(59,130,246,0.75); color: #fff; }
+.card-status-tag.orange { background: rgba(249,115,22,0.75); color: #fff; }
+.card-status-tag.green { background: rgba(16,185,129,0.75); color: #fff; }
+.card-status-tag.red { background: rgba(239,68,68,0.75); color: #fff; }
+.card-status-tag.gray { background: rgba(156,163,175,0.6); color: #fff; }
+.card-body {
+  padding: 10px 12px 12px;
+}
+.card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.card-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.card-actions {
+  display: flex;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+}
+
 /* Modal */
 .modal-overlay {
   position: fixed;
@@ -627,6 +895,9 @@ function getTypeTag(type: string | number) {
   border-radius: var(--radius);
   width: 520px;
   max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: var(--accent-glow), 0 20px 50px rgba(0,0,0,0.4);
 }
 
@@ -661,6 +932,17 @@ function getTypeTag(type: string | number) {
 
 .modal-body {
   padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
 }
 
 /* Loading */
@@ -796,5 +1078,16 @@ function getTypeTag(type: string | number) {
   border-color: var(--accent);
   box-shadow: inset 0 0 0 3px var(--bg-input);
   background: var(--accent);
+}
+
+/* ========== 详情图上传 ========== */
+.detail-images-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.detail-upload-item {
+  width: 96px;
+  height: 96px;
 }
 </style>
