@@ -1,15 +1,20 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getProducts, createOrder } from '@/api/user'
-import { message, Modal } from 'ant-design-vue'
-import type { Product } from '@/types/api'
+import { useUserStore } from '@/stores/user'
+import { getProducts, createOrder, getAddresses, getPoints } from '@/api/user'
+import { message } from 'ant-design-vue'
+import type { Product, Address } from '@/types/api'
+import pcaData from 'china-division/dist/pca.json'
 
 const themeStore = useThemeStore()
+const userStore = useUserStore()
 
 onMounted(() => {
   themeStore.init()
   loadProducts()
+  loadPoints()
+  loadAddresses()
 })
 
 const loading = ref(false)
@@ -18,12 +23,73 @@ const pagination = ref({ page: 1, size: 12, total: 0 })
 const detailVisible = ref(false)
 const selectedProduct = ref<Product | null>(null)
 
-// 视图切换
-const viewMode = ref<'table' | 'card'>('card')
+// 用户积分
+const userPoints = ref(0)
 
-// 搜索
+// 兑换弹窗
+const redeemVisible = ref(false)
+const redeemQuantity = ref(1)
+const redeemAddress = ref({
+  receiver: '',
+  phone: '',
+  province: '',
+  city: '',
+  district: '',
+  detail: '',
+})
+const addressList = ref<Address[]>([])
+const redeemLoading = ref(false)
+
+// 省市区级联数据
+interface AreaNode {
+  label: string
+  value: string
+  children?: AreaNode[]
+}
+
+function buildTree(data: Record<string, Record<string, string[]>>): AreaNode[] {
+  return Object.entries(data).map(([province, citiesObj]) => ({
+    label: province,
+    value: province,
+    children: Object.entries(citiesObj).map(([city, districts]) => ({
+      label: city,
+      value: city,
+      children: districts.map(district => ({
+        label: district,
+        value: district,
+      })),
+    })),
+  }))
+}
+
+const regionOptions = computed(() => buildTree(pcaData))
+
+// 级联选择器选中的值 [省, 市, 区]
+const selectedRegion = ref<string[]>([])
+
+// 计算兑换后剩余积分
+const remainingPoints = computed(() => {
+  if (!selectedProduct.value) return 0
+  const price = Number(selectedProduct.value.price) || 0
+  const quantity = Number(redeemQuantity.value) || 0
+  const points = Number(userPoints.value) || 0
+  return points - price * quantity
+})
+
+// 判断是否为实物商品
+const isPhysicalProduct = computed(() => {
+  return selectedProduct.value && Number(selectedProduct.value.type) === 2
+})
+
+// 默认地址
+const defaultAddress = computed(() => {
+  return addressList.value.find(a => a.isDefault === 1)
+})
+
+const viewMode = ref<'table' | 'card'>('card')
 const keyword = ref('')
 let searchTimer: ReturnType<typeof setTimeout> | null = null
+
 function onKeywordInput() {
   if (searchTimer) clearTimeout(searchTimer)
   searchTimer = setTimeout(() => {
@@ -52,6 +118,24 @@ async function loadProducts() {
   }
 }
 
+async function loadPoints() {
+  try {
+    const res = await getPoints()
+    userPoints.value = res.points
+  } catch (e: any) {
+    console.error('获取积分失败', e)
+  }
+}
+
+async function loadAddresses() {
+  try {
+    const res = await getAddresses()
+    addressList.value = res.map(a => ({ ...a, id: String(a.id) }))
+  } catch (e: any) {
+    console.error('获取地址失败', e)
+  }
+}
+
 function handlePageChange(page: number) {
   pagination.value.page = page
   loadProducts()
@@ -69,24 +153,98 @@ function showDetail(product: Product) {
   detailVisible.value = true
 }
 
-/** 兑换商品 */
-function confirmRedeem(product: Product) {
-  detailVisible.value = false
-  Modal.confirm({
-    title: '确认兑换',
-    content: `确定要使用 ${product.price} 积分兑换「${product.name}」吗？`,
-    okText: '确认兑换',
-    cancelText: '取消',
-    onOk: async () => {
-      try {
-        await createOrder(product.id, 1)
-        message.success('兑换成功！')
-        loadProducts()
-      } catch (e: any) {
-        message.error(e?.message || '兑换失败')
-      }
-    },
-  })
+function showRedeem(product: Product) {
+  selectedProduct.value = product
+  redeemQuantity.value = 1
+  // 实物商品默认带入默认地址信息
+  if (isPhysicalProduct.value && defaultAddress.value) {
+    redeemAddress.value = {
+      receiver: defaultAddress.value.receiver,
+      phone: defaultAddress.value.phone,
+      province: defaultAddress.value.province,
+      city: defaultAddress.value.city,
+      district: defaultAddress.value.district,
+      detail: defaultAddress.value.detail,
+    }
+    selectedRegion.value = [
+      defaultAddress.value.province,
+      defaultAddress.value.city,
+      defaultAddress.value.district,
+    ]
+  } else {
+    redeemAddress.value = {
+      receiver: '',
+      phone: '',
+      province: '',
+      city: '',
+      district: '',
+      detail: '',
+    }
+    selectedRegion.value = []
+  }
+  redeemVisible.value = true
+}
+
+// 级联选择器变化时更新 redeemAddress
+function handleRegionChange(value: string[]) {
+  selectedRegion.value = value
+  if (value.length >= 3) {
+    redeemAddress.value.province = value[0]
+    redeemAddress.value.city = value[1]
+    redeemAddress.value.district = value[2]
+  } else {
+    redeemAddress.value.province = value[0] || ''
+    redeemAddress.value.city = value[1] || ''
+    redeemAddress.value.district = value[2] || ''
+  }
+}
+
+async function handleRedeem() {
+  if (!selectedProduct.value) return
+
+  // 积分不足
+  if (remainingPoints.value < 0) {
+    message.error('积分不足')
+    return
+  }
+
+  // 实物商品必须填写完整地址
+  if (isPhysicalProduct.value) {
+    if (!redeemAddress.value.receiver || !redeemAddress.value.phone ||
+        !redeemAddress.value.province || !redeemAddress.value.city ||
+        !redeemAddress.value.district || !redeemAddress.value.detail) {
+      message.error('请填写完整的收货地址')
+      return
+    }
+  }
+
+  redeemLoading.value = true
+  try {
+    // 实物商品传地址信息，虚拟商品不传addressId
+    const orderData: any = {
+      productId: selectedProduct.value.id,
+      quantity: redeemQuantity.value,
+    }
+    if (isPhysicalProduct.value) {
+      orderData.addressInfo = redeemAddress.value
+    }
+    await createOrder(
+      selectedProduct.value.id,
+      redeemQuantity.value,
+      isPhysicalProduct.value ? redeemAddress.value : undefined
+    )
+    message.success('兑换成功！')
+    redeemVisible.value = false
+    // 刷新积分
+    await loadPoints()
+    // 刷新地址列表
+    await loadAddresses()
+    loadProducts()
+  } catch (e: any) {
+    message.error(e?.message || '兑换失败')
+  } finally {
+    redeemLoading.value = false
+  }
 }
 
 function getStatusTag(status: number) {
@@ -171,7 +329,7 @@ function getTypeText(type: string | number) {
                 <td class="cell-price">{{ product.price }}</td>
                 <td>{{ product.stock }}</td>
                 <td>
-                  <button class="redeem-btn-sm" @click="confirmRedeem(product)">兑换</button>
+                  <button class="redeem-btn-sm" @click="showRedeem(product)">兑换</button>
                 </td>
               </tr>
             </tbody>
@@ -223,7 +381,7 @@ function getTypeText(type: string | number) {
                 </div>
               </div>
               <div class="card-footer">
-                <button class="redeem-btn" @click="confirmRedeem(product)">
+                <button class="redeem-btn" @click="showRedeem(product)">
                   <i class="fas fa-exchange-alt"></i> 兑换
                 </button>
               </div>
@@ -287,12 +445,91 @@ function getTypeText(type: string | number) {
             {{ selectedProduct.description }}
           </p>
           <div class="detail-actions">
-            <button class="redeem-btn detail-redeem" @click="confirmRedeem(selectedProduct)">
+            <button class="redeem-btn detail-redeem" @click="showRedeem(selectedProduct)">
               <i class="fas fa-exchange-alt"></i> 立即兑换
             </button>
           </div>
         </div>
       </template>
+    </a-modal>
+
+    <!-- 兑换确认弹窗 -->
+    <a-modal
+      v-model:open="redeemVisible"
+      :centered="true"
+      :width="420"
+      :confirm-loading="redeemLoading"
+      title="确认兑换"
+      ok-text="确认兑换"
+      cancel-text="取消"
+      class="cyber-modal"
+      @ok="handleRedeem"
+    >
+      <div v-if="selectedProduct" class="redeem-form">
+        <div class="redeem-product-info">
+          <div class="redeem-product-name">{{ selectedProduct.name }}</div>
+          <div class="redeem-product-price">{{ selectedProduct.price }} 积分/件</div>
+        </div>
+
+        <!-- 积分信息 -->
+        <div class="redeem-points-info">
+          <div class="points-row">
+            <span class="points-label">当前积分</span>
+            <span class="points-value">{{ userPoints }}</span>
+          </div>
+          <div class="points-row">
+            <span class="points-label">兑换数量</span>
+            <a-input-number
+              v-model:value="redeemQuantity"
+              :min="1"
+              :max="selectedProduct.stock"
+              :precision="0"
+              style="width: 100px;"
+            />
+          </div>
+          <div class="points-row">
+            <span class="points-label">扣除积分</span>
+            <span class="points-value text-danger">-{{ selectedProduct.price * redeemQuantity }}</span>
+          </div>
+          <div class="points-row">
+            <span class="points-label">剩余积分</span>
+            <span class="points-value" :class="{ 'text-danger': remainingPoints < 0 }">
+              {{ remainingPoints }}
+            </span>
+          </div>
+        </div>
+
+        <!-- 实物商品地址表单 -->
+        <div v-if="isPhysicalProduct" class="redeem-address">
+          <div class="form-row" style="margin-top: 16px;">
+            <div class="form-item">
+              <label>收货人</label>
+              <input v-model="redeemAddress.receiver" type="text" placeholder="请输入收货人" />
+            </div>
+            <div class="form-item">
+              <label>联系电话</label>
+              <input v-model="redeemAddress.phone" type="tel" placeholder="请输入联系电话" maxlength="11" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-item full">
+              <label>省市区</label>
+              <a-cascader
+                v-model:value="selectedRegion"
+                :options="regionOptions"
+                placeholder="请选择省市区"
+                change-on-select
+                @change="handleRegionChange"
+                style="width: 100%;"
+              />
+            </div>
+          </div>
+          <div class="form-item full">
+            <label>详细地址</label>
+            <input v-model="redeemAddress.detail" type="text" placeholder="请输入详细地址" />
+          </div>
+        </div>
+      </div>
     </a-modal>
   </div>
 </template>
@@ -722,5 +959,100 @@ function getTypeText(type: string | number) {
   line-height: 1.6;
   padding-top: 12px;
   border-top: 1px solid var(--border-subtle);
+}
+
+/* 兑换弹窗样式 */
+.redeem-form {
+  padding: 8px 0;
+}
+
+.redeem-product-info {
+  background: var(--bg-input);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.redeem-product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.redeem-product-price {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.redeem-points-info {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.points-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.points-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.points-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.points-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.points-value.text-danger {
+  color: #ef4444;
+}
+
+/* 地址表单样式（与 AddressList 一致） */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-item label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.form-item input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-item input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 </style>

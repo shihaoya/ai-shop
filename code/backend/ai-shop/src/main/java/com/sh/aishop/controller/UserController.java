@@ -50,13 +50,14 @@ public class UserController {
         @ApiResponse(responseCode = "401", description = "未授权")
     })
     @PostMapping("/orders")
-    public Result<?> createOrder(HttpServletRequest request, 
-                                 @Parameter(description = "订单参数：productId(商品ID), quantity(数量), addressId(地址ID，可选)") @RequestBody Map<String, Object> params) {
+    public Result<?> createOrder(HttpServletRequest request,
+                                 @Parameter(description = "订单参数：productId(商品ID), quantity(数量), addressInfo(地址信息，可选)") @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
         Long productId = Long.valueOf(params.get("productId").toString());
         Integer quantity = Integer.valueOf(params.getOrDefault("quantity", 1).toString());
-        Long addressId = params.get("addressId") != null ? Long.valueOf(params.get("addressId").toString()) : null;
-        return userService.createOrder(userId, productId, quantity, addressId);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> addressInfo = (Map<String, Object>) params.get("addressInfo");
+        return userService.createOrder(userId, productId, quantity, addressInfo);
     }
 
     @Operation(summary = "订单列表", description = "获取当前用户的订单列表，可按状态筛选")

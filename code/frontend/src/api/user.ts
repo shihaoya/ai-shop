@@ -13,8 +13,12 @@ export function getProduct(id: string | number): Promise<Product> {
 }
 
 // ============ 订单 ============
-export function createOrder(productId: string | number, quantity: number, addressId?: string | number): Promise<Order> {
-  return request.post<Order>('/user/orders', { productId, quantity, addressId }) as any
+export function createOrder(productId: string | number, quantity: number, addressInfo?: any): Promise<Order> {
+  const data: any = { productId, quantity }
+  if (addressInfo) {
+    data.addressInfo = addressInfo
+  }
+  return request.post<Order>('/user/orders', data) as any
 }
 
 export function getOrders(params: PageRequest & { status?: number }): Promise<ListResponse<Order>> {

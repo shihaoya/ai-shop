@@ -272,12 +272,18 @@ class UserServiceTest {
 
                 Shop shop = createTestShop(SHOP_ID, 1, ShopStatus.APPROVED.getCode());
                 Product product = createTestProduct(SHOP_ID, ProductStatus.ON_SALE.getCode(), 100, ProductType.PHYSICAL.getCode(), 5);
-                Address address = createTestAddress(USER_ID, 1);
                 Points points = createTestPoints(USER_ID, 500);
+
+                Map<String, Object> addressInfo = new HashMap<>();
+                addressInfo.put("receiver", "张三");
+                addressInfo.put("phone", "13800138000");
+                addressInfo.put("province", "广东省");
+                addressInfo.put("city", "深圳市");
+                addressInfo.put("district", "南山区");
+                addressInfo.put("detail", "科技园1号");
 
                 when(productMapper.selectById(PRODUCT_ID)).thenReturn(product);
                 when(pointsMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(points);
-                when(addressMapper.selectById(ADDRESS_ID)).thenReturn(address);
                 when(orderMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
                 when(pointsMapper.insert(any(Points.class))).thenReturn(1);
                 when(orderMapper.insert(any(Order.class))).thenReturn(1);
@@ -285,7 +291,7 @@ class UserServiceTest {
                 when(shopMapper.selectById(SHOP_ID)).thenReturn(shop);
                 when(messageMapper.insert(any(Message.class))).thenReturn(1);
 
-                Result<?> result = userService.createOrder(USER_ID, PRODUCT_ID, 1, ADDRESS_ID);
+                Result<?> result = userService.createOrder(USER_ID, PRODUCT_ID, 1, addressInfo);
 
                 assertEquals(ResultCode.SUCCESS, result.getCode());
             }
@@ -391,8 +397,8 @@ class UserServiceTest {
         }
 
         @Test
-        @DisplayName("地址不存在时返回失败")
-        void shouldFailWhenAddressNotFound() {
+        @DisplayName("收货地址信息不完整时返回失败")
+        void shouldFailWhenAddressInfoIncomplete() {
             try (MockedStatic<SnowflakeIdUtil> mockedStatic = mockStatic(SnowflakeIdUtil.class)) {
                 mockedStatic.when(SnowflakeIdUtil::nextId).thenReturn(ORDER_ID);
 
@@ -400,35 +406,39 @@ class UserServiceTest {
                 Product product = createTestProduct(SHOP_ID, ProductStatus.ON_SALE.getCode(), 100, ProductType.PHYSICAL.getCode(), 5);
                 Points points = createTestPoints(USER_ID, 500);
 
+                Map<String, Object> incompleteAddress = new HashMap<>();
+                incompleteAddress.put("receiver", "张三");
+                incompleteAddress.put("phone", "13800138000");
+                // 缺少 province、city、district、detail
+
                 when(productMapper.selectById(PRODUCT_ID)).thenReturn(product);
                 when(pointsMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(points);
-                when(addressMapper.selectById(ADDRESS_ID)).thenReturn(null);
                 when(orderMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
 
-                Result<?> result = userService.createOrder(USER_ID, PRODUCT_ID, 1, ADDRESS_ID);
+                Result<?> result = userService.createOrder(USER_ID, PRODUCT_ID, 1, incompleteAddress);
 
-                assertEquals(ResultCode.ADDRESS_NOT_FOUND, result.getCode());
+                assertEquals(ResultCode.FAIL, result.getCode());
             }
         }
 
         @Test
-        @DisplayName("地址不属于用户时返回失败")
-        void shouldFailWhenAddressBelongsToOtherUser() {
+        @DisplayName("地址信息为空时返回失败")
+        void shouldFailWhenAddressInfoEmpty() {
             try (MockedStatic<SnowflakeIdUtil> mockedStatic = mockStatic(SnowflakeIdUtil.class)) {
                 mockedStatic.when(SnowflakeIdUtil::nextId).thenReturn(ORDER_ID);
 
                 Product product = createTestProduct(SHOP_ID, ProductStatus.ON_SALE.getCode(), 100, ProductType.PHYSICAL.getCode(), 5);
-                Address address = createTestAddress(9999L, 1);
                 Points points = createTestPoints(USER_ID, 500);
+
+                Map<String, Object> emptyAddress = new HashMap<>();
 
                 when(productMapper.selectById(PRODUCT_ID)).thenReturn(product);
                 when(pointsMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(points);
-                when(addressMapper.selectById(ADDRESS_ID)).thenReturn(address);
                 when(orderMapper.selectCount(any(LambdaQueryWrapper.class))).thenReturn(0L);
 
-                Result<?> result = userService.createOrder(USER_ID, PRODUCT_ID, 1, ADDRESS_ID);
+                Result<?> result = userService.createOrder(USER_ID, PRODUCT_ID, 1, emptyAddress);
 
-                assertEquals(ResultCode.ADDRESS_NOT_FOUND, result.getCode());
+                assertEquals(ResultCode.FAIL, result.getCode());
             }
         }
     }

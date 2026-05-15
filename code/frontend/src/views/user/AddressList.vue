@@ -1,11 +1,36 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getAddresses, createAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/api/user'
 import { message, Modal } from 'ant-design-vue'
 import type { Address } from '@/types/api'
+import pcaData from 'china-division/dist/pca.json'
 
 const themeStore = useThemeStore()
+
+// 省市区级联数据转换
+interface AreaNode {
+  label: string
+  value: string
+  children?: AreaNode[]
+}
+
+function buildTree(data: Record<string, Record<string, string[]>>): AreaNode[] {
+  return Object.entries(data).map(([province, citiesObj]) => ({
+    label: province,
+    value: province,
+    children: Object.entries(citiesObj).map(([city, districts]) => ({
+      label: city,
+      value: city,
+      children: districts.map(district => ({
+        label: district,
+        value: district,
+      })),
+    })),
+  }))
+}
+
+const regionOptions = computed(() => buildTree(pcaData))
 
 const loading = ref(false)
 const addressList = ref<Address[]>([])
@@ -22,6 +47,9 @@ const form = ref({
   detail: '',
   isDefault: 0,
 })
+
+// 级联选择器选中的值 [省, 市, 区]
+const selectedRegion = ref<string[]>([])
 
 onMounted(() => {
   themeStore.init()
@@ -63,6 +91,7 @@ function openAddModal() {
     detail: '',
     isDefault: 0,
   }
+  selectedRegion.value = []
   showModal.value = true
 }
 
@@ -78,7 +107,22 @@ function openEditModal(addr: Address) {
     detail: addr.detail,
     isDefault: addr.isDefault,
   }
+  selectedRegion.value = [addr.province, addr.city, addr.district]
   showModal.value = true
+}
+
+// 级联选择器变化时更新 form
+function handleRegionChange(value: string[]) {
+  selectedRegion.value = value
+  if (value.length >= 3) {
+    form.value.province = value[0]
+    form.value.city = value[1]
+    form.value.district = value[2]
+  } else {
+    form.value.province = value[0] || ''
+    form.value.city = value[1] || ''
+    form.value.district = value[2] || ''
+  }
 }
 
 async function handleSubmit() {
@@ -146,14 +190,10 @@ async function handleSetDefault(addr: Address) {
   loading.value = true
   try {
     const id = String(addr.id)
-    const res = await setDefaultAddress(id)
-    if (res) {
-      message.success('设置成功')
-      loadAddresses()
-    } else {
-      message.error('设置失败')
-    }
-  } catch {
+    await setDefaultAddress(id)
+    message.success('设置成功')
+    await loadAddresses()
+  } catch (e) {
     message.error('设置默认地址失败')
   } finally {
     loading.value = false
@@ -187,13 +227,13 @@ async function handleSetDefault(addr: Address) {
             <div class="address-detail">{{ getFullAddress(addr) }}</div>
           </div>
           <div class="address-actions">
-            <button class="cyber-btn" @click="openEditModal(addr)" v-if="addr.isDefault !== 1">
-              <i class="fas fa-edit" style="margin-right:4px;"></i>
-              编辑
-            </button>
             <button class="cyber-btn" @click="handleSetDefault(addr)" v-if="addr.isDefault !== 1">
               <i class="fas fa-star" style="margin-right:4px;"></i>
               设为默认
+            </button>
+            <button class="cyber-btn" @click="openEditModal(addr)">
+              <i class="fas fa-edit" style="margin-right:4px;"></i>
+              编辑
             </button>
             <button class="cyber-btn-danger" @click="handleDelete(addr)">
               <i class="fas fa-trash" style="margin-right:4px;"></i>
@@ -223,7 +263,7 @@ async function handleSetDefault(addr: Address) {
           </button>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="address-form">
+<form @submit.prevent="handleSubmit" class="address-form">
           <div class="form-row">
             <div class="form-item">
               <label>收货人</label>
@@ -236,20 +276,16 @@ async function handleSetDefault(addr: Address) {
           </div>
 
           <div class="form-row">
-            <div class="form-item">
-              <label>省份</label>
-              <input v-model="form.province" type="text" placeholder="请输入省份" />
-            </div>
-            <div class="form-item">
-              <label>城市</label>
-              <input v-model="form.city" type="text" placeholder="请输入城市" />
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-item">
-              <label>区县</label>
-              <input v-model="form.district" type="text" placeholder="请输入区县" />
+            <div class="form-item full">
+              <label>省市区</label>
+              <a-cascader
+                v-model:value="selectedRegion"
+                :options="regionOptions"
+                placeholder="请选择省市区"
+                change-on-select
+                @change="handleRegionChange"
+                style="width: 100%;"
+              />
             </div>
           </div>
 
@@ -448,10 +484,6 @@ async function handleSetDefault(addr: Address) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.form-item.full {
-  margin-bottom: 16px;
 }
 
 .form-item label {

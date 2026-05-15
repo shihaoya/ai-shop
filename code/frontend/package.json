@@ -16,6 +16,7 @@
     "@vueuse/motion": "^3.0.3",
     "ant-design-vue": "^4.2.6",
     "axios": "^1.16.0",
+    "china-division": "^2.7.0",
     "color": "^5.0.3",
     "image-compressor.js": "^1.1.4",
     "pinia": "^3.0.4",

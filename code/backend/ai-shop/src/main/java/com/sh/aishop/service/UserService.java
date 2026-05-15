@@ -147,7 +147,7 @@ public class UserService {
 
     // ============ 下单 ============
     @Transactional
-    public Result<?> createOrder(Long userId, Long productId, Integer quantity, Long addressId) {
+    public Result<?> createOrder(Long userId, Long productId, Integer quantity, Map<String, Object> addressInfo) {
         // 检查商品
         Product product = productMapper.selectById(productId);
         if (product == null || product.getDeleted() != 0) {
@@ -180,13 +180,13 @@ public class UserService {
         // 计算积分
         int totalPoints = product.getPrice() * quantity;
 
-        // 扣减积分
+        // 扣减积分（后端校验积分是否充足）
         Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
                 .eq(Points::getUserId, userId)
                 .orderByDesc(Points::getCreatedAt).last("LIMIT 1"));
         int currentBalance = latest != null ? latest.getBalance() : 0;
         if (currentBalance < totalPoints) {
-            return Result.fail(ResultCode.POINTS_INSUFFICIENT, "积分不足");
+            return Result.fail(ResultCode.POINTS_INSUFFICIENT, "积分不足，当前积分：" + currentBalance);
         }
         int newBalance = currentBalance - totalPoints;
 
@@ -211,18 +211,25 @@ public class UserService {
         order.setQuantity(quantity);
         order.setStatus(OrderStatus.CREATED.getCode());
 
-        // 地址快照
-        if (addressId != null && product.getType() == ProductType.PHYSICAL.getCode()) {
-            Address addr = addressMapper.selectById(addressId);
-            if (addr == null || !addr.getUserId().equals(userId)) {
-                return Result.fail(ResultCode.ADDRESS_NOT_FOUND, "地址不存在");
+        // 地址快照（支持 addressInfo 对象）
+        if (addressInfo != null && product.getType() == ProductType.PHYSICAL.getCode()) {
+            Object receiver = addressInfo.get("receiver");
+            Object phone = addressInfo.get("phone");
+            Object province = addressInfo.get("province");
+            Object city = addressInfo.get("city");
+            Object district = addressInfo.get("district");
+            Object detail = addressInfo.get("detail");
+
+            if (receiver == null || phone == null || province == null || city == null || district == null || detail == null) {
+                return Result.fail(ResultCode.FAIL, "收货地址信息不完整");
             }
-            order.setReceiverName(addr.getName());
-            order.setReceiverPhone(addr.getPhone());
-            order.setReceiverProvince(addr.getProvince());
-            order.setReceiverCity(addr.getCity());
-            order.setReceiverDistrict(addr.getDistrict());
-            order.setReceiverDetail(addr.getDetail());
+
+            order.setReceiverName(receiver.toString());
+            order.setReceiverPhone(phone.toString());
+            order.setReceiverProvince(province.toString());
+            order.setReceiverCity(city.toString());
+            order.setReceiverDistrict(district.toString());
+            order.setReceiverDetail(detail.toString());
         }
 
         orderMapper.insert(order);
@@ -329,7 +336,7 @@ public class UserService {
         Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
                 .eq(Points::getUserId, userId)
                 .orderByDesc(Points::getCreatedAt).last("LIMIT 1"));
-        return Result.success(java.util.Collections.singletonMap("balance",
+        return Result.success(java.util.Collections.singletonMap("points",
                 latest != null ? latest.getBalance() : 0));
     }
 
@@ -363,12 +370,12 @@ public class UserService {
     public Result<?> getAddresses(Long userId) {
         List<Address> addresses = addressMapper.selectList(new LambdaQueryWrapper<Address>()
                 .eq(Address::getUserId, userId).eq(Address::getDeleted, 0)
-                .orderByDesc(Address::getIsDefault).orderByDesc(Address::getCreatedAt));
+                .orderByDesc(Address::getCreatedAt));
 
         List<Map<String, Object>> result = addresses.stream().map(a -> {
             Map<String, Object> map = new HashMap<>();
             map.put("id", a.getId().toString());
-            map.put("name", a.getName());
+            map.put("receiver", a.getName()); // name -> receiver
             map.put("phone", a.getPhone());
             map.put("province", a.getProvince());
             map.put("city", a.getCity());
@@ -386,12 +393,14 @@ public class UserService {
         Address address = new Address();
         address.setId(SnowflakeIdUtil.nextId());
         address.setUserId(userId);
-        address.setName(params.get("name").toString());
-        address.setPhone(params.get("phone").toString());
-        address.setProvince(params.get("province").toString());
-        address.setCity(params.get("city").toString());
-        address.setDistrict(params.get("district").toString());
-        address.setDetail(params.get("detail").toString());
+        // 兼容 receiver 和 name 两种字段名
+        Object nameValue = params.get("receiver") != null ? params.get("receiver") : params.get("name");
+        address.setName(nameValue != null ? nameValue.toString() : "");
+        address.setPhone(params.get("phone") != null ? params.get("phone").toString() : "");
+        address.setProvince(params.get("province") != null ? params.get("province").toString() : "");
+        address.setCity(params.get("city") != null ? params.get("city").toString() : "");
+        address.setDistrict(params.get("district") != null ? params.get("district").toString() : "");
+        address.setDetail(params.get("detail") != null ? params.get("detail").toString() : "");
         address.setIsDefault(params.get("isDefault") != null ? Integer.valueOf(params.get("isDefault").toString()) : 0);
         addressMapper.insert(address);
 
@@ -413,7 +422,9 @@ public class UserService {
             return Result.fail(ResultCode.ADDRESS_NOT_FOUND, "地址不存在");
         }
 
-        if (params.get("name") != null) address.setName(params.get("name").toString());
+        // 兼容 receiver 和 name 两种字段名
+        Object nameValue = params.get("receiver") != null ? params.get("receiver") : params.get("name");
+        if (nameValue != null) address.setName(nameValue.toString());
         if (params.get("phone") != null) address.setPhone(params.get("phone").toString());
         if (params.get("province") != null) address.setProvince(params.get("province").toString());
         if (params.get("city") != null) address.setCity(params.get("city").toString());
