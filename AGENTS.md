@@ -15,7 +15,14 @@ ai-shop/
 
 ## 重要约束
 
-1. **雪花ID精度**：后端返回 Long，前端需转为 String 处理
+1. **雪花ID精度丢失风险（最高优先级）**：
+   - JS `Number.MAX_SAFE_INTEGER = 2^53-1 = 9007199254740991`，而雪花ID是64位
+   - 后端所有ID（id、fileId、shopId、userId等）**必须是 String** 传给前端，禁止 Long 在 JSON 中序列化
+   - 后端：`@JsonSerialize(using = ToStringSerializer.class)` 已加在 `BaseEntity.id`，所有继承实体自动生效
+   - 后端其他 ID 字段（如 shopId、userId、mainImage 等）如有外键关联，**也要确保是 String**
+   - 前端**禁止**把 id 转成 `Number`：禁止 `Number(id)`、`parseInt(id)`、`+id`、`id as number`
+   - 前端 API 返回的 id 全部当 string 处理，业务类型用 `string | null`，不要用 `number`
+   - 违反此约束 → JS 精度丢失 → 数据错乱，排查困难，**必须牢记**
 2. **逻辑删除**：查询时注意 `deleted` 字段条件
 3. **邀请码机制**：管理员/店铺用户可生成邀请码，普通用户注册需审核
 4. **店铺营业状态**：歇业时普通用户可浏览但无法下单

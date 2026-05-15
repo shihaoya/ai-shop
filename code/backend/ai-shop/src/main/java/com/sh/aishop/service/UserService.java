@@ -34,6 +34,10 @@ public class UserService {
     private UserMapper userMapper;
     @Autowired
     private ShopMapper shopMapper;
+    @Autowired
+    private CategoryMapper categoryMapper;
+    @Autowired
+    private FileRecordMapper fileRecordMapper;
 
     // ============ 商品 ============
     public Result<?> getProducts(PageRequest pageRequest) {
@@ -61,21 +65,29 @@ public class UserService {
         int offset = pageRequest.getOffset().intValue();
         products = products.stream().skip(offset).limit(pageRequest.getPageSize()).collect(Collectors.toList());
 
+        // 批量加载分类名
+        List<Long> catIds = products.stream()
+            .map(Product::getCategoryId).filter(Objects::nonNull).distinct().collect(Collectors.toList());
+        Map<Long, String> catNameMap = new HashMap<>();
+        if (!catIds.isEmpty()) {
+            categoryMapper.selectBatchIds(catIds).forEach(c -> catNameMap.put(c.getId(), c.getName()));
+        }
+
         List<ProductDTO> dtos = products.stream().map(p -> {
             ProductDTO dto = new ProductDTO();
             dto.setId(p.getId().toString());
             dto.setShopId(p.getShopId().toString());
-            // 店铺名
             Shop shop = activeShops.stream().filter(s -> s.getId().equals(p.getShopId())).findFirst().orElse(null);
             if (shop != null) dto.setShopName(shop.getName());
             dto.setCategoryId(p.getCategoryId() != null ? p.getCategoryId().toString() : null);
+            dto.setCategoryName(p.getCategoryId() != null ? catNameMap.get(p.getCategoryId()) : null);
             dto.setName(p.getName());
             dto.setType(p.getType());
             dto.setTypeDesc(p.getType() == ProductType.VIRTUAL.getCode() ? "虚拟" : "实体");
             dto.setPrice(p.getPrice());
             dto.setStock(p.getStock());
             dto.setLimitPerUser(p.getLimitPerUser());
-            dto.setMainImage(p.getMainImage());
+            dto.setMainImage(p.getMainImage() != null ? p.getMainImage().toString() : null);
             dto.setDetailImages(p.getDetailImages());
             dto.setDescription(p.getDescription());
             dto.setDeliveryInfo(p.getDeliveryInfo());
@@ -83,6 +95,17 @@ public class UserService {
             dto.setStatusDesc("上架");
             return dto;
         }).collect(Collectors.toList());
+
+        // 批量加载 mainImage URL
+        List<String> fileIds = dtos.stream()
+            .map(ProductDTO::getMainImage).filter(Objects::nonNull).collect(Collectors.toList());
+        if (!fileIds.isEmpty()) {
+            Map<String, String> urlMap = fileRecordMapper.selectBatchIds(fileIds)
+                .stream().collect(Collectors.toMap(f -> f.getId().toString(), FileRecord::getUrl));
+            dtos.forEach(dto -> {
+                if (dto.getMainImage() != null) dto.setMainImageUrl(urlMap.get(dto.getMainImage()));
+            });
+        }
 
         return Result.success(new PageResult<>(dtos, total, pageRequest.getPage(), pageRequest.getPageSize()));
     }
@@ -112,7 +135,7 @@ public class UserService {
         dto.setPrice(product.getPrice());
         dto.setStock(product.getStock());
         dto.setLimitPerUser(product.getLimitPerUser());
-        dto.setMainImage(product.getMainImage());
+            dto.setMainImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
         dto.setDetailImages(product.getDetailImages());
         dto.setDescription(product.getDescription());
         dto.setDeliveryInfo(product.getDeliveryInfo());
@@ -501,7 +524,7 @@ public class UserService {
         Product product = productMapper.selectById(o.getProductId());
         if (product != null) {
             dto.setProductName(product.getName());
-            dto.setProductImage(product.getMainImage());
+            dto.setProductImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
         }
         return dto;
     }

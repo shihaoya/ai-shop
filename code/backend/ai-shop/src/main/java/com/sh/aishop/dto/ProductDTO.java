@@ -37,10 +37,13 @@ public class ProductDTO {
     @Schema(description = "每人限购数量", example = "5")
     private Integer limitPerUser;
     
-    @Schema(description = "主图URL", example = "https://example.com/image.jpg")
+    @Schema(description = "主图 file_record.id", example = "1234567890")
     private String mainImage;
-    
-    @Schema(description = "详情图URL列表，JSON格式")
+
+    @Schema(description = "主图访问URL")
+    private String mainImageUrl;
+
+    @Schema(description = "详情图 file_record.id 数组，JSON格式")
     private String detailImages;
     
     @Schema(description = "商品描述")
@@ -80,6 +83,8 @@ public class ProductDTO {
     public void setLimitPerUser(Integer limitPerUser) { this.limitPerUser = limitPerUser; }
     public String getMainImage() { return mainImage; }
     public void setMainImage(String mainImage) { this.mainImage = mainImage; }
+    public String getMainImageUrl() { return mainImageUrl; }
+    public void setMainImageUrl(String mainImageUrl) { this.mainImageUrl = mainImageUrl; }
     public String getDetailImages() { return detailImages; }
     public void setDetailImages(String detailImages) { this.detailImages = detailImages; }
     public String getDescription() { return description; }

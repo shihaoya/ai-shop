@@ -38,6 +38,8 @@ public class OperatorService {
     private MessageMapper messageMapper;
     @Autowired
     private AddressMapper addressMapper;
+    @Autowired
+    private FileRecordMapper fileRecordMapper;
 
     // ============ 店铺管理 ============
     public Result<?> getMyShop(Long operatorId) {
@@ -203,6 +205,24 @@ public class OperatorService {
         products = products.stream().skip(offset).limit(pageRequest.getPageSize()).collect(Collectors.toList());
 
         List<ProductDTO> dtos = products.stream().map(this::toProductDTO).collect(Collectors.toList());
+
+        // 批量加载 mainImage 的访问URL
+        List<Long> fileIds = dtos.stream()
+            .map(ProductDTO::getMainImage)
+            .filter(Objects::nonNull)
+            .map(Long::parseLong)
+            .collect(Collectors.toList());
+        if (!fileIds.isEmpty()) {
+            Map<Long, String> urlMap = fileRecordMapper.selectBatchIds(fileIds)
+                .stream()
+                .collect(Collectors.toMap(FileRecord::getId, FileRecord::getUrl));
+            dtos.forEach(dto -> {
+                if (dto.getMainImage() != null) {
+                    dto.setMainImageUrl(urlMap.get(Long.parseLong(dto.getMainImage())));
+                }
+            });
+        }
+
         return Result.success(new PageResult<>(dtos, total, pageRequest.getPage(), pageRequest.getPageSize()));
     }
 
@@ -300,6 +320,10 @@ public class OperatorService {
         dto.setStock(p.getStock());
         dto.setLimitPerUser(p.getLimitPerUser());
         dto.setMainImage(p.getMainImage());
+        if (p.getMainImage() != null) {
+            FileRecord file = fileRecordMapper.selectById(Long.parseLong(p.getMainImage()));
+            if (file != null) dto.setMainImageUrl(file.getUrl());
+        }
         dto.setDetailImages(p.getDetailImages());
         dto.setDescription(p.getDescription());
         dto.setDeliveryInfo(p.getDeliveryInfo());
@@ -763,7 +787,7 @@ public class OperatorService {
         Product product = productMapper.selectById(o.getProductId());
         if (product != null) {
             dto.setProductName(product.getName());
-            dto.setProductImage(product.getMainImage());
+            dto.setProductImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
         }
         return dto;
     }
