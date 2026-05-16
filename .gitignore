@@ -37,6 +37,7 @@ E2E*.md
 .env
 .env.local
 .env.*.local
+application-local.yml
 
 # Build outputs
 dist/
