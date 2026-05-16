@@ -23,6 +23,9 @@ tmp/
 
 # Agent tools
 .sisyphus/
+.sisyphus/
+.claude/
+run-continuation/
 opencode.json
 *.session
 
