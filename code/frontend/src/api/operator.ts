@@ -121,6 +121,10 @@ export function rejectUser(userId: string | number): Promise<null> {
   return request.put<null>(`/operator/users/${userId}/reject`) as any
 }
 
+export function resetPassword(userId: string | number): Promise<{ password: string }> {
+  return request.put<{ password: string }>(`/operator/users/${userId}/password/reset`) as any
+}
+
 export function createUser(username: string, nickname: string, password: string): Promise<UserInfo> {
   return request.post<UserInfo>('/operator/users/create', { username, nickname, password }) as any
 }

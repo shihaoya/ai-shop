@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser } from '@/api/operator'
+import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser, resetPassword } from '@/api/operator'
 import { useThemeStore } from '@/stores/theme'
 import type { UserInfo, PointsLog } from '@/types/api'
 import { PointsTypeText } from '@/types/enums'
@@ -29,6 +29,11 @@ const pointsLogVisible = ref(false)
 const pointsLogList = ref<PointsLog[]>([])
 const pointsLogLoading = ref(false)
 const currentLogUser = ref('')
+
+// 重置密码弹窗
+const resetPwdVisible = ref(false)
+const resetPwdLoading = ref(false)
+const resetPwdForm = ref({ userId: '', username: '', newPassword: '' })
 
 async function loadUsers() {
   loading.value = true
@@ -176,6 +181,46 @@ async function openPointsLogModal(userId: string, username: string) {
   }
 }
 
+async function handleResetPassword(userId: string, username: string) {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      Modal.confirm({
+        title: '确认重置密码',
+        content: `确定要重置用户 ${username} 的密码吗？重置后将生成新随机密码。`,
+        okText: '确认',
+        cancelText: '取消',
+        onOk: () => resolve(),
+        onCancel: () => reject(new Error('cancel'))
+      })
+    })
+  } catch (e: any) {
+    if (e?.message !== 'cancel') {
+      message.error(e?.message || (e as Error)?.message || '操作失败')
+    }
+    return
+  }
+
+  resetPwdForm.value = { userId, username, newPassword: '' }
+  resetPwdLoading.value = true
+  try {
+    const res = await resetPassword(userId)
+    resetPwdForm.value.newPassword = res.password
+    resetPwdVisible.value = true
+  } catch (e: any) {
+    message.error(e?.message || (e as Error)?.message || '重置密码失败')
+  } finally {
+    resetPwdLoading.value = false
+  }
+}
+
+function copyPassword() {
+  navigator.clipboard.writeText(resetPwdForm.value.newPassword).then(() => {
+    message.success('密码已复制到剪贴板')
+  }).catch(() => {
+    message.error('复制失败')
+  })
+}
+
 function getStatusTag(status: number) {
   const map: Record<number, { text: string; class: string }> = {
     1: { text: '待审核', class: 'orange' },
@@ -263,6 +308,9 @@ function formatDate(date?: string) {
                   </button>
                   <button v-if="user.status !== 1" class="action-btn" title="积分流水" @click="openPointsLogModal(user.id, user.username)">
                     <i class="fas fa-history"></i>
+                  </button>
+                  <button v-if="user.status !== 1" class="action-btn orange" title="重置密码" @click="handleResetPassword(user.id, user.username)">
+                    <i class="fas fa-key"></i>
                   </button>
                 </td>
               </tr>
@@ -388,6 +436,34 @@ function formatDate(date?: string) {
         </div>
         <div class="modal-footer">
           <button class="cyber-btn" @click="pointsLogVisible = false">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重置密码弹窗 -->
+    <div class="modal-overlay" v-if="resetPwdVisible">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3><i class="fas fa-key" style="margin-right:8px;color:var(--accent);"></i>密码重置成功</h3>
+          <button class="modal-close" @click="resetPwdVisible = false">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom:16px;color:var(--text-secondary);">用户 <strong style="color:var(--accent);">{{ resetPwdForm.username }}</strong> 的密码已重置为：</p>
+          <div class="password-display">
+            <span class="password-text">{{ resetPwdForm.newPassword }}</span>
+            <button class="copy-btn" @click="copyPassword" title="复制密码">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+          <p style="margin-top:12px;font-size:12px;color:var(--text-muted);">请将此密码告知用户，并提醒其及时修改密码。</p>
+        </div>
+        <div class="modal-footer">
+          <button class="cyber-btn" @click="resetPwdVisible = false">关闭</button>
+          <button class="cyber-btn-primary" @click="copyPassword">
+            <i class="fas fa-copy" style="margin-right:5px;"></i>复制密码
+          </button>
         </div>
       </div>
     </div>
@@ -543,5 +619,40 @@ function formatDate(date?: string) {
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid var(--border-subtle);
+}
+
+.password-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius-xs);
+  margin-bottom: 8px;
+}
+
+.password-text {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+
+.copy-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--border-glow);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent);
 }
 </style>

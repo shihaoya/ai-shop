@@ -41,8 +41,6 @@ async function handleChangePwd() {
     await authApi.updatePassword({ oldPassword, newPassword })
     message.success('密码修改成功')
     changePwdVisible.value = false
-  } catch (e: any) {
-    message.error(e?.message || '修改失败')
   } finally {
     changePwdLoading.value = false
   }
@@ -70,11 +68,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="right">
-        <button class="icon-btn">
-          <i class="far fa-bell"></i>
-          <span class="dot"></span>
-        </button>
-        <Dropdown trigger="hover">
+        <Dropdown trigger="click">
           <div class="user-tag">
             <div class="avatar">U</div>
             <span class="name">{{ userStore.userInfo?.nickname || userStore.userInfo?.username || '用户' }}</span>
@@ -237,5 +231,82 @@ onMounted(() => {
 .dropdown-username {
   color: var(--text-muted);
   font-size: 12px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 8, 22, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius);
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: var(--accent-glow), 0 20px 50px rgba(0,0,0,0.4);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.modal-close:hover {
+  color: var(--accent);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 </style>

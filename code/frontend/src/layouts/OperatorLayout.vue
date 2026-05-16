@@ -46,8 +46,8 @@ async function handleChangePwd() {
     await authApi.updatePassword({ oldPassword, newPassword })
     message.success('密码修改成功')
     changePwdVisible.value = false
-  } catch (e: any) {
-    message.error(e?.message || '修改失败')
+  } catch (_e) {
+    // 错误已在拦截器中提示
   } finally {
     changePwdLoading.value = false
   }
@@ -81,14 +81,7 @@ onMounted(async () => {
         </div>
       </div>
       <div class="right">
-        <button class="icon-btn">
-          <i class="far fa-bell"></i>
-          <span class="dot"></span>
-        </button>
-        <button class="icon-btn">
-          <i class="fas fa-expand"></i>
-        </button>
-        <Dropdown trigger="hover">
+        <Dropdown trigger="click">
           <div class="user-tag">
             <div class="avatar">O</div>
             <span class="name">{{ userStore.userInfo?.nickname || userStore.userInfo?.username || '运营人员' }}</span>
@@ -277,83 +270,80 @@ onMounted(async () => {
   font-size: 12px;
 }
 
-.user-menu-wrapper {
-  position: relative;
-}
-
-.user-tag {
-  cursor: pointer;
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 8, 22, 0.8);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: background 0.2s;
-}
-
-.user-tag:hover {
-  background: var(--bg-hover);
-}
-
-.user-dropdown {
-  display: none;
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  min-width: 200px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  justify-content: center;
   z-index: 1000;
-  overflow: hidden;
-  padding: 4px 0;
 }
 
-.user-dropdown:not(.dropdown-hidden) {
-  display: block;
+.modal-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius);
+  width: 420px;
+  max-width: 90vw;
+  box-shadow: var(--accent-glow), 0 20px 50px rgba(0,0,0,0.4);
 }
 
-.dropdown-userinfo {
-  padding: 12px 16px;
+.modal-header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-.dropdown-name {
+.modal-header h3 {
+  margin: 0;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 14px;
 }
 
-.dropdown-username {
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.dropdown-divider {
-  height: 1px;
-  background: var(--border-subtle);
-  margin: 4px 0;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 10px 16px;
+.modal-close {
   background: none;
   border: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-muted);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  text-align: left;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
 }
 
-.dropdown-item:hover {
-  background: var(--bg-hover);
+.modal-close:hover {
   color: var(--accent);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 </style>

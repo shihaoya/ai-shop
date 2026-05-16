@@ -1,6 +1,8 @@
 spring:
   application:
     name: ai-shop
+  profiles:
+    active: local
   datasource:
     url: jdbc:mysql://localhost:3306/ai_shop?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
     username: root

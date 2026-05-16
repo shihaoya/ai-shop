@@ -248,6 +248,13 @@ public class OperatorController {
         return operatorService.createUser(userId, params.get("username"), params.get("nickname"), params.get("password"));
     }
 
+    @Operation(summary = "重置用户密码", description = "强制重置用户密码为新生成的随机密码")
+    @PutMapping("/users/{id}/password/reset")
+    public Result<?> resetUserPassword(@PathVariable("id") Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return operatorService.resetUserPassword(userId, id);
+    }
+
     @Operation(summary = "消息列表", description = "获取系统消息列表")
     @GetMapping("/messages")
     public Result<?> getMessages(HttpServletRequest request, PageRequest pageRequest) {

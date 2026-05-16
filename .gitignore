@@ -37,8 +37,10 @@ E2E*.md
 .env
 .env.local
 .env.*.local
-application-local.yml
 
 # Build outputs
 dist/
 build/
+
+# Local config
+code/backend/ai-shop/src/main/resources/application-local.yml

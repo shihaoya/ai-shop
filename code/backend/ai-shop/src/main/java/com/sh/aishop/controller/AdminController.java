@@ -78,6 +78,16 @@ public class AdminController {
         return adminService.rejectUser(userId);
     }
 
+    @Operation(summary = "重置用户密码", description = "强制重置用户密码为新生成的随机密码")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "重置成功"),
+        @ApiResponse(responseCode = "404", description = "用户不存在")
+    })
+    @PutMapping("/users/{id}/password/reset")
+    public Result<?> resetUserPassword(@PathVariable("id") Long userId) {
+        return adminService.resetUserPassword(userId);
+    }
+
     @Operation(summary = "我的邀请码", description = "获取管理员的邀请码")
     @GetMapping("/invite-code")
     public Result<?> getInviteCode(HttpServletRequest request) {

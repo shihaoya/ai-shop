@@ -8,6 +8,7 @@ import com.sh.aishop.dto.*;
 import com.sh.aishop.entity.*;
 import com.sh.aishop.entity.enums.*;
 import com.sh.aishop.mapper.*;
+import com.sh.aishop.util.SecurityUtil;
 import com.sh.aishop.util.SnowflakeIdUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -681,6 +682,40 @@ public class OperatorService {
         userMapper.insert(user);
 
         return Result.success(user.getId().toString());
+    }
+
+    @Transactional
+    public Result<?> resetUserPassword(Long operatorId, Long userId) {
+        Shop shop = getApprovedShop(operatorId);
+        if (shop == null) {
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
+        }
+
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
+        }
+
+        // 确保用户属于当前运营人员的店铺
+        if (user.getParentId() == null || !user.getParentId().equals(operatorId)) {
+            return Result.fail(ResultCode.FAIL, "无权重置该用户密码");
+        }
+
+        String newPassword = generateRandomPassword();
+        user.setPassword(com.sh.aishop.util.SecurityUtil.encryptPassword(newPassword));
+        userMapper.updateById(user);
+
+        return Result.success(Collections.singletonMap("password", newPassword));
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     // ============ 消息 ============

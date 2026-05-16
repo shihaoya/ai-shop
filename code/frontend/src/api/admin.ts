@@ -36,6 +36,11 @@ export function rejectUser(userId: string | number): Promise<null> {
   return request.put<null>(`/admin/users/${userId}/reject`) as any
 }
 
+// 重置用户密码
+export function resetPassword(userId: string | number): Promise<{ password: string }> {
+  return request.put<{ password: string }>(`/admin/users/${userId}/password/reset`) as any
+}
+
 // 获取邀请码
 export function getInviteCode(): Promise<string | null> {
   return request.get<string | null>('/admin/invite-code') as any

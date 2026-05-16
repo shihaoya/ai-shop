@@ -9,6 +9,7 @@ import com.sh.aishop.entity.*;
 import com.sh.aishop.entity.enums.*;
 import com.sh.aishop.mapper.*;
 import com.sh.aishop.util.SnowflakeIdUtil;
+import com.sh.aishop.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ public class AdminService {
     private ShopMapper shopMapper;
     @Autowired
     private InviteCodeMapper inviteCodeMapper;
+    @Autowired
+    private PointsMapper pointsMapper;
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -125,6 +128,13 @@ public class AdminService {
             dto.setNickname(user.getNickname());
             dto.setRole(user.getRole());
             dto.setStatus(user.getStatus());
+            dto.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null);
+            // 查询积分
+            Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
+                    .eq(Points::getUserId, user.getId())
+                    .orderByDesc(Points::getCreatedAt)
+                    .last("LIMIT 1"));
+            dto.setPointsBalance(latest != null ? latest.getBalance().toString() : "0");
             dtos.add(dto);
         }
 
@@ -225,6 +235,28 @@ public class AdminService {
         inviteCodeMapper.insert(newCode);
 
         return Result.success(newCode.getCode());
+    }
+
+    @Transactional
+    public Result<?> resetUserPassword(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
+        }
+        String newPassword = generateRandomPassword();
+        user.setPassword(SecurityUtil.encryptPassword(newPassword));
+        userMapper.updateById(user);
+        return Result.success(Collections.singletonMap("password", newPassword));
+    }
+
+    private String generateRandomPassword() {
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 
     private String generateCode() {
