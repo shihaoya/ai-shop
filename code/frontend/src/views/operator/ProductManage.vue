@@ -93,6 +93,8 @@ function onMainImageChange(val: string[]) {
 }
 
 const submitLoading = ref(false)
+const previewVisible = ref(false)
+const previewImageUrl = ref('')
 
 // 视图切换
 const viewMode = ref<'table' | 'card'>('table')

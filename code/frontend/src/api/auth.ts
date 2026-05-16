@@ -17,4 +17,7 @@ export const authApi = {
   getUserInfo(): Promise<UserInfo & { points?: number }> {
     return request.get<UserInfo & { points?: number }>('/auth/info') as any
   },
+  updateUserInfo(data: { nickname?: string }): Promise<UserInfo> {
+    return request.put<UserInfo>('/auth/info', data) as any
+  },
 }

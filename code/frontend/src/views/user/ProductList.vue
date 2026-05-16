@@ -467,8 +467,18 @@ function getTypeText(type: string | number) {
     >
       <div v-if="selectedProduct" class="redeem-form">
         <div class="redeem-product-info">
-          <div class="redeem-product-name">{{ selectedProduct.name }}</div>
-          <div class="redeem-product-price">{{ selectedProduct.price }} 积分/件</div>
+          <img
+            v-if="(selectedProduct as any).mainImageUrl"
+            :src="(selectedProduct as any).mainImageUrl"
+            class="redeem-product-img"
+          />
+          <div v-else class="redeem-product-img-placeholder">
+            <i class="fas fa-box"></i>
+          </div>
+          <div class="redeem-product-text">
+            <div class="redeem-product-name">{{ selectedProduct.name }}</div>
+            <div class="redeem-product-price">{{ selectedProduct.price }} 积分/件</div>
+          </div>
         </div>
 
         <!-- 积分信息 -->
@@ -971,6 +981,88 @@ function getTypeText(type: string | number) {
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.redeem-product-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid var(--border-subtle);
+}
+
+.redeem-product-img-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 20px;
+}
+
+.redeem-product-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.redeem-product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.redeem-product-price {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.redeem-product-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.redeem-product-img-placeholder {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.redeem-product-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.redeem-product-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .redeem-product-name {

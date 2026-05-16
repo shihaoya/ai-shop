@@ -151,6 +151,21 @@ public class AuthService {
         return Result.success();
     }
 
+    @Transactional
+    public Result<?> updateUserInfo(Long userId, String nickname) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
+        }
+
+        if (StringUtils.hasText(nickname)) {
+            user.setNickname(nickname);
+        }
+
+        userMapper.updateById(user);
+        return Result.success(toUserDTO(user));
+    }
+
     private UserDTO toUserDTO(User user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId().toString());

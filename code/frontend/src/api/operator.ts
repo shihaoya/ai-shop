@@ -34,7 +34,7 @@ export function deleteCategory(id: string | number): Promise<null> {
 }
 
 // ============ 商品 ============
-export function getProducts(params: PageRequest): Promise<ListResponse<Product>> {
+export function getProducts(params: PageRequest & { keyword?: string }): Promise<ListResponse<Product>> {
   return request.get<ListResponse<Product>>('/operator/products', { params }) as any
 }
 

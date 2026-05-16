@@ -15,6 +15,10 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
+import java.util.Map;
+
 @Tag(name = "认证管理", description = "用户登录、注册、密码修改、登出")
 @RestController
 @RequestMapping("/api/auth")
@@ -66,6 +70,15 @@ public class AuthController {
                                     @Valid @RequestBody PasswordRequest passwordRequest) {
         Long userId = (Long) request.getAttribute("userId");
         return authService.changePassword(userId, passwordRequest);
+    }
+
+    @Operation(summary = "修改用户信息", description = "修改当前用户信息（昵称等）")
+    @PutMapping("/info")
+    public Result<?> updateUserInfo(HttpServletRequest request,
+                                    @RequestBody Map<String, String> body) {
+        Long userId = (Long) request.getAttribute("userId");
+        String nickname = body.get("nickname");
+        return authService.updateUserInfo(userId, nickname);
     }
 
     @Operation(summary = "用户登出", description = "退出登录，将Token加入黑名单")

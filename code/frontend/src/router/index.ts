@@ -65,7 +65,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'products/:id', name: 'UserProductDetail', component: () => import('@/views/user/ProductDetail.vue'), meta: { title: '商品详情' } },
       { path: 'orders', name: 'UserOrders', component: () => import('@/views/user/OrderList.vue'), meta: { title: '我的订单', sidebar: true, icon: 'fa-receipt' } },
       { path: 'orders/:id', name: 'UserOrderDetail', component: () => import('@/views/user/OrderDetail.vue'), meta: { title: '订单详情' } },
-      { path: 'points', name: 'UserPoints', component: () => import('@/views/user/PointsInfo.vue'), meta: { title: '积分中心', sidebar: true, icon: 'fa-star' } },
+      { path: 'profile', name: 'UserProfile', component: () => import('@/views/user/Profile.vue'), meta: { title: '个人中心', sidebar: true, icon: 'fa-user' } },
       { path: 'addresses', name: 'UserAddresses', component: () => import('@/views/user/AddressList.vue'), meta: { title: '地址簿', sidebar: true, icon: 'fa-map-marker-alt' } },
       { path: 'messages', name: 'UserMessages', component: () => import('@/views/user/MessageList.vue'), meta: { title: '我的消息', sidebar: true, icon: 'fa-envelope' } },
     ],

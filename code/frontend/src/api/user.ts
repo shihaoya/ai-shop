@@ -4,7 +4,7 @@ import type { PageRequest, Product, Order, Address, PointsLog, Message } from '@
 type ListResponse<T> = { list: T[]; total: number; page: number; size: number }
 
 // ============ 商品 ============
-export function getProducts(params: PageRequest): Promise<ListResponse<Product>> {
+export function getProducts(params: PageRequest & { keyword?: string }): Promise<ListResponse<Product>> {
   return request.get<ListResponse<Product>>('/user/products', { params }) as any
 }
 
