@@ -5,6 +5,7 @@ import { getShops, auditShop } from '@/api/admin'
 import { message, Modal } from 'ant-design-vue'
 import { ShopStatus, ShopStatusText, ShopStatusClass } from '@/types/enums'
 import type { Shop } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 
@@ -79,6 +80,11 @@ function getStatusTag(status: number) {
 function formatDate(date?: string) {
   if (!date) return '-'
   return new Date(date).toLocaleString('zh-CN')
+}
+
+function handlePageChange(page: number) {
+  pagination.value.page = page
+  loadShops()
 }
 </script>
 
@@ -163,15 +169,13 @@ function formatDate(date?: string) {
       </div>
 
       <!-- Pagination -->
-      <div class="pagination" v-if="pagination.total > 0">
-        <span># TOTAL: {{ pagination.total }} RECORDS</span>
-        <button class="page-btn" :disabled="pagination.page <= 1" @click="pagination.page--; loadShops()">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="page-btn active">{{ pagination.page }}</button>
-        <button class="page-btn" :disabled="pagination.page * pagination.size >= pagination.total" @click="pagination.page++; loadShops()">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+      <div class="pagination-wrap" v-if="pagination.total > 0">
+        <CyberPagination
+          v-model:current="pagination.page"
+          v-model:pageSize="pagination.size"
+          :total="pagination.total"
+          @change="handlePageChange"
+        />
       </div>
 
       <!-- 拒绝弹窗 -->
@@ -246,7 +250,7 @@ function formatDate(date?: string) {
 .loading-mask {
   position: absolute;
   inset: 0;
-  background: rgba(7, 8, 22, 0.6);
+  background: var(--loading-mask);
   display: flex;
   align-items: center;
   justify-content: center;

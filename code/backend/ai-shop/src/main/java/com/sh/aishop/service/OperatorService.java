@@ -768,6 +768,7 @@ public class OperatorService {
         dto.setShopId(o.getShopId().toString());
         dto.setProductId(o.getProductId().toString());
         dto.setPoints(o.getPoints());
+        dto.setTotalPoints(o.getPoints() * o.getQuantity());
         dto.setQuantity(o.getQuantity());
         dto.setStatus(o.getStatus());
         dto.setCreatedAt(o.getCreatedAt() != null ? o.getCreatedAt().toString() : null);

@@ -12,6 +12,8 @@
   --bg-nav: #0d0f24;
   --bg-input: #0f1229;
 
+  --loading-mask: rgba(7, 8, 22, 0.6);
+
   --border: rgba(99, 102, 241, 0.20);
   --border-subtle: rgba(99, 102, 241, 0.12);
   --border-glow: rgba(99, 102, 241, 0.30);
@@ -51,6 +53,8 @@
   --bg-card-hover: #f4f5f9;
   --bg-nav: rgba(255, 255, 255, 0.80);
   --bg-input: #f0f1f4;
+
+  --loading-mask: rgba(237, 239, 242, 0.7);
 
   --border: rgba(0, 0, 0, 0.12);
   --border-subtle: rgba(0, 0, 0, 0.06);
@@ -751,6 +755,15 @@ body::after {
 /* ============================================
    分页
    ============================================ */
+.pagination-wrap,
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px 0 8px;
+  margin-top: 16px;
+}
+
 .pagination {
   display: flex;
   align-items: center;
@@ -791,6 +804,89 @@ body::after {
   border-color: transparent;
   color: white;
   box-shadow: var(--accent-glow);
+}
+
+/* ============================================
+   ant-pagination 暗色模式适配
+   ============================================ */
+:deep(.ant-pagination) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:deep(.ant-pagination-item) {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+:deep(.ant-pagination-item a) {
+  color: var(--text-primary);
+}
+
+:deep(.ant-pagination-item:hover) {
+  background: var(--bg-card-hover);
+  border-color: var(--border-glow);
+}
+
+:deep(.ant-pagination-item:hover a) {
+  color: var(--accent);
+}
+
+:deep(.ant-pagination-item-active) {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+:deep(.ant-pagination-item-active a) {
+  color: white;
+}
+
+:deep(.ant-pagination-prev button),
+:deep(.ant-pagination-next button) {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+:deep(.ant-pagination-prev:hover button),
+:deep(.ant-pagination-next:hover button) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+:deep(.ant-pagination-options) {
+  margin-left: 12px;
+}
+
+:deep(.ant-pagination-options .ant-select-selector) {
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+:deep(.ant-pagination-options .ant-select-arrow) {
+  color: var(--text-muted);
+}
+
+:deep(.ant-pagination-options .ant-select-dropdown) {
+  background: var(--bg-card);
+}
+
+:deep(.ant-pagination-options .ant-select-item) {
+  color: var(--text-primary);
+}
+
+:deep(.ant-pagination-options .ant-select-item-option-active) {
+  background: var(--bg-card-hover);
+}
+
+:deep(.ant-pagination-options .ant-select-item-option-selected) {
+  background: var(--accent);
+  color: white;
 }
 
 /* ============================================

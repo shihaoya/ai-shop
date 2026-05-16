@@ -4,6 +4,7 @@ import { useThemeStore } from '@/stores/theme'
 import { getOrders, getOrder, closeOrder, completeOrder } from '@/api/user'
 import { message } from 'ant-design-vue'
 import type { Order } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 
@@ -75,12 +76,6 @@ function handleStatusChange(status: number | undefined) {
 
 function handlePageChange(page: number) {
   pagination.value.page = page
-  loadOrders()
-}
-
-function handlePageSizeChange(size: number) {
-  pagination.value.size = size
-  pagination.value.page = 1
   loadOrders()
 }
 
@@ -232,18 +227,13 @@ function formatAddress(addr?: Order['addressInfo']) {
           </div>
         </a-spin>
 
-        <!-- 分页 -->
-        <div v-if="orders.length > 0" class="pagination-wrapper">
-          <div class="pagination-info">共 {{ pagination.total }} 条记录</div>
-          <a-pagination
-            :current="pagination.page"
-            :page-size="pagination.size"
+        <!-- Pagination -->
+        <div v-if="pagination.total > 0" class="pagination-wrapper">
+          <CyberPagination
+            v-model:current="pagination.page"
+            v-model:pageSize="pagination.size"
             :total="pagination.total"
-            :show-size-changer="true"
-            :page-size-options="['5', '10', '20', '50']"
-            show-quick-jumper
             @change="handlePageChange"
-            @showSizeChange="handlePageSizeChange"
           />
         </div>
       </div>
@@ -404,7 +394,7 @@ function formatAddress(addr?: Order['addressInfo']) {
   border-radius: var(--radius);
   padding: 20px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .cyber-card::before {
@@ -733,15 +723,10 @@ function formatAddress(addr?: Order['addressInfo']) {
 .pagination-wrapper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 20px 0 8px;
   margin-top: 16px;
   border-top: 1px solid var(--border-subtle);
-}
-
-.pagination-info {
-  font-size: 13px;
-  color: var(--text-muted);
 }
 
 /* 响应式 */

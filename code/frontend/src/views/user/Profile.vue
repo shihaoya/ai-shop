@@ -4,8 +4,11 @@ import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { authApi } from '@/api/auth'
 import { getPoints, getPointsLog } from '@/api/user'
-import { message } from 'ant-design-vue'
+import { getInviteCode as adminGetInviteCode, createInviteCode as adminCreateInviteCode } from '@/api/admin'
+import { getInviteCode as operatorGetInviteCode, createInviteCode as operatorCreateInviteCode } from '@/api/operator'
+import { message, Modal } from 'ant-design-vue'
 import type { PointsLog } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -19,16 +22,76 @@ const loading = ref(false)
 const pointsLog = ref<PointsLog[]>([])
 const pagination = ref({ page: 1, size: 10, total: 0 })
 
+// 邀请码（admin/operator）
+const inviteCodeLoading = ref(false)
+const inviteCode = ref('')
+const createdAt = ref('')
+const generating = ref(false)
+
 // 编辑昵称
 const editNicknameVisible = ref(false)
 const editNicknameLoading = ref(false)
 const nicknameForm = ref('')
 
-onMounted(() => {
-  themeStore.init()
-  loadPoints()
-  loadPointsLog()
-})
+function getInviteCodeApi() {
+  return userStore.userInfo?.role === 1 ? adminGetInviteCode() : operatorGetInviteCode()
+}
+
+function getCreateInviteCodeApi() {
+  return userStore.userInfo?.role === 1 ? adminCreateInviteCode() : operatorCreateInviteCode()
+}
+
+async function loadInviteCode() {
+  inviteCodeLoading.value = true
+  try {
+    const code = await getInviteCodeApi()
+    inviteCode.value = code || ''
+  } catch {
+    inviteCode.value = ''
+  } finally {
+    inviteCodeLoading.value = false
+  }
+}
+
+async function doGenerate() {
+  generating.value = true
+  try {
+    const code = await getCreateInviteCodeApi()
+    inviteCode.value = code || ''
+    createdAt.value = new Date().toLocaleString('zh-CN')
+    message.success('邀请码已生成')
+  } catch {
+    message.error('生成失败')
+  } finally {
+    generating.value = false
+  }
+}
+
+async function handleGenerateInviteCode() {
+  if (inviteCode.value) {
+    Modal.confirm({
+      title: '确认生成新邀请码？',
+      content: '生成后旧邀请码将立即失效，是否继续？',
+      okText: '确认生成',
+      cancelText: '取消',
+      okButtonProps: { danger: true },
+      onOk() {
+        doGenerate()
+      },
+    })
+  } else {
+    await doGenerate()
+  }
+}
+
+function handleCopyInviteCode() {
+  if (!inviteCode.value) return
+  navigator.clipboard.writeText(inviteCode.value).then(() => {
+    message.success('已复制到剪贴板')
+  }).catch(() => {
+    message.error('复制失败')
+  })
+}
 
 async function loadPoints() {
   pointsLoading.value = true
@@ -60,12 +123,6 @@ async function loadPointsLog() {
 
 function handlePageChange(page: number) {
   pagination.value.page = page
-  loadPointsLog()
-}
-
-function handlePageSizeChange(size: number) {
-  pagination.value.size = size
-  pagination.value.page = 1
   loadPointsLog()
 }
 
@@ -105,6 +162,16 @@ function getTypeInfo(type: number) {
   }
   return { text: type === 2 ? '扣除' : '兑换', class: 'decrease', icon: 'fa-arrow-down', sign: '-' }
 }
+
+onMounted(() => {
+  themeStore.init()
+  loadPoints()
+  if (userStore.userInfo?.role === 3) {
+    loadPointsLog()
+  } else {
+    loadInviteCode()
+  }
+})
 </script>
 
 <template>
@@ -129,7 +196,10 @@ function getTypeInfo(type: number) {
           </button>
         </div>
         <div class="profile-info">
-          <h3 class="profile-nickname">{{ userStore.userInfo?.nickname || '-' }}</h3>
+          <h3 class="profile-nickname" @click="openEditNickname" title="点击修改昵称">
+            {{ userStore.userInfo?.nickname || '-' }}
+            <i class="fas fa-pen nickname-edit-icon"></i>
+          </h3>
           <div class="profile-meta">
             <span class="profile-tag">
               <i class="fas fa-user"></i> {{ userStore.userInfo?.username }}
@@ -142,26 +212,47 @@ function getTypeInfo(type: number) {
               <i class="fas fa-calendar"></i> {{ formatDate(userStore.userInfo?.createdAt) }}
             </span>
           </div>
+          <div class="profile-points" v-if="userStore.userInfo?.role === 3">
+            <i class="fas fa-gem"></i>
+            <span class="points-value">{{ currentPoints.toLocaleString() }}</span>
+            <span class="points-label">积分</span>
+          </div>
         </div>
       </div>
 
-      <!-- 积分余额卡片 -->
-      <div class="cyber-card points-balance-card">
-        <a-spin :spinning="pointsLoading">
-          <div class="balance-content">
-            <div class="balance-icon">
-              <i class="fas fa-gem"></i>
-            </div>
-            <div class="balance-info">
-              <span class="balance-label">当前积分</span>
-              <span class="balance-value">{{ currentPoints.toLocaleString() }}</span>
-            </div>
+      <!-- 邀请码（admin/operator） -->
+      <div v-if="userStore.userInfo?.role !== 3" class="cyber-card invite-card" :class="{ 'has-code': !!inviteCode }">
+        <div class="invite-card-inner">
+          <div class="invite-icon">
+            <i class="fas fa-qrcode"></i>
           </div>
-        </a-spin>
+
+          <template v-if="inviteCode">
+            <div class="invite-code-display">{{ inviteCode }}</div>
+            <div v-if="createdAt" class="invite-meta">生成于 {{ createdAt }}</div>
+            <div class="invite-actions">
+              <button class="cyber-btn" @click="handleCopyInviteCode">
+                <i class="fas fa-copy"></i>复制邀请码
+              </button>
+              <button class="cyber-btn-primary" @click="handleGenerateInviteCode" :disabled="generating">
+                <i class="fas fa-sync-alt" :class="{ 'fa-spin': generating }"></i>生成新码
+              </button>
+            </div>
+          </template>
+
+          <template v-else>
+            <div class="invite-empty">暂无可用邀请码</div>
+            <div class="invite-actions">
+              <button class="cyber-btn-primary" @click="handleGenerateInviteCode" :disabled="generating">
+                <i class="fas fa-plus" :class="{ 'fa-spin': generating }"></i>生成邀请码
+              </button>
+            </div>
+          </template>
+        </div>
       </div>
 
       <!-- 积分记录 -->
-      <div class="cyber-card">
+      <div v-if="userStore.userInfo?.role === 3" class="cyber-card">
         <h3 class="section-title">积分记录</h3>
 
         <a-spin :spinning="loading">
@@ -204,15 +295,11 @@ function getTypeInfo(type: number) {
 
         <!-- 分页 -->
         <div v-if="pointsLog.length > 0" class="pagination-wrapper">
-          <a-pagination
-            :current="pagination.page"
-            :page-size="pagination.size"
+          <CyberPagination
+            v-model:current="pagination.page"
+            v-model:pageSize="pagination.size"
             :total="pagination.total"
-            :show-size-changer="true"
-            :page-size-options="['5', '10', '20', '50']"
-            show-quick-jumper
             @change="handlePageChange"
-            @showSizeChange="handlePageSizeChange"
           />
         </div>
       </div>
@@ -289,7 +376,7 @@ function getTypeInfo(type: number) {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -405,6 +492,22 @@ function getTypeInfo(type: number) {
   margin: 0 0 10px;
   letter-spacing: 0.5px;
   text-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.nickname-edit-icon {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.profile-nickname:hover .nickname-edit-icon {
+  opacity: 1;
+  color: var(--accent);
 }
 
 .profile-meta {
@@ -436,7 +539,170 @@ function getTypeInfo(type: number) {
   font-size: 10px;
 }
 
-/* ===== Points Balance Card - THE HERO ===== */
+/* ===== Inline Points in Profile Card ===== */
+.profile-points {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--accent-rgb), 0.04));
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 24px;
+}
+
+.profile-points i {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.points-value {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+.points-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ===== Invite Code Section (matches InviteCodeManage.vue style) ===== */
+.invite-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 48px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.invite-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+.invite-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 24px rgba(var(--accent-rgb), 0.12);
+}
+
+.invite-card.has-code {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.10);
+}
+
+.invite-card-inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.invite-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(var(--accent-rgb), 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.invite-code-display {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--accent);
+  font-family: 'Courier New', monospace;
+  background: rgba(var(--accent-rgb), 0.06);
+  border: 1px dashed rgba(var(--accent-rgb), 0.30);
+  border-radius: 8px;
+  padding: 16px 32px;
+  user-select: all;
+}
+
+.invite-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.invite-empty {
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.invite-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.invite-actions .cyber-btn,
+.invite-actions .cyber-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.invite-actions .cyber-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.invite-actions .cyber-btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  border-color: transparent;
+  color: #fff;
+}
+
+.invite-actions .cyber-btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.30);
+}
+
+.invite-actions .cyber-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@keyframes borderGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ===== Points Balance Card (unused - kept for migration) ===== */
+/* ===== Points Log Section ===== */
 .points-balance-card {
   margin-bottom: 20px;
   background: linear-gradient(135deg, var(--bg-card) 0%, rgba(99, 102, 241, 0.08) 50%, rgba(236, 72, 153, 0.05) 100%);
@@ -739,8 +1005,8 @@ function getTypeInfo(type: number) {
 }
 
 :deep(.ant-pagination-item) {
-  background: var(--bg-input);
-  border-color: var(--border-subtle);
+  background: var(--bg-card);
+  border-color: var(--border);
   border-radius: var(--radius-xs);
   transition: all 0.2s ease;
 }
@@ -761,8 +1027,8 @@ function getTypeInfo(type: number) {
 
 :deep(.ant-pagination-prev button),
 :deep(.ant-pagination-next button) {
-  background: var(--bg-input);
-  border-color: var(--border-subtle);
+  background: var(--bg-card);
+  border-color: var(--border);
   border-radius: var(--radius-xs);
   color: var(--text-secondary);
   transition: all 0.2s ease;
@@ -779,8 +1045,8 @@ function getTypeInfo(type: number) {
 }
 
 :deep(.ant-select-selector) {
-  background: var(--bg-input) !important;
-  border-color: var(--border-subtle) !important;
+  background: var(--bg-card) !important;
+  border-color: var(--border) !important;
   border-radius: var(--radius-xs) !important;
 }
 

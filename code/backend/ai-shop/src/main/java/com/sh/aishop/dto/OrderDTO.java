@@ -12,6 +12,7 @@ public class OrderDTO {
     private String productImage;
     private Integer points;
     private Integer quantity;
+    private Integer totalPoints;
     private Integer status;
     private String createdAt;
     private String completedAt;
@@ -51,6 +52,8 @@ public class OrderDTO {
     public void setPoints(Integer points) { this.points = points; }
     public Integer getQuantity() { return quantity; }
     public void setQuantity(Integer quantity) { this.quantity = quantity; }
+    public Integer getTotalPoints() { return totalPoints; }
+    public void setTotalPoints(Integer totalPoints) { this.totalPoints = totalPoints; }
     public Integer getStatus() { return status; }
     public void setStatus(Integer status) { this.status = status; }
     public String getCreatedAt() { return createdAt; }

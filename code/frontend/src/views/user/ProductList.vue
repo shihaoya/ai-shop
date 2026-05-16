@@ -6,6 +6,7 @@ import { getProducts, createOrder, getAddresses, getPoints } from '@/api/user'
 import { message } from 'ant-design-vue'
 import type { Product, Address } from '@/types/api'
 import pcaData from 'china-division/dist/pca.json'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -19,7 +20,7 @@ onMounted(() => {
 
 const loading = ref(false)
 const products = ref<Product[]>([])
-const pagination = ref({ page: 1, size: 12, total: 0 })
+const pagination = ref({ page: 1, size: 10, total: 0 })
 const detailVisible = ref(false)
 const selectedProduct = ref<Product | null>(null)
 
@@ -39,6 +40,26 @@ const redeemAddress = ref({
 })
 const addressList = ref<Address[]>([])
 const redeemLoading = ref(false)
+
+// 地址选择弹窗
+const addressPickerVisible = ref(false)
+
+function openAddressPicker() {
+  addressPickerVisible.value = true
+}
+
+function selectAddress(addr: Address) {
+  redeemAddress.value = {
+    receiver: addr.receiver,
+    phone: addr.phone,
+    province: addr.province,
+    city: addr.city,
+    district: addr.district,
+    detail: addr.detail,
+  }
+  selectedRegion.value = [addr.province, addr.city, addr.district]
+  addressPickerVisible.value = false
+}
 
 // 省市区级联数据
 interface AreaNode {
@@ -140,12 +161,6 @@ function handlePageChange(page: number) {
   pagination.value.page = page
   loadProducts()
   window.scrollTo({ top: 0, behavior: 'smooth' })
-}
-
-function handlePageSizeChange(size: number) {
-  pagination.value.size = size
-  pagination.value.page = 1
-  loadProducts()
 }
 
 function showDetail(product: Product) {
@@ -390,18 +405,14 @@ function getTypeText(type: string | number) {
         </a-spin>
       </div>
 
-      <!-- 分页 -->
-      <div v-if="products.length > 0" class="pagination-wrapper">
-        <div class="pagination-info">共 {{ pagination.total }} 条</div>
-        <a-pagination
-          :current="pagination.page"
-          :page-size="pagination.size"
+      <!-- Pagination -->
+      <div v-if="pagination.total > 0" class="pagination-wrapper">
+        <CyberPagination
+          v-model:current="pagination.page"
+          v-model:pageSize="pagination.size"
           :total="pagination.total"
-          :show-size-changer="true"
-          :page-size-options="['12', '24', '36', '48']"
-          show-quick-jumper
+          :show-total="total => `共 ${total} 条`"
           @change="handlePageChange"
-          @showSizeChange="handlePageSizeChange"
         />
       </div>
     </div>
@@ -512,6 +523,14 @@ function getTypeText(type: string | number) {
         <!-- 实物商品地址表单 -->
         <div v-if="isPhysicalProduct" class="redeem-address">
           <div class="form-row" style="margin-top: 16px;">
+            <div class="form-item" style="flex: 0 0 auto;">
+              <button type="button" class="cyber-btn" @click="openAddressPicker" style="margin-top: 20px;">
+                <i class="fas fa-book" style="margin-right:4px;"></i>
+                选择地址
+              </button>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top: 16px;">
             <div class="form-item">
               <label>收货人</label>
               <input v-model="redeemAddress.receiver" type="text" placeholder="请输入收货人" />
@@ -540,6 +559,37 @@ function getTypeText(type: string | number) {
           </div>
         </div>
       </div>
+
+      <!-- 地址选择弹窗 -->
+      <a-modal
+        v-model:open="addressPickerVisible"
+        title="选择收货地址"
+        :centered="true"
+        :width="500"
+        :footer="null"
+        class="cyber-modal"
+      >
+        <div class="address-picker-list">
+          <div v-if="addressList.length === 0" class="empty-state" style="padding: 40px 20px; text-align: center;">
+            <i class="fas fa-map-marker-alt" style="font-size: 36px; margin-bottom: 12px; opacity: 0.4;"></i>
+            <p>暂无收货地址</p>
+          </div>
+          <div
+            v-for="addr in addressList"
+            :key="String(addr.id)"
+            class="address-picker-item"
+            :class="{ selected: redeemAddress.receiver === addr.receiver && redeemAddress.phone === addr.phone }"
+            @click="selectAddress(addr)"
+          >
+            <div class="address-picker-main">
+              <span class="receiver">{{ addr.receiver }}</span>
+              <span class="phone">{{ addr.phone }}</span>
+              <span v-if="addr.isDefault === 1" class="default-badge">默认</span>
+            </div>
+            <div class="address-picker-detail">{{ addr.province }} {{ addr.city }} {{ addr.district }} {{ addr.detail }}</div>
+          </div>
+        </div>
+      </a-modal>
     </a-modal>
   </div>
 </template>
@@ -871,14 +921,10 @@ function getTypeText(type: string | number) {
 .pagination-wrapper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 20px 0 8px;
   margin-top: 12px;
   border-top: 1px solid var(--border-subtle);
-}
-.pagination-info {
-  font-size: 13px;
-  color: var(--text-muted);
 }
 
 /* 弹框 */
@@ -973,7 +1019,100 @@ function getTypeText(type: string | number) {
 
 /* 兑换弹窗样式 */
 .redeem-form {
-  padding: 8px 0;
+  margin-top: 16px;
+}
+
+.redeem-form .form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.redeem-form .form-item {
+  flex: 1;
+}
+
+.redeem-form .form-item.full {
+  flex: none;
+  width: 100%;
+}
+
+.redeem-form label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.redeem-form input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.redeem-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* 地址选择弹窗样式 */
+.address-picker-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.address-picker-item {
+  padding: 14px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.address-picker-item:hover {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.04);
+}
+
+.address-picker-item.selected {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.address-picker-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.address-picker-main .receiver {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.address-picker-main .phone {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.address-picker-main .default-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.address-picker-detail {
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .redeem-product-info {

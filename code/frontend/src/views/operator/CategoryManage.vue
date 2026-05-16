@@ -386,7 +386,7 @@ function handleDelete(category: Category) {
 .loading-mask {
   position: absolute;
   inset: 0;
-  background: rgba(7, 8, 22, 0.6);
+  background: var(--loading-mask);
   display: flex;
   align-items: center;
   justify-content: center;

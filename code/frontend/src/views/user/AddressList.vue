@@ -32,6 +32,9 @@ function buildTree(data: Record<string, Record<string, string[]>>): AreaNode[] {
 
 const regionOptions = computed(() => buildTree(pcaData))
 
+// 检查地址数量是否达到上限（5个）
+const isAddressLimitReached = computed(() => addressList.value.length >= 5)
+
 const loading = ref(false)
 const addressList = ref<Address[]>([])
 const showModal = ref(false)
@@ -210,7 +213,7 @@ async function handleSetDefault(addr: Address) {
     <div class="page-content">
       <div class="page-head">
         <h2><span class="accent-line"></span>收货地址</h2>
-        <button class="cyber-btn-primary" @click="openAddModal">
+        <button class="cyber-btn-primary" @click="openAddModal" :disabled="isAddressLimitReached" :title="isAddressLimitReached ? '收货地址数量已达到上限（最多5个）' : '新增地址'">
           <i class="fas fa-plus" style="margin-right:6px;"></i>
           新增地址
         </button>
@@ -246,7 +249,7 @@ async function handleSetDefault(addr: Address) {
       <div v-else class="empty-state cyber-card">
         <i class="fas fa-map-marker-alt" style="font-size:48px;margin-bottom:16px;opacity:0.5;"></i>
         <p style="font-size:16px;">暂无收货地址</p>
-        <button class="cyber-btn-primary" @click="openAddModal" style="margin-top:16px;">
+        <button class="cyber-btn-primary" @click="openAddModal" :disabled="isAddressLimitReached" :title="isAddressLimitReached ? '收货地址数量已达到上限（最多5个）' : '新增地址'" style="margin-top:16px;">
           <i class="fas fa-plus" style="margin-right:6px;"></i>
           新增地址
         </button>
@@ -550,6 +553,13 @@ async function handleSetDefault(addr: Address) {
 
 .cyber-btn-primary:hover {
   box-shadow: var(--accent-glow-hover);
+}
+
+.cyber-btn-primary:disabled {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .cyber-btn-danger {

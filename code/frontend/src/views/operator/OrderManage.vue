@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getOrders, confirmOrder, shipOrder, completeOrder } from '@/api/operator'
+import { getOrders, confirmOrder, shipOrder, completeOrder, closeOrder } from '@/api/operator'
 import { message, Modal } from 'ant-design-vue'
 import type { Order } from '@/types/api'
 import { OrderStatus, OrderStatusText, OrderStatusClass } from '@/types/enums'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 
@@ -64,6 +65,11 @@ function handleReset() {
 function handleStatusChange(status: number | undefined) {
   statusFilter.value = status
   pagination.value.page = 1
+  loadOrders()
+}
+
+function handlePageChange(page: number) {
+  pagination.value.page = page
   loadOrders()
 }
 
@@ -154,6 +160,27 @@ async function handleComplete(order: Order) {
     },
   })
 }
+
+// 关闭订单
+async function handleClose(order: Order) {
+  Modal.confirm({
+    title: '关闭订单',
+    content: `确定要关闭订单 "${order.orderNo}" 吗？关闭后积分将退回用户。`,
+    okText: '确认',
+    cancelText: '取消',
+    async onOk() {
+      try {
+        await closeOrder(order.id, '店铺关闭订单')
+        message.success('订单已关闭，积分已退回用户')
+        detailVisible.value = false
+        loadOrders()
+      } catch (e: any) {
+        message.error(e?.message || '操作失败')
+        throw e
+      }
+    },
+  })
+}
 </script>
 
 <template>
@@ -235,6 +262,9 @@ async function handleComplete(order: Order) {
                       <button class="action-btn green" title="确认" @click="handleConfirm(order)">
                         <i class="fas fa-check"></i>
                       </button>
+                      <button class="action-btn red" title="关闭" @click="handleClose(order)">
+                        <i class="fas fa-times"></i>
+                      </button>
                     </template>
                     <template v-if="order.status === OrderStatus.CONFIRMED">
                       <button class="action-btn purple" title="发货" @click="openShipModal(order)">
@@ -267,15 +297,13 @@ async function handleComplete(order: Order) {
       </div>
 
       <!-- Pagination -->
-      <div class="pagination" v-if="pagination.total > 0">
-        <span># TOTAL: {{ pagination.total }} RECORDS</span>
-        <button class="page-btn" :disabled="pagination.page <= 1" @click="pagination.page--; loadOrders()">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="page-btn active">{{ pagination.page }}</button>
-        <button class="page-btn" :disabled="pagination.page * pagination.size >= pagination.total" @click="pagination.page++; loadOrders()">
-          <i class="fas fa-chevron-right"></i>
-        </button>
+      <div class="pagination-wrap" v-if="pagination.total > 0">
+        <CyberPagination
+          v-model:current="pagination.page"
+          v-model:pageSize="pagination.size"
+          :total="pagination.total"
+          @change="handlePageChange"
+        />
       </div>
     </div>
 

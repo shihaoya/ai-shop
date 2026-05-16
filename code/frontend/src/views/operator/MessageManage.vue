@@ -4,6 +4,7 @@ import { useThemeStore } from '@/stores/theme'
 import { getMessages, markMessageRead } from '@/api/operator'
 import { message } from 'ant-design-vue'
 import type { Message } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 
@@ -55,12 +56,6 @@ async function handleMessageClick(msg: Message) {
 
 function handlePageChange(page: number) {
   pagination.value.page = page
-  loadMessages()
-}
-
-function handlePageSizeChange(size: number) {
-  pagination.value.size = size
-  pagination.value.page = 1
   loadMessages()
 }
 
@@ -119,15 +114,11 @@ function formatDate(date?: string) {
         </div>
 
         <div class="pagination-wrapper" v-if="pagination.total > 0">
-          <a-pagination
+          <CyberPagination
             v-model:current="pagination.page"
-            :page-size="pagination.size"
+            v-model:pageSize="pagination.size"
             :total="pagination.total"
-            show-quick-jumper
-            :show-size-changer="true"
-            :page-size-options="['5', '10', '20', '50']"
             @change="handlePageChange"
-            @showSizeChange="handlePageSizeChange"
           />
         </div>
       </div>
@@ -149,8 +140,8 @@ function formatDate(date?: string) {
   right: 0;
   bottom: 0;
   background-image:
-    linear-gradient(var(--border-color) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   z-index: 0;
@@ -204,7 +195,7 @@ function formatDate(date?: string) {
 .unread-badge {
   padding: 6px 16px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: 20px;
   color: var(--red);
   font-size: 14px;
@@ -212,10 +203,23 @@ function formatDate(date?: string) {
 }
 
 .cyber-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: visible;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 24px;
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.4;
 }
 
 .message-list {
@@ -230,10 +234,10 @@ function formatDate(date?: string) {
   gap: 16px;
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
 .message-item:hover {
@@ -244,7 +248,7 @@ function formatDate(date?: string) {
 
 .message-item.unread {
   border-left: 3px solid var(--accent);
-  background: var(--bg-secondary);
+  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
 }
 
 .message-icon {
@@ -254,15 +258,12 @@ function formatDate(date?: string) {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: var(--accent);
-  color: white;
-  font-size: 16px;
   flex-shrink: 0;
 }
 
 .message-item.unread .message-icon {
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  box-shadow: var(--accent-glow);
+  color: white;
 }
 
 .message-item:not(.unread) .message-icon {
@@ -304,10 +305,10 @@ function formatDate(date?: string) {
 
 .status-unread {
   padding: 4px 10px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: transparent;
+  border: 1px solid var(--accent);
   border-radius: 12px;
-  color: var(--red);
+  color: var(--accent);
   font-size: 12px;
   font-weight: 500;
 }
@@ -331,7 +332,7 @@ function formatDate(date?: string) {
 .loading-state i {
   font-size: 48px;
   margin-bottom: 16px;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .empty-state p,
@@ -341,187 +342,10 @@ function formatDate(date?: string) {
 }
 
 .pagination-wrapper {
-  margin-top: 24px;
   display: flex;
-  justify-content: center;
-}
-
-:deep(.ant-pagination) {
-  background: var(--bg-secondary);
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
-:deep(.ant-pagination-item) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
-}
-
-:deep(.ant-pagination-item:hover) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-:deep(.ant-pagination-item-active) {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: white;
-}
-
-:deep(.ant-pagination-prev),
-:deep(.ant-pagination-next) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
-}
-
-:deep(.ant-pagination-prev:hover),
-:deep(.ant-pagination-next:hover) {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-:deep(.ant-pagination-options) {
-  color: var(--text-secondary);
-}
-</style>
-
-<style scoped>
-.message-row {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.message-row:hover {
-  background: var(--bg-hover);
-}
-
-.message-row.unread {
-  background: var(--bg-secondary);
-}
-
-.message-row.unread td {
-  font-weight: 500;
-}
-
-.read-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.4;
-}
-
-.read-dot.unread {
-  background: var(--red);
-  opacity: 1;
-  box-shadow: var(--accent-glow);
-}
-
-.title-cell {
-  max-width: 300px;
-}
-
-.msg-title {
-  margin-right: 8px;
-}
-
-.unread-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 12px;
-  background: var(--bg-secondary);
-  color: var(--red);
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-}
-
-.content-cell {
-  max-width: 400px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-secondary);
-}
-
-.time-cell {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.empty-cell,
-.loading-cell {
-  text-align: center;
-  padding: 60px 20px !important;
-  color: var(--text-secondary);
-}
-
-.pagination-wrap {
-  display: flex;
-  align-items: center;
   justify-content: flex-end;
-  gap: 16px;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-.total-text {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-.cyber-pagination {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.page-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.page-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  border-color: var(--accent);
-}
-
-.page-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.page-info {
-  font-size: 14px;
-  color: var(--text-primary);
-  min-width: 60px;
-  text-align: center;
-}
-
-.page-size-select {
-  padding: 6px 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  color: var(--text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  outline: none;
-}
-
-.page-size-select:focus {
-  border-color: var(--accent);
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
 }
 </style>

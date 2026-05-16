@@ -164,6 +164,7 @@ onMounted(async () => {
               v-model="changePwdForm.oldPassword"
               class="cyber-input"
               type="password"
+              autocomplete="off"
               placeholder="请输入原密码"
             />
           </div>
@@ -173,6 +174,7 @@ onMounted(async () => {
               v-model="changePwdForm.newPassword"
               class="cyber-input"
               type="password"
+              autocomplete="new-password"
               placeholder="请输入新密码（至少6位）"
             />
           </div>
@@ -182,6 +184,7 @@ onMounted(async () => {
               v-model="changePwdForm.confirmPassword"
               class="cyber-input"
               type="password"
+              autocomplete="new-password"
               placeholder="请再次输入新密码"
               @keyup.enter="handleChangePwd"
             />

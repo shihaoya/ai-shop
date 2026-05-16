@@ -11,6 +11,7 @@ import { useUserStore } from '@/stores/user'
 import { useOperatorShop } from '@/composables/useOperatorShop'
 import { ProductStatus, ProductStatusText, ProductStatusClass } from '@/types/enums'
 import type { Product, Category } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
@@ -437,16 +438,12 @@ function getTypeTag(type: string | number) {
 
       <!-- Pagination -->
       <div class="pagination-wrap" v-if="pagination.total > 0">
-        <div class="pagination-info">共 {{ pagination.total }} 条</div>
-        <div class="pagination-controls">
-          <button class="cyber-btn-sm" :disabled="pagination.page <= 1" @click="handlePageChange(pagination.page - 1)">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <span class="page-info">{{ pagination.page }} / {{ Math.ceil(pagination.total / pagination.size) }}</span>
-          <button class="cyber-btn-sm" :disabled="pagination.page >= Math.ceil(pagination.total / pagination.size)" @click="handlePageChange(pagination.page + 1)">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
+        <CyberPagination
+          v-model:current="pagination.page"
+          v-model:pageSize="pagination.size"
+          :total="pagination.total"
+          @change="handlePageChange"
+        />
       </div>
     </div>
 
@@ -951,7 +948,7 @@ function getTypeTag(type: string | number) {
 .loading-mask {
   position: absolute;
   inset: 0;
-  background: rgba(7, 8, 22, 0.6);
+  background: var(--loading-mask);
   display: flex;
   align-items: center;
   justify-content: center;

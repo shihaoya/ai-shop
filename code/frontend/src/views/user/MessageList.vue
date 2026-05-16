@@ -4,6 +4,7 @@ import { useThemeStore } from '@/stores/theme'
 import { getMessages, markMessageRead } from '@/api/user'
 import { message } from 'ant-design-vue'
 import type { Message } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 
@@ -119,15 +120,11 @@ function formatDate(date?: string) {
         </div>
 
         <div class="pagination-wrapper" v-if="pagination.total > 0">
-          <a-pagination
+          <CyberPagination
             v-model:current="pagination.page"
-            :page-size="pagination.size"
+            v-model:pageSize="pagination.size"
             :total="pagination.total"
-            show-quick-jumper
-            :show-size-changer="true"
-            :page-size-options="['5', '10', '20', '50']"
             @change="handlePageChange"
-            @showSizeChange="handlePageSizeChange"
           />
         </div>
       </div>
@@ -149,8 +146,8 @@ function formatDate(date?: string) {
   right: 0;
   bottom: 0;
   background-image:
-    linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(var(--accent-rgb), 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--accent-rgb), 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   pointer-events: none;
   z-index: 0;
@@ -202,21 +199,36 @@ function formatDate(date?: string) {
 }
 
 .unread-badge {
-  padding: 6px 16px;
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.1), rgba(var(--accent-rgb), 0.05));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 20px;
-  color: #ef4444;
+  color: var(--accent);
   font-size: 14px;
   font-weight: 500;
 }
 
 .cyber-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
+  position: relative;
+  overflow: visible;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
   padding: 24px;
-  backdrop-filter: blur(10px);
+}
+
+.cyber-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.4;
 }
 
 .message-list {
@@ -231,10 +243,10 @@ function formatDate(date?: string) {
   gap: 16px;
   padding: 16px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-secondary);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
 .message-item:hover {
@@ -245,7 +257,7 @@ function formatDate(date?: string) {
 
 .message-item.unread {
   border-left: 3px solid var(--accent);
-  background: linear-gradient(90deg, rgba(99, 102, 241, 0.08), transparent);
+  background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.08), transparent);
 }
 
 .message-icon {
@@ -255,15 +267,13 @@ function formatDate(date?: string) {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: var(--accent);
-  color: white;
   font-size: 16px;
   flex-shrink: 0;
 }
 
 .message-item.unread .message-icon {
   background: linear-gradient(135deg, var(--accent), var(--accent-light));
-  box-shadow: var(--accent-glow);
+  color: white;
 }
 
 .message-item:not(.unread) .message-icon {
@@ -305,8 +315,8 @@ function formatDate(date?: string) {
 
 .status-unread {
   padding: 4px 10px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-rgb), 0.05));
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
   border-radius: 12px;
   color: var(--accent);
   font-size: 12px;
@@ -316,7 +326,7 @@ function formatDate(date?: string) {
 .status-read {
   padding: 4px 10px;
   background: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   color: var(--text-tertiary);
   font-size: 12px;
@@ -333,207 +343,14 @@ function formatDate(date?: string) {
 .loading-state i {
   font-size: 48px;
   margin-bottom: 16px;
-  opacity: 0.5;
-}
-
-.pagination-wrapper {
-  margin-top: 24px;
-  display: flex;
-  justify-content: center;
-}
-
-:deep(.ant-pagination) {
-  background: var(--bg-secondary);
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-}
-
-:deep(.ant-pagination-item) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-:deep(.ant-pagination-item a) {
-  color: var(--text-primary);
-}
-
-:deep(.ant-pagination-item-active) {
-  border-color: var(--accent);
-  background: var(--accent);
-}
-
-:deep(.ant-pagination-item-active a) {
-  color: white;
-}
-
-:deep(.ant-pagination-prev button),
-:deep(.ant-pagination-next button) {
-  background: var(--bg-tertiary);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-:deep(.ant-select-selector) {
-  background: var(--bg-tertiary) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-primary) !important;
-}
-</style>
-
-<style scoped>
-.unread-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 20px;
-}
-
-.badge-count {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ef4444;
-}
-
-.badge-text {
-  font-size: 13px;
-  color: #ef4444;
-}
-
-.message-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.message-item {
-  display: flex;
-  gap: 16px;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.message-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(99, 102, 241, 0.3);
-}
-
-.message-item.unread {
-  background: rgba(99, 102, 241, 0.05);
-  border-color: rgba(99, 102, 241, 0.2);
-}
-
-.message-item.unread .message-icon {
-  color: var(--accent, #6366f1);
-}
-
-.message-item.unread .message-title {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.message-icon {
-  font-size: 24px;
-  color: var(--text-secondary);
-  opacity: 0.5;
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-}
-
-.message-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.message-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.message-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.message-status {
-  font-size: 12px;
-  padding: 2px 10px;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-.message-status.unread {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.message-status.read {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-}
-
-.message-body {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin: 0 0 10px 0;
-  line-height: 1.6;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.message-time {
-  font-size: 12px;
-  color: var(--text-secondary);
-  opacity: 0.6;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: 48px;
-  margin-bottom: 16px;
   opacity: 0.4;
 }
 
-.empty-state p {
-  font-size: 16px;
-  margin: 0;
-}
-
 .pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  justify-content: center;
+  border-top: 1px solid var(--border-subtle);
 }
 </style>

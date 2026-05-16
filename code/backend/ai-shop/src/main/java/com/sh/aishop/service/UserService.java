@@ -388,11 +388,19 @@ public class UserService {
         return Result.success(result);
     }
 
-    @Transactional
-    public Result<?> createAddress(Long userId, Map<String, Object> params) {
-        Address address = new Address();
-        address.setId(SnowflakeIdUtil.nextId());
-        address.setUserId(userId);
+        @Transactional
+        public Result<?> createAddress(Long userId, Map<String, Object> params) {
+            // 检查用户地址数量是否已达到上限（5个）
+            LambdaQueryWrapper<Address> countWrapper = new LambdaQueryWrapper<>();
+            countWrapper.eq(Address::getUserId, userId).eq(Address::getDeleted, 0);
+            long addressCount = addressMapper.selectCount(countWrapper);
+            if (addressCount >= 5) {
+                return Result.fail(ResultCode.ADDRESS_LIMIT_EXCEEDED, "收货地址数量已达到上限（最多5个）");
+            }
+    
+            Address address = new Address();
+            address.setId(SnowflakeIdUtil.nextId());
+            address.setUserId(userId);
         // 兼容 receiver 和 name 两种字段名
         Object nameValue = params.get("receiver") != null ? params.get("receiver") : params.get("name");
         address.setName(nameValue != null ? nameValue.toString() : "");
@@ -516,6 +524,7 @@ public class UserService {
         dto.setShopId(o.getShopId().toString());
         dto.setProductId(o.getProductId().toString());
         dto.setPoints(o.getPoints());
+        dto.setTotalPoints(o.getPoints() * o.getQuantity());
         dto.setQuantity(o.getQuantity());
         dto.setStatus(o.getStatus());
         dto.setCreatedAt(o.getCreatedAt() != null ? o.getCreatedAt().toString() : null);

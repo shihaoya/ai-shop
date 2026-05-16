@@ -4,6 +4,7 @@ import { useThemeStore } from '@/stores/theme'
 import { getPoints, getPointsLog } from '@/api/user'
 import { message } from 'ant-design-vue'
 import type { PointsLog } from '@/types/api'
+import CyberPagination from '@/components/CyberPagination.vue'
 
 const themeStore = useThemeStore()
 
@@ -53,12 +54,6 @@ async function loadPointsLog() {
 
 function handlePageChange(page: number) {
   pagination.value.page = page
-  loadPointsLog()
-}
-
-function handlePageSizeChange(size: number) {
-  pagination.value.size = size
-  pagination.value.page = 1
   loadPointsLog()
 }
 
@@ -147,15 +142,11 @@ function getTypeInfo(type: number) {
 
         <!-- 分页 -->
         <div v-if="pointsLog.length > 0" class="pagination-wrapper">
-          <a-pagination
+          <CyberPagination
             :current="pagination.page"
             :page-size="pagination.size"
             :total="pagination.total"
-            :show-size-changer="true"
-            :page-size-options="['5', '10', '20', '50']"
-            show-quick-jumper
             @change="handlePageChange"
-            @showSizeChange="handlePageSizeChange"
           />
         </div>
       </div>
@@ -350,6 +341,6 @@ function getTypeInfo(type: number) {
 .pagination-wrapper {
   margin-top: 24px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
 }
 </style>

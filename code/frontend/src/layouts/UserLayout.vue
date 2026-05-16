@@ -141,15 +141,15 @@ onMounted(() => {
         <div class="modal-body">
           <div class="form-group">
             <label>原密码</label>
-            <input v-model="changePwdForm.oldPassword" class="cyber-input" type="password" placeholder="请输入原密码" />
+            <input v-model="changePwdForm.oldPassword" class="cyber-input" type="password" autocomplete="off" placeholder="请输入原密码" />
           </div>
           <div class="form-group">
             <label>新密码</label>
-            <input v-model="changePwdForm.newPassword" class="cyber-input" type="password" placeholder="请输入新密码（至少6位）" />
+            <input v-model="changePwdForm.newPassword" class="cyber-input" type="password" autocomplete="new-password" placeholder="请输入新密码（至少6位）" />
           </div>
           <div class="form-group">
             <label>确认密码</label>
-            <input v-model="changePwdForm.confirmPassword" class="cyber-input" type="password" placeholder="请再次输入新密码" @keyup.enter="handleChangePwd" />
+            <input v-model="changePwdForm.confirmPassword" class="cyber-input" type="password" autocomplete="new-password" placeholder="请再次输入新密码" @keyup.enter="handleChangePwd" />
           </div>
         </div>
         <div class="modal-footer">
