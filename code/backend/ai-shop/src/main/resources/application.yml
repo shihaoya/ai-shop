@@ -51,7 +51,7 @@ knife4j:
 
 # Server
 server:
-  port: 18780
+  port: ${SERVER_PORT:18780}
 
 # 文件上传配置
 upload:

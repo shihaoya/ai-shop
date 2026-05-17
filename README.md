@@ -61,11 +61,14 @@
 
 ```
 ai-shop/
+├── .env.example              # 环境变量配置示例
+├── docker-compose.yml        # Docker 编排（MySQL + Redis + 后端 + 前端）
 ├── SDD.md                    # 解决方案设计文档
 ├── docs/                     # 开发文档
 ├── code/
 │   ├── backend/              # Spring Boot 后端
 │   │   ├── ai-shop/          # 主项目
+│   │   │   ├── Dockerfile   # 后端多阶段构建
 │   │   │   └── src/main/java/com/sh/aishop/
 │   │   │       ├── config/   # 配置类
 │   │   │       ├── controller/  # REST 控制器
@@ -76,6 +79,8 @@ ai-shop/
 │   │   └── sql/
 │   │       └── init.sql      # 数据库初始化脚本
 │   └── frontend/             # Vue 3 前端
+│       ├── Dockerfile        # 前端多阶段构建
+│       ├── nginx.conf        # Nginx SPA + API 代理配置
 │       └── src/
 │           ├── api/          # API 模块
 │           ├── views/        # 页面组件
@@ -118,6 +123,115 @@ pnpm dev
 
 # 构建生产版本
 pnpm build
+```
+
+---
+
+## Docker 部署
+
+项目支持通过 Docker Compose 一键部署，包含 MySQL、Redis、后端、前端四个服务。
+
+### 前置条件
+
+- [Docker](https://docs.docker.com/engine/install/) ≥ 24.0
+- [Docker Compose](https://docs.docker.com/compose/install/) ≥ 2.0
+
+### 快速部署
+
+```bash
+# 1. 从项目根目录启动
+docker compose up -d
+
+# 2. 查看启动日志
+docker compose logs -f
+
+# 3. 等待所有服务就绪后，访问
+#    http://localhost
+```
+
+首次启动会自动完成以下操作：
+1. 构建后端镜像（Maven 编译 → JRE 运行）
+2. 构建前端镜像（Node 编译 → Nginx 运行）
+3. 启动 MySQL 并自动执行 `init.sql` 初始化数据库
+4. 启动 Redis
+5. 启动后端服务（等待 MySQL 和 Redis 就绪后启动）
+6. 启动前端 Nginx 服务
+
+### 自定义配置
+
+复制环境变量模板并修改：
+
+```bash
+cp .env.example .env
+```
+
+可配置项：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `FRONTEND_PORT` | `80` | 前端访问端口（宿主机） |
+| `BACKEND_PORT` | `18780` | 后端 API 端口（宿主机） |
+| `MYSQL_PORT` | `3307` | MySQL 外部访问端口 |
+| `MYSQL_PASSWORD` | `root123` | MySQL root 密码 |
+| `JWT_SECRET` | `...` | JWT 签名密钥（生产环境务必修改） |
+
+修改端口后重新部署：
+
+```bash
+docker compose down
+# 编辑 .env 文件修改端口
+docker compose up -d
+```
+
+### 端口配置说明
+
+| 配置文件 | 配置项 | 说明 |
+|---------|--------|------|
+| `code/backend/ai-shop/src/main/resources/application.yml` | `server.port` | 后端监听端口（默认 `18780`），支持环境变量 `SERVER_PORT` 覆盖 |
+| `code/frontend/nginx.conf` | `listen` | Nginx 容器内部监听端口（默认 `80`），外部映射由 `FRONTEND_PORT` 控制 |
+| `code/frontend/vite.config.ts` | `server.port` | 前端开发服务器端口（默认 `18781`，仅本地开发有效） |
+
+> **注意**：如果修改了后端 `server.port`，需要同步更新 `code/frontend/nginx.conf` 中的 `proxy_pass http://backend:<端口>` 和目标端口映射。
+
+### 管理命令
+
+```bash
+# 启动所有服务
+docker compose up -d
+
+# 停止所有服务
+docker compose down
+
+# 查看实时日志
+docker compose logs -f
+
+# 查看特定服务日志
+docker compose logs -f backend
+
+# 重启单个服务（如修改配置后）
+docker compose restart backend
+
+# 重新构建镜像（代码变更后）
+docker compose build
+
+# 完全重建（不使用缓存）
+docker compose build --no-cache
+```
+
+### 数据持久化
+
+数据存储在 Docker 命名卷中，`docker compose down` **不会**丢失数据：
+
+| 卷名 | 挂载点 | 存储内容 |
+|------|--------|---------|
+| `mysql-data` | `/var/lib/mysql` | 数据库文件 |
+| `redis-data` | `/data` | Redis 缓存 |
+| `upload-data` | `/uploads` | 用户上传文件 |
+
+如需清理数据：
+
+```bash
+docker compose down -v
 ```
 
 ---

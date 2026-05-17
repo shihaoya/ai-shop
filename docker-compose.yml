@@ -1,0 +1,82 @@
+services:
+  # === MySQL 数据库 ===
+  mysql:
+    image: mysql:8.0
+    container_name: ai-shop-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-root123}
+      MYSQL_DATABASE: ai_shop
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./code/backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    networks:
+      - ai-shop-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === Redis 缓存 ===
+  redis:
+    image: redis:7-alpine
+    container_name: ai-shop-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - ai-shop-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # === Spring Boot 后端 ===
+  backend:
+    build:
+      context: ./code/backend/ai-shop
+      dockerfile: Dockerfile
+    container_name: ai-shop-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_PASSWORD: ${MYSQL_PASSWORD:-root123}
+      JWT_SECRET: ${JWT_SECRET:-ai-shop-jwt-secret-for-docker-2026}
+    volumes:
+      - upload-data:/uploads
+    ports:
+      - "${BACKEND_PORT:-18780}:18780"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ai-shop-net
+
+  # === Vue 前端（Nginx） ===
+  frontend:
+    build:
+      context: ./code/frontend
+      dockerfile: Dockerfile
+    container_name: ai-shop-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - ai-shop-net
+
+volumes:
+  mysql-data:
+  redis-data:
+  upload-data:
+
+networks:
+  ai-shop-net:
+    driver: bridge
