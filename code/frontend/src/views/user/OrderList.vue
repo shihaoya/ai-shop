@@ -136,11 +136,6 @@ function formatDate(date?: string) {
   if (!date) return '-'
   return new Date(date).toLocaleString('zh-CN')
 }
-
-function formatAddress(addr?: Order['addressInfo']) {
-  if (!addr) return '-'
-  return `${addr.province}${addr.city}${addr.district}${addr.detail} ${addr.receiver} ${addr.phone}`
-}
 </script>
 
 <template>
@@ -282,22 +277,39 @@ function formatAddress(addr?: Order['addressInfo']) {
           </div>
 
           <!-- 收货地址 -->
-          <div class="detail-section" v-if="selectedOrder.addressInfo">
+          <div class="detail-section" v-if="selectedOrder.receiverName">
             <div class="detail-section-title"><i class="fas fa-map-marker-alt"></i> 收货地址</div>
-            <div class="detail-address">{{ formatAddress(selectedOrder.addressInfo) }}</div>
+            <div class="detail-address">
+              <div class="address-row">
+                <span class="addr-label">收货人</span>
+                <span class="addr-value">{{ selectedOrder.receiverName }}</span>
+              </div>
+              <div class="address-row">
+                <span class="addr-label">手机号</span>
+                <span class="addr-value">{{ selectedOrder.receiverPhone }}</span>
+              </div>
+              <div class="address-row">
+                <span class="addr-label">省市区</span>
+                <span class="addr-value">{{ selectedOrder.receiverProvince }} {{ selectedOrder.receiverCity }} {{ selectedOrder.receiverDistrict }}</span>
+              </div>
+              <div class="address-row">
+                <span class="addr-label">详细地址</span>
+                <span class="addr-value">{{ selectedOrder.receiverDetail }}</span>
+              </div>
+            </div>
           </div>
 
           <!-- 物流信息 -->
-          <div class="detail-section" v-if="selectedOrder.trackingNo">
+          <div class="detail-section" v-if="selectedOrder.expressNo">
             <div class="detail-section-title"><i class="fas fa-truck"></i> 物流信息</div>
             <div class="detail-logistics">
               <div class="detail-log-row">
                 <span class="log-label">承运商：</span>
-                <span class="log-value">{{ selectedOrder.carrier || '-' }}</span>
+                <span class="log-value">{{ selectedOrder.expressCompany || '-' }}</span>
               </div>
               <div class="detail-log-row">
                 <span class="log-label">运单号：</span>
-                <span class="log-value">{{ selectedOrder.trackingNo }}</span>
+                <span class="log-value">{{ selectedOrder.expressNo }}</span>
               </div>
             </div>
           </div>
@@ -326,9 +338,9 @@ function formatAddress(addr?: Order['addressInfo']) {
           </div>
 
           <!-- 关闭原因 -->
-          <div class="detail-section" v-if="selectedOrder.reason">
+          <div class="detail-section" v-if="selectedOrder.closeReason">
             <div class="detail-section-title"><i class="fas fa-info-circle"></i> {{ selectedOrder.status === 5 ? '关闭' : '备注' }}信息</div>
-            <div class="detail-reason">{{ selectedOrder.reason }}</div>
+            <div class="detail-reason">{{ selectedOrder.closeReason }}</div>
           </div>
 
           <!-- 操作按钮 -->
@@ -898,13 +910,26 @@ function formatAddress(addr?: Order['addressInfo']) {
 
 /* 收货地址 */
 .detail-address {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.6;
-  padding: 8px 12px;
+  padding: 12px;
   background: var(--bg-input);
   border-radius: var(--radius-xs);
   border: 1px solid var(--border-subtle);
+}
+.address-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.address-row:last-child {
+  margin-bottom: 0;
+}
+.addr-label {
+  color: var(--text-muted);
+  min-width: 70px;
+}
+.addr-value {
+  color: var(--text-primary);
 }
 
 /* 物流信息 */
