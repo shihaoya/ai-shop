@@ -10,8 +10,10 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./code/backend/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "${MYSQL_PORT:-3307}:3306"
+    # 后端通过 Docker 内部网络访问 MySQL，不需要暴露到宿主机
+    # 如需外部工具直连，取消下方注释并调整端口
+    # ports:
+    #   - "${MYSQL_PORT:-3307}:3306"
     networks:
       - ai-shop-net
     healthcheck:

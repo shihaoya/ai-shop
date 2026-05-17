@@ -4,7 +4,7 @@ WORKDIR /app
 
 # 先复制 pom.xml，利用 Docker 层缓存加速依赖下载
 COPY pom.xml .
-RUN mvn dependency:resolve dependency:resolve-plugins -B
+RUN mvn dependency:resolve -B
 
 # 复制源码并打包
 COPY src ./src
