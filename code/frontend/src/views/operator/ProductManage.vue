@@ -38,7 +38,7 @@ async function loadProducts() {
     }))
     pagination.value.total = res.total
   } catch (e: any) {
-    message.error(e?.message || '加载商品失败')
+    // 全局拦截器已处理错误提示，组件内不重复处理
   } finally {
     loading.value = false
   }
@@ -56,7 +56,7 @@ async function loadCategories() {
       id: String(c.id)
     }))
   } catch (e: any) {
-    message.error(e?.message || '加载分类失败')
+    // 全局拦截器已处理错误提示，组件内不重复处理
   }
 }
 
@@ -199,7 +199,7 @@ async function handleSubmit() {
     modalVisible.value = false
     loadProducts()
   } catch (e: any) {
-    message.error(e?.message || '操作失败')
+    // 全局拦截器已处理错误提示，组件内不重复处理
   } finally {
     submitLoading.value = false
   }
@@ -221,7 +221,7 @@ async function handleToggleStatus(product: Product) {
         message.success(`${actionText}成功`)
         loadProducts()
       } catch (e: any) {
-        message.error(e?.message || `${actionText}失败`)
+        // 全局拦截器已处理错误提示，组件内不重复处理
       }
     }
   })
@@ -240,7 +240,7 @@ function handleDelete(product: Product) {
         message.success('删除成功')
         loadProducts()
       } catch (e: any) {
-        message.error(e?.message || '删除失败')
+        // 全局拦截器已处理错误提示，组件内不重复处理
       }
     }
   })

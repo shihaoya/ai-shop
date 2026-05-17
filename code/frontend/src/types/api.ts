@@ -102,13 +102,22 @@ export interface Order {
   quantity: number
   totalPoints: number
   status: number      // 1=已下单, 2=已确认, 3=已发货, 4=已完成, 5=已关闭
-  addressId?: string
-  addressInfo?: Address
-  trackingNo?: string
-  carrier?: string
-  reason?: string
+  // 收货信息快照（后端平铺返回）
+  receiverName?: string
+  receiverPhone?: string
+  receiverProvince?: string
+  receiverCity?: string
+  receiverDistrict?: string
+  receiverDetail?: string
+  // 物流信息
+  expressCompany?: string
+  expressNo?: string
+  deliveryContent?: string
+  // 订单状态信息
   createdAt?: string
-  updatedAt?: string
+  completedAt?: string
+  closedAt?: string
+  closeReason?: string
 }
 
 // ============ 收货地址 ============

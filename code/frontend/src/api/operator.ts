@@ -88,8 +88,8 @@ export function confirmOrder(id: string | number): Promise<null> {
   return request.put<null>(`/operator/orders/${id}/confirm`) as any
 }
 
-export function shipOrder(id: string | number, trackingNo: string, carrier?: string): Promise<null> {
-  return request.put<null>(`/operator/orders/${id}/ship`, { trackingNo, carrier }) as any
+export function shipOrder(id: string | number, expressNo: string, expressCompany?: string): Promise<null> {
+  return request.put<null>(`/operator/orders/${id}/ship`, { expressNo, expressCompany }) as any
 }
 
 export function closeOrder(id: string | number, reason?: string): Promise<null> {

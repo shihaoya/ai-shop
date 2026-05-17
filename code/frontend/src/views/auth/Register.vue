@@ -41,8 +41,8 @@ async function handleRegister() {
     })
     message.success('注册成功，请等待审核')
     router.push('/login')
-  } catch (error) {
-    // 错误已在 request 拦截器中提示
+  } catch (e: any) {
+    message.error(e?.message || '注册失败')
   } finally {
     loading.value = false
   }

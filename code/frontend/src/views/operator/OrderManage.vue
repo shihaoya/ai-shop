@@ -6,6 +6,8 @@ import { message, Modal } from 'ant-design-vue'
 import type { Order } from '@/types/api'
 import { OrderStatus, OrderStatusText, OrderStatusClass } from '@/types/enums'
 import CyberPagination from '@/components/CyberPagination.vue'
+import OrderDetailModal from '@/components/operator/OrderDetailModal.vue'
+import OrderShipModal from '@/components/operator/OrderShipModal.vue'
 
 const themeStore = useThemeStore()
 
@@ -27,8 +29,7 @@ const currentOrder = ref<Order | null>(null)
 
 // 发货弹框
 const shipVisible = ref(false)
-const shipForm = ref({ carrier: '', trackingNo: '' })
-const shipLoading = ref(false)
+const shipOrderData = ref<Order | null>(null)
 
 async function loadOrders() {
   loading.value = true
@@ -43,8 +44,8 @@ async function loadOrders() {
       id: String(o.id)
     }))
     pagination.value.total = res.total
-  } catch (e) {
-    throw e
+  } catch (e: any) {
+    message.error(e?.message || '加载订单失败')
   } finally {
     loading.value = false
   }
@@ -78,6 +79,11 @@ function viewDetail(order: Order) {
   detailVisible.value = true
 }
 
+function closeDetail() {
+  detailVisible.value = false
+  currentOrder.value = null
+}
+
 function getStatusTag(status: number) {
   return {
     text: OrderStatusText[status] || '未知',
@@ -91,7 +97,7 @@ function formatDate(date?: string) {
 }
 
 // 确认订单
-async function handleConfirm(order: Order) {
+function handleConfirm(order: Order) {
   Modal.confirm({
     title: '确认订单',
     content: `确定要确认订单 "${order.orderNo}" 吗？`,
@@ -110,39 +116,31 @@ async function handleConfirm(order: Order) {
   })
 }
 
-// 发货
+// 打开发货弹框
 function openShipModal(order: Order) {
-  currentOrder.value = order
-  shipForm.value = { carrier: '', trackingNo: '' }
+  shipOrderData.value = order
   shipVisible.value = true
 }
 
-async function handleShip() {
-  if (!shipForm.value.carrier.trim()) {
-    message.warning('请输入物流公司')
-    return
-  }
-  if (!shipForm.value.trackingNo.trim()) {
-    message.warning('请输入物流单号')
-    return
-  }
-  if (!currentOrder.value) return
+function closeShipModal() {
+  shipVisible.value = false
+  shipOrderData.value = null
+}
 
-  shipLoading.value = true
+// 发货
+async function handleShipOrder(orderId: string, trackingNo: string, carrier: string) {
   try {
-    await shipOrder(currentOrder.value.id, shipForm.value.trackingNo.trim(), shipForm.value.carrier.trim())
+    await shipOrder(orderId, trackingNo, carrier)
     message.success('已发货')
-    shipVisible.value = false
+    closeShipModal()
     loadOrders()
   } catch (e: any) {
-    message.error(e?.message || '操作失败')
-  } finally {
-    shipLoading.value = false
+    message.error(e?.message || '发货失败')
   }
 }
 
 // 完成订单
-async function handleComplete(order: Order) {
+function handleComplete(order: Order) {
   Modal.confirm({
     title: '完成订单',
     content: `确定将订单 "${order.orderNo}" 标记为已完成吗？`,
@@ -162,7 +160,7 @@ async function handleComplete(order: Order) {
 }
 
 // 关闭订单
-async function handleClose(order: Order) {
+function handleClose(order: Order) {
   Modal.confirm({
     title: '关闭订单',
     content: `确定要关闭订单 "${order.orderNo}" 吗？关闭后积分将退回用户。`,
@@ -172,7 +170,7 @@ async function handleClose(order: Order) {
       try {
         await closeOrder(order.id, '店铺关闭订单')
         message.success('订单已关闭，积分已退回用户')
-        detailVisible.value = false
+        closeDetail()
         loadOrders()
       } catch (e: any) {
         message.error(e?.message || '操作失败')
@@ -307,102 +305,22 @@ async function handleClose(order: Order) {
       </div>
     </div>
 
-    <!-- Order Detail Modal -->
-    <div class="modal-overlay" v-if="detailVisible" @click.self="detailVisible = false">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3><span class="accent-line"></span>订单详情</h3>
-          <button class="modal-close" @click="detailVisible = false">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body" v-if="currentOrder">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <label>订单号</label>
-              <span class="id-cell">{{ currentOrder.orderNo }}</span>
-            </div>
-            <div class="detail-item">
-              <label>订单状态</label>
-              <span class="status-tag" :class="getStatusTag(currentOrder.status).class">
-                <span class="dot"></span>{{ getStatusTag(currentOrder.status).text }}
-              </span>
-            </div>
-            <div class="detail-item">
-              <label>用户</label>
-              <span>{{ currentOrder.userNickname || currentOrder.userId }}</span>
-            </div>
-            <div class="detail-item">
-              <label>商品</label>
-              <span>{{ currentOrder.productName }}</span>
-            </div>
-            <div class="detail-item">
-              <label>数量</label>
-              <span>x{{ currentOrder.quantity }}</span>
-            </div>
-            <div class="detail-item">
-              <label>总积分</label>
-              <span class="points-value">{{ currentOrder.totalPoints }}</span>
-            </div>
-            <div class="detail-item" v-if="currentOrder.trackingNo">
-              <label>物流单号</label>
-              <span>{{ currentOrder.trackingNo }}</span>
-            </div>
-            <div class="detail-item" v-if="currentOrder.carrier">
-              <label>物流公司</label>
-              <span>{{ currentOrder.carrier }}</span>
-            </div>
-            <div class="detail-item" v-if="currentOrder.reason">
-              <label>关闭原因</label>
-              <span class="text-red">{{ currentOrder.reason }}</span>
-            </div>
-            <div class="detail-item full-width">
-              <label>下单时间</label>
-              <span>{{ formatDate(currentOrder.createdAt) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- 订单详情弹框 -->
+    <OrderDetailModal
+      v-model:visible="detailVisible"
+      :order="currentOrder"
+      @confirm="handleConfirm"
+      @close="handleClose"
+      @ship="openShipModal"
+      @complete="handleComplete"
+    />
 
-    <!-- Ship Modal -->
-    <div class="modal-overlay" v-if="shipVisible" @click.self="shipVisible = false">
-      <div class="modal-card">
-        <div class="modal-header">
-          <h3><span class="accent-line"></span>发货</h3>
-          <button class="modal-close" @click="shipVisible = false">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-item">
-            <label>物流公司</label>
-            <input
-              v-model="shipForm.carrier"
-              type="text"
-              placeholder="请输入物流公司名称"
-              class="cyber-input"
-            />
-          </div>
-          <div class="form-item">
-            <label>物流单号</label>
-            <input
-              v-model="shipForm.trackingNo"
-              type="text"
-              placeholder="请输入物流单号"
-              class="cyber-input"
-            />
-          </div>
-          <div class="modal-actions">
-            <button class="cyber-btn" @click="shipVisible = false">取消</button>
-            <button class="cyber-btn-primary" :disabled="shipLoading" @click="handleShip">
-              <i v-if="shipLoading" class="fas fa-spinner fa-spin"></i>
-              <span v-else>确认发货</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- 发货弹框 -->
+    <OrderShipModal
+      v-model:visible="shipVisible"
+      :order="shipOrderData"
+      @ship="handleShipOrder"
+    />
   </div>
 </template>
 
