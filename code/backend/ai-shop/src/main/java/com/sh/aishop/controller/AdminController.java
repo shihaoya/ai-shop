@@ -37,7 +37,7 @@ public class AdminController {
     })
     @PutMapping("/shops/{id}/audit")
     public Result<?> auditShop(
-            @Parameter(description = "店铺ID", required = true, example = "100") @PathVariable("id") Long shopId,
+            @Parameter(description = "店铺ID", required = true, example = "100") @PathVariable("id") String shopId,
             @Parameter(description = "审核状态：2通过 3拒绝", required = true, example = "2") @RequestParam Integer status,
             @Parameter(description = "拒绝原因（拒绝时必填）", required = false) @RequestParam(required = false) String rejectReason) {
         return adminService.auditShop(shopId, status, rejectReason);
@@ -61,20 +61,20 @@ public class AdminController {
     })
     @PutMapping("/users/{id}/status")
     public Result<?> changeUserStatus(
-            @Parameter(description = "用户ID", required = true) @PathVariable("id") Long userId, 
+            @Parameter(description = "用户ID", required = true) @PathVariable("id") String userId, 
             @Parameter(description = "状态：1待审核 2正常 3冻结", required = true, example = "2") @RequestParam Integer status) {
         return adminService.changeUserStatus(userId, status);
     }
 
     @Operation(summary = "审批用户", description = "审批普通用户的注册申请")
     @PutMapping("/users/{id}/approve")
-    public Result<?> approveUser(@PathVariable("id") Long userId) {
+    public Result<?> approveUser(@PathVariable("id") String userId) {
         return adminService.approveUser(userId);
     }
 
     @Operation(summary = "拒绝用户", description = "拒绝用户的注册申请（软删除）")
     @PutMapping("/users/{id}/reject")
-    public Result<?> rejectUser(@PathVariable("id") Long userId) {
+    public Result<?> rejectUser(@PathVariable("id") String userId) {
         return adminService.rejectUser(userId);
     }
 
@@ -84,7 +84,7 @@ public class AdminController {
         @ApiResponse(responseCode = "404", description = "用户不存在")
     })
     @PutMapping("/users/{id}/password/reset")
-    public Result<?> resetUserPassword(@PathVariable("id") Long userId) {
+    public Result<?> resetUserPassword(@PathVariable("id") String userId) {
         return adminService.resetUserPassword(userId);
     }
 

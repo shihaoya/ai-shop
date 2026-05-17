@@ -32,7 +32,7 @@ export function uploadFile(
   if (businessId) {
     formData.append('businessId', businessId.toString())
   }
-  return request.post<FileRecord>('/file/upload', formData, {
+  return request.post<FileRecord>('/files/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -46,7 +46,7 @@ export function uploadFile(
 export function uploadProductImage(file: File): Promise<FileRecord> {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<FileRecord>('/file/upload/product', formData, {
+  return request.post<FileRecord>('/files/upload/product', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -58,7 +58,7 @@ export function uploadProductImage(file: File): Promise<FileRecord> {
  * @param fileId 文件ID
  */
 export function deleteFile(fileId: string | number): Promise<null> {
-  return request.delete<null>(`/file/${fileId}`) as any
+  return request.delete<null>(`/files/${fileId}`) as any
 }
 
 /**
@@ -66,7 +66,7 @@ export function deleteFile(fileId: string | number): Promise<null> {
  * @param fileId 文件ID
  */
 export function getFile(fileId: string | number): Promise<FileRecord> {
-  return request.get<FileRecord>(`/file/${fileId}`) as any
+  return request.get<FileRecord>(`/files/${fileId}`) as any
 }
 
 /**
@@ -78,7 +78,7 @@ export function getFilesByBusiness(
   businessType: string,
   businessId: string | number
 ): Promise<FileRecord[]> {
-  return request.get<FileRecord[]>('/file/list', {
+  return request.get<FileRecord[]>('/files/list', {
     params: { businessType, businessId },
   }) as any
 }

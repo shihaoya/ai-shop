@@ -74,8 +74,8 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> auditShop(Long shopId, Integer statusCode, String rejectReason) {
-        Shop shop = shopMapper.selectById(shopId);
+    public Result<?> auditShop(String shopId, Integer statusCode, String rejectReason) {
+        Shop shop = shopMapper.selectById(Long.parseLong(shopId));
         if (shop == null) {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在");
         }
@@ -142,8 +142,8 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> changeUserStatus(Long userId, Integer status) {
-        User user = userMapper.selectById(userId);
+    public Result<?> changeUserStatus(String userId, Integer status) {
+        User user = userMapper.selectById(Long.parseLong(userId));
         if (user == null) {
             return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
         }
@@ -157,8 +157,8 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> approveUser(Long userId) {
-        User user = userMapper.selectById(userId);
+    public Result<?> approveUser(String userId) {
+        User user = userMapper.selectById(Long.parseLong(userId));
         if (user == null) {
             return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
         }
@@ -172,8 +172,8 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> rejectUser(Long userId) {
-        User user = userMapper.selectById(userId);
+    public Result<?> rejectUser(String userId) {
+        User user = userMapper.selectById(Long.parseLong(userId));
         if (user == null) {
             return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
         }
@@ -238,8 +238,8 @@ public class AdminService {
     }
 
     @Transactional
-    public Result<?> resetUserPassword(Long userId) {
-        User user = userMapper.selectById(userId);
+    public Result<?> resetUserPassword(String userId) {
+        User user = userMapper.selectById(Long.parseLong(userId));
         if (user == null) {
             return Result.fail(ResultCode.USER_NOT_FOUND, "用户不存在");
         }

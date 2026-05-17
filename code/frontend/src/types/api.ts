@@ -115,6 +115,7 @@ export interface Order {
   deliveryContent?: string
   // 订单状态信息
   createdAt?: string
+  updatedAt?: string
   completedAt?: string
   closedAt?: string
   closeReason?: string

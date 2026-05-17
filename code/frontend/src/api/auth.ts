@@ -8,16 +8,7 @@ export const authApi = {
   register(data: RegisterParams): Promise<UserInfo> {
     return request.post<UserInfo>('/auth/register', data) as any
   },
-  updatePassword(data: { oldPassword: string; newPassword: string }): Promise<null> {
-    return request.put<null>('/auth/password', data) as any
-  },
   logout(): Promise<null> {
     return request.post<null>('/auth/logout') as any
-  },
-  getUserInfo(): Promise<UserInfo & { points?: number }> {
-    return request.get<UserInfo & { points?: number }>('/auth/info') as any
-  },
-  updateUserInfo(data: { nickname?: string }): Promise<UserInfo> {
-    return request.put<UserInfo>('/auth/info', data) as any
   },
 }
