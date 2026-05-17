@@ -129,6 +129,51 @@ export function createUser(username: string, nickname: string, password: string)
   return request.post<UserInfo>('/operator/users/create', { username, nickname, password }) as any
 }
 
+// ============ 导入用户 ============
+/** 下载导入模板 */
+export function downloadImportTemplate() {
+  const token = localStorage.getItem('token')
+  const baseUrl = import.meta.env.VITE_API_BASE || ''
+  const url = `${baseUrl}/api/operator/users/import/template`
+
+  const xhr = new XMLHttpRequest()
+  xhr.open('GET', url, true)
+  xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+  xhr.responseType = 'blob'
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      const blob = xhr.response
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = '用户导入模板.xlsx'
+      link.click()
+      URL.revokeObjectURL(link.href)
+    }
+  }
+  xhr.send()
+}
+
+/** 导入用户（上传 Excel） */
+export function importUsers(file: File): Promise<ImportResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post<ImportResult>('/operator/users/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }) as any
+}
+
+export interface ImportError {
+  row: number
+  message: string
+}
+
+export interface ImportResult {
+  hasErrors: boolean
+  success?: boolean
+  errors?: ImportError[]
+  users?: { username: string; nickname: string; password: string }[]
+}
+
 // ============ 邀请码 ============
 export function getInviteCode(): Promise<string | null> {
   return request.get<string | null>('/operator/invite-code') as any

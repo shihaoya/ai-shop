@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser, resetPassword } from '@/api/operator'
+import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser, resetPassword, downloadImportTemplate } from '@/api/operator'
 import { useThemeStore } from '@/stores/theme'
 import type { UserInfo, PointsLog } from '@/types/api'
 import { PointsTypeText } from '@/types/enums'
 import CyberPagination from '@/components/CyberPagination.vue'
+import ImportUserModal from '@/components/ImportUserModal.vue'
 
 const themeStore = useThemeStore()
 
@@ -34,6 +35,12 @@ const currentLogUser = ref('')
 const resetPwdVisible = ref(false)
 const resetPwdLoading = ref(false)
 const resetPwdForm = ref({ userId: '', username: '', newPassword: '' })
+
+// 导入用户弹窗
+const importVisible = ref(false)
+function openImportModal() {
+  importVisible.value = true
+}
 
 async function loadUsers() {
   loading.value = true
@@ -234,6 +241,14 @@ function formatDate(date?: string) {
   if (!date) return '-'
   return new Date(date).toLocaleString('zh-CN')
 }
+
+function handleDownloadTemplate() {
+  downloadImportTemplate()
+}
+
+function onImportSuccess() {
+  loadUsers()
+}
 </script>
 
 <template>
@@ -265,6 +280,13 @@ function formatDate(date?: string) {
           </button>
           <button class="cyber-btn" style="padding:9px 16px;" @click="handleReset">
             <i class="fas fa-undo"></i>
+          </button>
+          <div style="flex:1;"></div>
+          <button class="cyber-btn" style="padding:9px 16px;margin-right:8px;" @click="handleDownloadTemplate">
+            <i class="fas fa-download" style="margin-right:5px;"></i>下载模板
+          </button>
+          <button class="cyber-btn-primary" style="padding:9px 16px;" @click="openImportModal">
+            <i class="fas fa-upload" style="margin-right:5px;"></i>导入用户
           </button>
         </div>
       </div>
@@ -467,6 +489,8 @@ function formatDate(date?: string) {
         </div>
       </div>
     </div>
+
+    <ImportUserModal :visible="importVisible" @close="importVisible = false" @success="onImportSuccess" />
   </div>
 </template>
 

@@ -1,7 +1,9 @@
 package com.sh.aishop.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.dto.PageRequest;
+import com.sh.aishop.dto.UserImportDTO;
 import com.sh.aishop.service.OperatorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,9 +11,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Tag(name = "运营端", description = "店铺运营人员操作：商品管理、订单处理、用户管理、积分调整")
@@ -253,6 +262,31 @@ public class OperatorController {
     public Result<?> resetUserPassword(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return operatorService.resetUserPassword(userId, id);
+    }
+
+    @Operation(summary = "下载导入模板", description = "下载 Excel 导入用户模板")
+    @GetMapping("/users/import/template")
+    public void downloadImportTemplate(HttpServletResponse response) {
+        try {
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setCharacterEncoding("utf-8");
+            String fileName = URLEncoder.encode("用户导入模板.xlsx", StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+            response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName);
+
+            List<UserImportDTO> templateData = new ArrayList<>();
+            EasyExcel.write(response.getOutputStream(), UserImportDTO.class)
+                    .sheet("用户导入")
+                    .doWrite(templateData);
+        } catch (IOException e) {
+            throw new RuntimeException("下载模板失败");
+        }
+    }
+
+    @Operation(summary = "导入用户", description = "通过 Excel 批量导入用户")
+    @PostMapping("/users/import")
+    public Result<?> importUsers(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+        Long userId = (Long) request.getAttribute("userId");
+        return operatorService.importUsers(userId, file);
     }
 
     @Operation(summary = "消息列表", description = "获取系统消息列表")

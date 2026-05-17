@@ -1,5 +1,6 @@
 package com.sh.aishop.service;
 
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.sh.aishop.common.Result;
@@ -14,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -214,7 +217,7 @@ public class OperatorService {
             .map(Long::parseLong)
             .collect(Collectors.toList());
         if (!fileIds.isEmpty()) {
-            Map<Long, String> urlMap = fileRecordMapper.selectBatchIds(fileIds)
+            Map<Long, String> urlMap = fileRecordMapper.selectByIds(fileIds)
                 .stream()
                 .collect(Collectors.toMap(FileRecord::getId, FileRecord::getUrl));
             dtos.forEach(dto -> {
@@ -706,6 +709,125 @@ public class OperatorService {
         userMapper.updateById(user);
 
         return Result.success(Collections.singletonMap("password", newPassword));
+    }
+
+    // ============ Excel 导入用户 ============
+    public Result<?> importUsers(Long operatorId, MultipartFile file) {
+        Shop shop = getApprovedShop(operatorId);
+        if (shop == null) {
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
+        }
+
+        // 1. 解析 Excel
+        List<UserImportDTO> rows;
+        try {
+            rows = EasyExcel.read(file.getInputStream())
+                    .head(UserImportDTO.class)
+                    .sheet()
+                    .doReadSync();
+        } catch (IOException e) {
+            return Result.fail("文件读取失败，请检查文件格式");
+        } catch (Exception e) {
+            return Result.fail("文件解析失败，请确认上传的是正确的 Excel 文件");
+        }
+
+        // 2. 检查是否有数据
+        if (rows == null || rows.isEmpty()) {
+            return Result.fail("文件中没有数据，请填写后再上传");
+        }
+
+        // 3. 逐行校验
+        List<Map<String, Object>> errors = new ArrayList<>();
+        Set<String> importUsernames = new HashSet<>();     // 文件内检查重复
+        Set<String> existingUsernames = new HashSet<>();
+
+        // 查询所有已存在的用户名
+        List<User> allUsers = userMapper.selectList(new LambdaQueryWrapper<User>()
+                .eq(User::getDeleted, 0)
+                .select(User::getUsername));
+        allUsers.forEach(u -> existingUsernames.add(u.getUsername()));
+
+        for (int i = 0; i < rows.size(); i++) {
+            UserImportDTO row = rows.get(i);
+            int rowNum = i + 2; // Excel 行号从1开始，表头占1行，数据从第2行开始
+            List<String> rowErrors = new ArrayList<>();
+
+            String username = row.getUsername() != null ? row.getUsername().trim() : "";
+            String nickname = row.getNickname() != null ? row.getNickname().trim() : "";
+
+            // 校验用户名
+            if (username.isEmpty()) {
+                rowErrors.add("用户名为空");
+            } else if (username.length() > 50) {
+                rowErrors.add("用户名不能超过50个字符");
+            } else if (importUsernames.contains(username)) {
+                rowErrors.add("文件中存在重复的用户名: " + username);
+            } else if (existingUsernames.contains(username)) {
+                rowErrors.add("用户名已存在: " + username);
+            }
+
+            // 校验昵称（可选，为空时自动使用用户名）
+            if (!nickname.isEmpty() && nickname.length() > 50) {
+                rowErrors.add("昵称超过50个字符");
+            }
+
+            if (!rowErrors.isEmpty()) {
+                Map<String, Object> err = new HashMap<>();
+                err.put("row", rowNum);
+                err.put("message", String.join("; ", rowErrors));
+                errors.add(err);
+            }
+
+            if (!username.isEmpty()) {
+                importUsernames.add(username);
+            }
+        }
+
+        // 4. 有错误 → 返回错误列表
+        if (!errors.isEmpty()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("hasErrors", true);
+            result.put("errors", errors);
+            return Result.success(result);
+        }
+
+        // 5. 全部校验通过 → 事务批量导入
+        return doImportUsers(operatorId, rows);
+    }
+
+    @Transactional
+    public Result<?> doImportUsers(Long operatorId, List<UserImportDTO> rows) {
+        List<Map<String, String>> importedUsers = new ArrayList<>();
+
+        for (UserImportDTO row : rows) {
+            String username = row.getUsername().trim();
+            String nickname = row.getNickname() != null && !row.getNickname().trim().isEmpty()
+                    ? row.getNickname().trim() : username;
+
+            String password = generateRandomPassword();
+
+            User user = new User();
+            user.setId(SnowflakeIdUtil.nextId());
+            user.setUsername(username);
+            user.setNickname(nickname);
+            user.setPassword(SecurityUtil.encryptPassword(password));
+            user.setRole(RoleEnum.NORMAL_USER.getCode());
+            user.setParentId(operatorId);
+            user.setStatus(UserStatus.NORMAL.getCode());
+            userMapper.insert(user);
+
+            Map<String, String> userMap = new HashMap<>();
+            userMap.put("username", username);
+            userMap.put("nickname", nickname);
+            userMap.put("password", password);
+            importedUsers.add(userMap);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("hasErrors", false);
+        result.put("success", true);
+        result.put("users", importedUsers);
+        return Result.success(result);
     }
 
     private String generateRandomPassword() {
