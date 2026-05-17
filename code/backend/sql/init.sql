@@ -219,10 +219,4 @@ CREATE TABLE `file_record` (
   INDEX `idx_storage_type` (`storage_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件记录表';
 
--- ============================================
--- 预置管理员账号
--- 用户名：admin，密码：admin123
--- 密码为 BCrypt 加密后的值
--- ============================================
-INSERT INTO `user` (`id`, `username`, `nickname`, `password`, `role`, `parent_id`, `status`, `deleted`, `created_at`, `updated_at`)
-VALUES (1, 'admin', '管理员', '$2a$10$mxdpkIwUAXyKYprDS8nIKOQr8W3v47PZuv3pgMwGEayB3sDRdiHMq', 1, 0, 2, 0, NOW(), NOW());
+
