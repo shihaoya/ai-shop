@@ -1,7 +1,7 @@
 package com.sh.aishop.controller;
 
 import com.sh.aishop.common.Result;
-import com.sh.aishop.entity.FileRecord;
+import com.sh.aishop.common.entity.FileRecord;
 import com.sh.aishop.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

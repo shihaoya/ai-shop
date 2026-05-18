@@ -1,7 +1,7 @@
 package com.sh.aishop.service.impl;
 
 import com.sh.aishop.config.UploadConfig;
-import com.sh.aishop.entity.FileRecord;
+import com.sh.aishop.common.entity.FileRecord;
 import com.sh.aishop.service.StorageStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

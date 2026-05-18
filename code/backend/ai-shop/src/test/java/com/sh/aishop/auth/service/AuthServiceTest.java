@@ -3,6 +3,7 @@ package com.sh.aishop.auth.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
+import com.sh.aishop.common.dto.UserDTO;
 import com.sh.aishop.auth.dto.*;
 import com.sh.aishop.common.entity.*;
 import com.sh.aishop.common.enums.*;

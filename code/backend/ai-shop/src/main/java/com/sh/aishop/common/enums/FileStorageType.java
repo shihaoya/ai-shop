@@ -1,4 +1,4 @@
-package com.sh.aishop.entity.enums;
+package com.sh.aishop.common.enums;
 
 /**
  * 文件存储类型枚举

@@ -1,4 +1,4 @@
-package com.sh.aishop.entity;
+package com.sh.aishop.common.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;

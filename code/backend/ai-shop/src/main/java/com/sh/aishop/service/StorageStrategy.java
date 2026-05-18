@@ -1,7 +1,7 @@
 package com.sh.aishop.service;
 
 import com.sh.aishop.config.UploadConfig;
-import com.sh.aishop.entity.FileRecord;
+import com.sh.aishop.common.entity.FileRecord;
 import com.sh.aishop.mapper.FileRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

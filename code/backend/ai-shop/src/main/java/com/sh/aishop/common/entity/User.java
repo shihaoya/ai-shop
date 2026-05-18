@@ -1,4 +1,4 @@
-package com.sh.aishop.entity;
+package com.sh.aishop.common.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,10 +8,12 @@ import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("invite_code")
-public class InviteCode extends BaseEntity<InviteCode> {
-    private String code;
+@TableName("user")
+public class User extends BaseEntity<User> {
+    private String username;
+    private String nickname;
+    private String password;
     private Integer role;
-    private Long creatorId;
+    private Long parentId;
     private Integer status;
 }

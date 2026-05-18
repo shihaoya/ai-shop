@@ -1,4 +1,4 @@
-package com.sh.aishop.entity.enums;
+package com.sh.aishop.common.enums;
 
 public enum ProductType {
     VIRTUAL(1, "虚拟"),
