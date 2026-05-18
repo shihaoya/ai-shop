@@ -1,17 +1,22 @@
-package com.sh.aishop.service;
+package com.sh.aishop.admin.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
-import com.sh.aishop.dto.*;
+import com.sh.aishop.common.dto.UserDTO;
 import com.sh.aishop.common.entity.*;
 import com.sh.aishop.common.enums.*;
-import com.sh.aishop.mapper.*;
+import com.sh.aishop.dto.PageRequest;
+import com.sh.aishop.dto.PageResult;
+import com.sh.aishop.dto.ShopDTO;
+import com.sh.aishop.mapper.InviteCodeMapper;
+import com.sh.aishop.mapper.PointsMapper;
+import com.sh.aishop.mapper.ShopMapper;
+import com.sh.aishop.mapper.UserMapper;
 import com.sh.aishop.util.SnowflakeIdUtil;
 import com.sh.aishop.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -29,18 +34,14 @@ public class AdminService {
     private InviteCodeMapper inviteCodeMapper;
     @Autowired
     private PointsMapper pointsMapper;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
 
     // ============ 店铺管理 ============
     public Result<?> getShops(PageRequest pageRequest) {
         LambdaQueryWrapper<Shop> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Shop::getDeleted, 0);
-        // 状态筛选
         if (pageRequest.getStatus() != null) {
             wrapper.eq(Shop::getStatus, pageRequest.getStatus());
         }
-        // 关键词搜索
         if (StringUtils.hasText(pageRequest.getKeyword())) {
             wrapper.like(Shop::getName, pageRequest.getKeyword());
         }
@@ -49,12 +50,10 @@ public class AdminService {
         List<Shop> shops = shopMapper.selectList(wrapper);
         Long total = (long) shops.size();
 
-        // 分页
         int offset = pageRequest.getOffset().intValue();
         int pageSize = pageRequest.getPageSize();
         shops = shops.stream().skip(offset).limit(pageSize).collect(Collectors.toList());
 
-        // 转换为DTO
         List<ShopDTO> dtos = new ArrayList<>();
         for (Shop shop : shops) {
             ShopDTO dto = new ShopDTO();
@@ -96,17 +95,13 @@ public class AdminService {
     public Result<?> getUsers(PageRequest pageRequest) {
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(User::getDeleted, 0);
-        // 排除管理员
         wrapper.ne(User::getRole, RoleEnum.ADMIN.getCode());
-        // 角色筛选
         if (pageRequest.getRole() != null) {
             wrapper.eq(User::getRole, pageRequest.getRole());
         }
-        // 状态筛选
         if (pageRequest.getStatus() != null) {
             wrapper.eq(User::getStatus, pageRequest.getStatus());
         }
-        // 关键词搜索
         if (StringUtils.hasText(pageRequest.getKeyword())) {
             wrapper.and(w -> w.like(User::getUsername, pageRequest.getKeyword())
                     .or().like(User::getNickname, pageRequest.getKeyword()));
@@ -129,7 +124,6 @@ public class AdminService {
             dto.setRole(user.getRole());
             dto.setStatus(user.getStatus());
             dto.setCreatedAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null);
-            // 查询积分
             Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
                     .eq(Points::getUserId, user.getId())
                     .orderByDesc(Points::getCreatedAt)
@@ -181,12 +175,10 @@ public class AdminService {
             return Result.fail(ResultCode.FAIL, "用户不是待审核状态");
         }
 
-        // 软删除用户（使用 UpdateWrapper 避免 @TableLogic 对 deleted 字段的干扰）
         LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(User::getId, userId).set(User::getDeleted, 1);
         userMapper.update(null, updateWrapper);
 
-        // 作废该用户的邀请码（如果该用户创建了邀请码）
         InviteCode code = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
                 .eq(InviteCode::getCreatorId, userId)
                 .eq(InviteCode::getStatus, InviteCodeStatus.ACTIVE.getCode())
@@ -201,7 +193,6 @@ public class AdminService {
 
     // ============ 邀请码管理 ============
     public Result<?> getInviteCode(Long adminId) {
-        // 查找当前有效的邀请码（管理员邀请码用于创建店铺用户，role=2）
         InviteCode code = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
                 .eq(InviteCode::getCreatorId, adminId)
                 .eq(InviteCode::getRole, RoleEnum.SHOP_USER.getCode())
@@ -213,7 +204,6 @@ public class AdminService {
 
     @Transactional
     public Result<?> createInviteCode(Long adminId) {
-        // 作废旧的邀请码
         InviteCode oldCode = inviteCodeMapper.selectOne(new LambdaQueryWrapper<InviteCode>()
                 .eq(InviteCode::getCreatorId, adminId)
                 .eq(InviteCode::getRole, RoleEnum.SHOP_USER.getCode())
@@ -225,7 +215,6 @@ public class AdminService {
             inviteCodeMapper.updateById(oldCode);
         }
 
-        // 创建新的邀请码（管理员邀请码用于创建店铺用户，role=2）
         InviteCode newCode = new InviteCode();
         newCode.setId(SnowflakeIdUtil.nextId());
         newCode.setCode(generateCode());
@@ -250,7 +239,7 @@ public class AdminService {
     }
 
     private String generateRandomPassword() {
-        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+        String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpstuvwxyz23456789";
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 8; i++) {

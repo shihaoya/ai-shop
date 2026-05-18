@@ -1,10 +1,10 @@
-package com.sh.aishop.service;
+package com.sh.aishop.file.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
-import com.sh.aishop.config.UploadConfig;
 import com.sh.aishop.common.entity.FileRecord;
+import com.sh.aishop.config.UploadConfig;
 import com.sh.aishop.mapper.FileRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,11 +22,11 @@ public class FileService {
 
     @Autowired
     @Qualifier("localStorageStrategy")
-    private StorageStrategy localStorageStrategy;
+    private com.sh.aishop.service.StorageStrategy localStorageStrategy;
 
     @Autowired
     @Qualifier("ossStorageStrategy")
-    private StorageStrategy ossStorageStrategy;
+    private com.sh.aishop.service.StorageStrategy ossStorageStrategy;
 
     @Autowired
     private UploadConfig uploadConfig;
@@ -34,7 +34,7 @@ public class FileService {
     @Transactional
     public Result<FileRecord> uploadFile(MultipartFile file, String businessType, Long businessId) throws IOException {
         validateFile(file);
-        StorageStrategy strategy = getStorageStrategy();
+        com.sh.aishop.service.StorageStrategy strategy = getStorageStrategy();
 
         FileRecord fileRecord = new FileRecord();
         fileRecord.setFileName(file.getOriginalFilename());
@@ -58,7 +58,7 @@ public class FileService {
             return Result.fail(ResultCode.DATA_NOT_FOUND, "文件不存在");
         }
 
-        StorageStrategy strategy = getStorageStrategy(file.getStorageType());
+        com.sh.aishop.service.StorageStrategy strategy = getStorageStrategy(file.getStorageType());
         strategy.delete(file.getFilePath());
         fileRecordMapper.deleteById(fileId);
 
@@ -83,12 +83,12 @@ public class FileService {
         return Result.success(files);
     }
 
-    private StorageStrategy getStorageStrategy() {
+    private com.sh.aishop.service.StorageStrategy getStorageStrategy() {
         int storageType = "oss".equals(uploadConfig.getStorageType()) ? 2 : 1;
         return storageType == 2 ? ossStorageStrategy : localStorageStrategy;
     }
 
-    private StorageStrategy getStorageStrategy(Integer storageType) {
+    private com.sh.aishop.service.StorageStrategy getStorageStrategy(Integer storageType) {
         return storageType == 2 ? ossStorageStrategy : localStorageStrategy;
     }
 

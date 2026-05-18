@@ -2,7 +2,7 @@ package com.sh.aishop.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.dto.PageRequest;
-import com.sh.aishop.service.AdminService;
+import com.sh.aishop.admin.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,7 +61,7 @@ public class AdminController {
     })
     @PutMapping("/users/{id}/status")
     public Result<?> changeUserStatus(
-            @Parameter(description = "用户ID", required = true) @PathVariable("id") Long userId, 
+            @Parameter(description = "用户ID", required = true) @PathVariable("id") Long userId,
             @Parameter(description = "状态：1待审核 2正常 3冻结", required = true, example = "2") @RequestParam Integer status) {
         return adminService.changeUserStatus(userId, status);
     }

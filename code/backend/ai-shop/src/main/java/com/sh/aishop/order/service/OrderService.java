@@ -1,14 +1,35 @@
-package com.sh.aishop.service;
+package com.sh.aishop.order.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
-import com.sh.aishop.dto.*;
-import com.sh.aishop.common.entity.*;
-import com.sh.aishop.common.enums.*;
-import com.sh.aishop.mapper.*;
+import com.sh.aishop.common.entity.Category;
+import com.sh.aishop.common.entity.FileRecord;
+import com.sh.aishop.common.entity.Message;
+import com.sh.aishop.common.entity.Order;
+import com.sh.aishop.common.entity.Points;
+import com.sh.aishop.common.entity.Product;
+import com.sh.aishop.common.entity.Shop;
+import com.sh.aishop.common.enums.OrderStatus;
+import com.sh.aishop.common.enums.PointsType;
+import com.sh.aishop.common.enums.ProductStatus;
+import com.sh.aishop.common.enums.ProductType;
+import com.sh.aishop.common.enums.MessageType;
+import com.sh.aishop.common.enums.ShopStatus;
+import com.sh.aishop.dto.OrderDTO;
+import com.sh.aishop.dto.PageRequest;
+import com.sh.aishop.dto.PageResult;
+import com.sh.aishop.dto.ProductDTO;
+import com.sh.aishop.mapper.CategoryMapper;
+import com.sh.aishop.mapper.FileRecordMapper;
+import com.sh.aishop.mapper.MessageMapper;
+import com.sh.aishop.mapper.OrderMapper;
+import com.sh.aishop.mapper.PointsMapper;
+import com.sh.aishop.mapper.ProductMapper;
+import com.sh.aishop.mapper.ShopMapper;
+import com.sh.aishop.mapper.UserMapper;
+import com.sh.aishop.shop.service.ShopService;
 import com.sh.aishop.util.SnowflakeIdUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +40,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class UserService {
+public class OrderService {
     @Autowired
     private ProductMapper productMapper;
     @Autowired
     private OrderMapper orderMapper;
     @Autowired
     private PointsMapper pointsMapper;
-    @Autowired
-    private AddressMapper addressMapper;
-    @Autowired
-    private MessageMapper messageMapper;
     @Autowired
     private UserMapper userMapper;
     @Autowired
@@ -38,12 +55,135 @@ public class UserService {
     private CategoryMapper categoryMapper;
     @Autowired
     private FileRecordMapper fileRecordMapper;
+    @Autowired
+    private MessageMapper messageMapper;
+    @Autowired
+    private ShopService shopService;
 
-    // ============ 商品 ============
+    // ============ 店铺端订单管理 ============
+    public Result<?> getShopOrders(Long operatorId, PageRequest pageRequest, Integer status) {
+        var shopResult = shopService.getMyShop(operatorId);
+        if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
+        }
+        Map<?, ?> shopData = (Map<?, ?>) shopResult.getData();
+        if (!Boolean.TRUE.equals(shopData.get("hasShop"))) {
+            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
+        }
+
+        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Order::getShopId, Long.parseLong(shopData.get("id").toString()))
+               .eq(Order::getDeleted, 0);
+        if (status != null) {
+            wrapper.eq(Order::getStatus, status);
+        }
+        wrapper.orderByDesc(Order::getCreatedAt);
+
+        List<Order> orders = orderMapper.selectList(wrapper);
+        Long total = (long) orders.size();
+
+        int offset = pageRequest.getOffset().intValue();
+        orders = orders.stream().skip(offset).limit(pageRequest.getPageSize()).collect(Collectors.toList());
+
+        List<OrderDTO> dtos = orders.stream().map(order -> {
+            OrderDTO dto = toOrderDTO(order);
+            var user = userMapper.selectById(order.getUserId());
+            if (user != null) dto.setUserNickname(user.getNickname());
+            return dto;
+        }).collect(Collectors.toList());
+
+        return Result.success(new PageResult<>(dtos, total, pageRequest.getPage(), pageRequest.getPageSize()));
+    }
+
+    @Transactional
+    public Result<?> confirmOrder(Long operatorId, Long orderId) {
+        Order order = getOrderByOperatorId(operatorId, orderId);
+        if (order == null) {
+            return Result.fail(ResultCode.ORDER_NOT_FOUND, "订单不存在");
+        }
+        if (order.getStatus() != OrderStatus.CREATED.getCode()) {
+            return Result.fail(ResultCode.ORDER_STATUS_ERROR, "订单状态不正确");
+        }
+        order.setStatus(OrderStatus.CONFIRMED.getCode());
+        orderMapper.updateById(order);
+        sendOrderMessage(order.getUserId(), orderId, "您的订单已确认");
+        return Result.success();
+    }
+
+    @Transactional
+    public Result<?> shipOrder(Long operatorId, Long orderId, Map<String, Object> params) {
+        Order order = getOrderByOperatorId(operatorId, orderId);
+        if (order == null) {
+            return Result.fail(ResultCode.ORDER_NOT_FOUND, "订单不存在");
+        }
+        if (order.getStatus() != OrderStatus.CONFIRMED.getCode()) {
+            return Result.fail(ResultCode.ORDER_STATUS_ERROR, "订单状态不正确");
+        }
+
+        Product product = productMapper.selectById(order.getProductId());
+        boolean isVirtual = product != null && product.getType() == ProductType.VIRTUAL.getCode();
+
+        order.setStatus(OrderStatus.SHIPPED.getCode());
+        if (isVirtual) {
+            order.setDeliveryContent(params.get("deliveryContent") != null ? params.get("deliveryContent").toString() : null);
+        } else {
+            order.setExpressCompany(params.get("expressCompany") != null ? params.get("expressCompany").toString() : null);
+            order.setExpressNo(params.get("expressNo") != null ? params.get("expressNo").toString() : null);
+        }
+        orderMapper.updateById(order);
+
+        sendOrderMessage(order.getUserId(), orderId, "您的订单已发货");
+
+        return Result.success();
+    }
+
+    @Transactional
+    public Result<?> closeShopOrder(Long operatorId, Long orderId, String reason) {
+        Order order = getOrderByOperatorId(operatorId, orderId);
+        if (order == null) {
+            return Result.fail(ResultCode.ORDER_NOT_FOUND, "订单不存在");
+        }
+        if (order.getStatus() == OrderStatus.COMPLETED.getCode() || order.getStatus() == OrderStatus.CLOSED.getCode()) {
+            return Result.fail(ResultCode.ORDER_STATUS_ERROR, "订单已结束");
+        }
+
+        refundPoints(order);
+
+        order.setStatus(OrderStatus.CLOSED.getCode());
+        order.setClosedAt(LocalDateTime.now());
+        order.setCloseReason(reason);
+        orderMapper.updateById(order);
+
+        sendOrderMessage(order.getUserId(), orderId, "您的订单已关闭：" + reason);
+
+        return Result.success();
+    }
+
+    @Transactional
+    public Result<?> completeShopOrder(Long operatorId, Long orderId) {
+        Order order = getOrderByOperatorId(operatorId, orderId);
+        if (order == null) {
+            return Result.fail(ResultCode.ORDER_NOT_FOUND, "订单不存在");
+        }
+        if (order.getStatus() != OrderStatus.SHIPPED.getCode()) {
+            return Result.fail(ResultCode.ORDER_STATUS_ERROR, "订单状态不正确");
+        }
+
+        order.setStatus(OrderStatus.COMPLETED.getCode());
+        order.setCompletedAt(LocalDateTime.now());
+        orderMapper.updateById(order);
+
+        sendOrderMessage(order.getUserId(), orderId, "您的订单已完成");
+
+        return Result.success();
+    }
+
+    // ============ 用户端商品浏览 ============
     public Result<?> getProducts(PageRequest pageRequest) {
-        // 只显示营业中店铺的上架商品
         LambdaQueryWrapper<Shop> shopWrapper = new LambdaQueryWrapper<>();
-        shopWrapper.eq(Shop::getIsActive, 1).eq(Shop::getStatus, ShopStatus.APPROVED.getCode()).eq(Shop::getDeleted, 0);
+        shopWrapper.eq(Shop::getIsActive, 1)
+                   .eq(Shop::getStatus, ShopStatus.APPROVED.getCode())
+                   .eq(Shop::getDeleted, 0);
         List<Shop> activeShops = shopMapper.selectList(shopWrapper);
         if (activeShops.isEmpty()) {
             return Result.success(new PageResult<>(Collections.emptyList(), 0L, pageRequest.getPage(), pageRequest.getPageSize()));
@@ -98,12 +238,17 @@ public class UserService {
 
         // 批量加载 mainImage URL
         List<String> fileIds = dtos.stream()
-            .map(ProductDTO::getMainImage).filter(Objects::nonNull).collect(Collectors.toList());
+            .map(ProductDTO::getMainImage)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
         if (!fileIds.isEmpty()) {
             Map<String, String> urlMap = fileRecordMapper.selectBatchIds(fileIds)
-                .stream().collect(Collectors.toMap(f -> f.getId().toString(), FileRecord::getUrl));
+                .stream()
+                .collect(Collectors.toMap(f -> f.getId().toString(), FileRecord::getUrl));
             dtos.forEach(dto -> {
-                if (dto.getMainImage() != null) dto.setMainImageUrl(urlMap.get(dto.getMainImage()));
+                if (dto.getMainImage() != null) {
+                    dto.setMainImageUrl(urlMap.get(dto.getMainImage()));
+                }
             });
         }
 
@@ -135,7 +280,7 @@ public class UserService {
         dto.setPrice(product.getPrice());
         dto.setStock(product.getStock());
         dto.setLimitPerUser(product.getLimitPerUser());
-            dto.setMainImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
+        dto.setMainImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
         dto.setDetailImages(product.getDetailImages());
         dto.setDescription(product.getDescription());
         dto.setDeliveryInfo(product.getDeliveryInfo());
@@ -145,10 +290,9 @@ public class UserService {
         return Result.success(dto);
     }
 
-    // ============ 下单 ============
+    // ============ 用户端下单 ============
     @Transactional
     public Result<?> createOrder(Long userId, Long productId, Integer quantity, Map<String, Object> addressInfo) {
-        // 检查商品
         Product product = productMapper.selectById(productId);
         if (product == null || product.getDeleted() != 0) {
             return Result.fail(ResultCode.PRODUCT_NOT_FOUND, "商品不存在");
@@ -157,7 +301,6 @@ public class UserService {
             return Result.fail(ResultCode.PRODUCT_OFF_SALE, "商品已下架");
         }
 
-        // 检查库存
         if (product.getStock() == 0) {
             return Result.fail(ResultCode.PRODUCT_STOCK_ZERO, "商品库存为0");
         }
@@ -165,7 +308,6 @@ public class UserService {
             return Result.fail(ResultCode.FAIL, "库存不足");
         }
 
-        // 检查限购
         if (product.getLimitPerUser() > 0) {
             Long boughtCount = orderMapper.selectCount(new LambdaQueryWrapper<Order>()
                     .eq(Order::getUserId, userId)
@@ -177,10 +319,8 @@ public class UserService {
             }
         }
 
-        // 计算积分
         int totalPoints = product.getPrice() * quantity;
 
-        // 扣减积分（后端校验积分是否充足）
         Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
                 .eq(Points::getUserId, userId)
                 .orderByDesc(Points::getCreatedAt).last("LIMIT 1"));
@@ -190,7 +330,6 @@ public class UserService {
         }
         int newBalance = currentBalance - totalPoints;
 
-        // 记录积分扣减
         Points points = new Points();
         points.setId(SnowflakeIdUtil.nextId());
         points.setUserId(userId);
@@ -200,7 +339,6 @@ public class UserService {
         points.setRemark("兑换商品：" + product.getName());
         pointsMapper.insert(points);
 
-        // 创建订单
         Order order = new Order();
         order.setId(SnowflakeIdUtil.nextId());
         order.setOrderNo(generateOrderNo());
@@ -211,7 +349,6 @@ public class UserService {
         order.setQuantity(quantity);
         order.setStatus(OrderStatus.CREATED.getCode());
 
-        // 地址快照（支持 addressInfo 对象）
         if (addressInfo != null && product.getType() == ProductType.PHYSICAL.getCode()) {
             Object receiver = addressInfo.get("receiver");
             Object phone = addressInfo.get("phone");
@@ -234,13 +371,11 @@ public class UserService {
 
         orderMapper.insert(order);
 
-        // 扣减库存
         if (product.getStock() > 0) {
             product.setStock(product.getStock() - quantity);
             productMapper.updateById(product);
         }
 
-        // 发送消息给店铺
         sendOrderMessageToShop(product.getShopId(), order.getId(), "新订单：" + product.getName() + " x" + quantity);
 
         Map<String, String> result = new HashMap<>();
@@ -249,8 +384,8 @@ public class UserService {
         return Result.success(result);
     }
 
-    // ============ 订单 ============
-    public Result<?> getOrders(Long userId, PageRequest pageRequest, Integer status) {
+    // ============ 用户端订单查询 ============
+    public Result<?> getUserOrders(Long userId, PageRequest pageRequest, Integer status) {
         LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Order::getUserId, userId).eq(Order::getDeleted, 0);
         if (status != null) {
@@ -283,7 +418,7 @@ public class UserService {
     }
 
     @Transactional
-    public Result<?> closeOrder(Long userId, Long orderId) {
+    public Result<?> closeUserOrder(Long userId, Long orderId) {
         Order order = orderMapper.selectById(orderId);
         if (order == null || !order.getUserId().equals(userId)) {
             return Result.fail(ResultCode.ORDER_NOT_FOUND, "订单不存在");
@@ -292,7 +427,6 @@ public class UserService {
             return Result.fail(ResultCode.ORDER_STATUS_ERROR, "只有已下单状态可以关闭");
         }
 
-        // 退回积分
         refundPoints(order);
 
         order.setStatus(OrderStatus.CLOSED.getCode());
@@ -300,7 +434,6 @@ public class UserService {
         order.setCloseReason("用户取消");
         orderMapper.updateById(order);
 
-        // 恢复库存
         Product product = productMapper.selectById(order.getProductId());
         if (product != null && product.getStock() >= 0) {
             product.setStock(product.getStock() + order.getQuantity());
@@ -313,7 +446,7 @@ public class UserService {
     }
 
     @Transactional
-    public Result<?> completeOrder(Long userId, Long orderId) {
+    public Result<?> completeUserOrder(Long userId, Long orderId) {
         Order order = orderMapper.selectById(orderId);
         if (order == null || !order.getUserId().equals(userId)) {
             return Result.fail(ResultCode.ORDER_NOT_FOUND, "订单不存在");
@@ -331,222 +464,21 @@ public class UserService {
         return Result.success();
     }
 
-    // ============ 积分 ============
-    public Result<?> getPoints(Long userId) {
-        Points latest = pointsMapper.selectOne(new LambdaQueryWrapper<Points>()
-                .eq(Points::getUserId, userId)
-                .orderByDesc(Points::getCreatedAt).last("LIMIT 1"));
-        return Result.success(java.util.Collections.singletonMap("points",
-                latest != null ? latest.getBalance() : 0));
-    }
-
-    public Result<?> getPointsLog(Long userId, PageRequest pageRequest) {
-        LambdaQueryWrapper<Points> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Points::getUserId, userId).eq(Points::getDeleted, 0)
-               .orderByDesc(Points::getCreatedAt);
-
-        List<Points> list = pointsMapper.selectList(wrapper);
-        Long total = (long) list.size();
-
-        int offset = pageRequest.getOffset().intValue();
-        list = list.stream().skip(offset).limit(pageRequest.getPageSize()).collect(Collectors.toList());
-
-        List<Map<String, Object>> result = list.stream().map(p -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", p.getId().toString());
-            map.put("amount", p.getAmount());
-            map.put("balance", p.getBalance());
-            map.put("type", p.getType());
-            map.put("typeDesc", getPointsTypeDesc(p.getType()));
-            map.put("remark", p.getRemark());
-            map.put("createdAt", p.getCreatedAt().toString());
-            return map;
-        }).collect(Collectors.toList());
-
-        return Result.success(new PageResult<>(result, total, pageRequest.getPage(), pageRequest.getPageSize()));
-    }
-
-    // ============ 地址 ============
-    public Result<?> getAddresses(Long userId) {
-        List<Address> addresses = addressMapper.selectList(new LambdaQueryWrapper<Address>()
-                .eq(Address::getUserId, userId).eq(Address::getDeleted, 0)
-                .orderByDesc(Address::getCreatedAt));
-
-        List<Map<String, Object>> result = addresses.stream().map(a -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", a.getId().toString());
-            map.put("receiver", a.getName()); // name -> receiver
-            map.put("phone", a.getPhone());
-            map.put("province", a.getProvince());
-            map.put("city", a.getCity());
-            map.put("district", a.getDistrict());
-            map.put("detail", a.getDetail());
-            map.put("isDefault", a.getIsDefault());
-            return map;
-        }).collect(Collectors.toList());
-
-        return Result.success(result);
-    }
-
-        @Transactional
-        public Result<?> createAddress(Long userId, Map<String, Object> params) {
-            // 检查用户地址数量是否已达到上限（5个）
-            LambdaQueryWrapper<Address> countWrapper = new LambdaQueryWrapper<>();
-            countWrapper.eq(Address::getUserId, userId).eq(Address::getDeleted, 0);
-            long addressCount = addressMapper.selectCount(countWrapper);
-            if (addressCount >= 5) {
-                return Result.fail(ResultCode.ADDRESS_LIMIT_EXCEEDED, "收货地址数量已达到上限（最多5个）");
-            }
-    
-            Address address = new Address();
-            address.setId(SnowflakeIdUtil.nextId());
-            address.setUserId(userId);
-        // 兼容 receiver 和 name 两种字段名
-        Object nameValue = params.get("receiver") != null ? params.get("receiver") : params.get("name");
-        address.setName(nameValue != null ? nameValue.toString() : "");
-        address.setPhone(params.get("phone") != null ? params.get("phone").toString() : "");
-        address.setProvince(params.get("province") != null ? params.get("province").toString() : "");
-        address.setCity(params.get("city") != null ? params.get("city").toString() : "");
-        address.setDistrict(params.get("district") != null ? params.get("district").toString() : "");
-        address.setDetail(params.get("detail") != null ? params.get("detail").toString() : "");
-        address.setIsDefault(params.get("isDefault") != null ? Integer.valueOf(params.get("isDefault").toString()) : 0);
-        addressMapper.insert(address);
-
-        // 如果是默认地址，取消其他的默认
-        if (address.getIsDefault() == 1) {
-            addressMapper.update(null, new LambdaUpdateWrapper<Address>()
-                    .eq(Address::getUserId, userId)
-                    .ne(Address::getId, address.getId())
-                    .set(Address::getIsDefault, 0));
-        }
-
-        return Result.success(address.getId().toString());
-    }
-
-    @Transactional
-    public Result<?> updateAddress(Long userId, Long addressId, Map<String, Object> params) {
-        Address address = addressMapper.selectById(addressId);
-        if (address == null || !address.getUserId().equals(userId)) {
-            return Result.fail(ResultCode.ADDRESS_NOT_FOUND, "地址不存在");
-        }
-
-        // 兼容 receiver 和 name 两种字段名
-        Object nameValue = params.get("receiver") != null ? params.get("receiver") : params.get("name");
-        if (nameValue != null) address.setName(nameValue.toString());
-        if (params.get("phone") != null) address.setPhone(params.get("phone").toString());
-        if (params.get("province") != null) address.setProvince(params.get("province").toString());
-        if (params.get("city") != null) address.setCity(params.get("city").toString());
-        if (params.get("district") != null) address.setDistrict(params.get("district").toString());
-        if (params.get("detail") != null) address.setDetail(params.get("detail").toString());
-
-        addressMapper.updateById(address);
-
-        // 处理默认地址
-        if (params.get("isDefault") != null && Integer.valueOf(params.get("isDefault").toString()) == 1) {
-            addressMapper.update(null, new LambdaUpdateWrapper<Address>()
-                    .eq(Address::getUserId, userId)
-                    .ne(Address::getId, addressId)
-                    .set(Address::getIsDefault, 0));
-        }
-
-        return Result.success();
-    }
-
-    @Transactional
-    public Result<?> deleteAddress(Long userId, Long addressId) {
-        Address address = addressMapper.selectById(addressId);
-        if (address == null || !address.getUserId().equals(userId)) {
-            return Result.fail(ResultCode.ADDRESS_NOT_FOUND, "地址不存在");
-        }
-        addressMapper.deleteById(addressId);
-        return Result.success();
-    }
-
-    @Transactional
-    public Result<?> setDefaultAddress(Long userId, Long addressId) {
-        Address address = addressMapper.selectById(addressId);
-        if (address == null || !address.getUserId().equals(userId)) {
-            return Result.fail(ResultCode.ADDRESS_NOT_FOUND, "地址不存在");
-        }
-
-        addressMapper.update(null, new LambdaUpdateWrapper<Address>()
-                .eq(Address::getUserId, userId)
-                .set(Address::getIsDefault, 0));
-
-        address.setIsDefault(1);
-        addressMapper.updateById(address);
-
-        return Result.success();
-    }
-
-    // ============ 消息 ============
-    public Result<?> getMessages(Long userId, PageRequest pageRequest) {
-        LambdaQueryWrapper<Message> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Message::getUserId, userId).eq(Message::getDeleted, 0)
-               .orderByDesc(Message::getCreatedAt);
-
-        List<Message> messages = messageMapper.selectList(wrapper);
-        Long total = (long) messages.size();
-
-        int offset = pageRequest.getOffset().intValue();
-        messages = messages.stream().skip(offset).limit(pageRequest.getPageSize()).collect(Collectors.toList());
-
-        List<Map<String, Object>> result = messages.stream().map(m -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", m.getId().toString());
-            map.put("title", m.getTitle());
-            map.put("content", m.getContent());
-            map.put("type", m.getType());
-            map.put("isRead", m.getIsRead());
-            map.put("createdAt", m.getCreatedAt().toString());
-            return map;
-        }).collect(Collectors.toList());
-
-        return Result.success(new PageResult<>(result, total, pageRequest.getPage(), pageRequest.getPageSize()));
-    }
-
-    @Transactional
-    public Result<?> markMessageRead(Long userId, Long messageId) {
-        Message message = messageMapper.selectById(messageId);
-        if (message != null && message.getUserId().equals(userId)) {
-            message.setIsRead(1);
-            messageMapper.updateById(message);
-        }
-        return Result.success();
-    }
-
     // ============ 私有方法 ============
-    private OrderDTO toOrderDTO(Order o) {
-        OrderDTO dto = new OrderDTO();
-        dto.setId(o.getId().toString());
-        dto.setOrderNo(o.getOrderNo());
-        dto.setUserId(o.getUserId().toString());
-        dto.setShopId(o.getShopId().toString());
-        dto.setProductId(o.getProductId().toString());
-        dto.setPoints(o.getPoints());
-        dto.setTotalPoints(o.getPoints() * o.getQuantity());
-        dto.setQuantity(o.getQuantity());
-        dto.setStatus(o.getStatus());
-        dto.setCreatedAt(o.getCreatedAt() != null ? o.getCreatedAt().toString() : null);
-        dto.setCompletedAt(o.getCompletedAt() != null ? o.getCompletedAt().toString() : null);
-        dto.setClosedAt(o.getClosedAt() != null ? o.getClosedAt().toString() : null);
-        dto.setCloseReason(o.getCloseReason());
-        dto.setReceiverName(o.getReceiverName());
-        dto.setReceiverPhone(o.getReceiverPhone());
-        dto.setReceiverProvince(o.getReceiverProvince());
-        dto.setReceiverCity(o.getReceiverCity());
-        dto.setReceiverDistrict(o.getReceiverDistrict());
-        dto.setReceiverDetail(o.getReceiverDetail());
-        dto.setExpressCompany(o.getExpressCompany());
-        dto.setExpressNo(o.getExpressNo());
-        dto.setDeliveryContent(o.getDeliveryContent());
-
-        Product product = productMapper.selectById(o.getProductId());
-        if (product != null) {
-            dto.setProductName(product.getName());
-            dto.setProductImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
+    private Order getOrderByOperatorId(Long operatorId, Long orderId) {
+        var shopResult = shopService.getMyShop(operatorId);
+        if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
+            return null;
         }
-        return dto;
+        Map<?, ?> shopData = (Map<?, ?>) shopResult.getData();
+        if (!Boolean.TRUE.equals(shopData.get("hasShop"))) {
+            return null;
+        }
+        Order order = orderMapper.selectById(orderId);
+        if (order == null || !order.getShopId().toString().equals(shopData.get("id").toString())) {
+            return null;
+        }
+        return order;
     }
 
     private void refundPoints(Order order) {
@@ -555,14 +487,15 @@ public class UserService {
                 .orderByDesc(Points::getCreatedAt).last("LIMIT 1"));
         int currentBalance = latest != null ? latest.getBalance() : 0;
         int refundAmount = order.getPoints() * order.getQuantity();
+        int newBalance = currentBalance + refundAmount;
 
         Points points = new Points();
         points.setId(SnowflakeIdUtil.nextId());
         points.setUserId(order.getUserId());
         points.setAmount(refundAmount);
-        points.setBalance(currentBalance + refundAmount);
+        points.setBalance(newBalance);
         points.setType(PointsType.REFUND.getCode());
-        points.setRemark("订单取消退款：" + order.getOrderNo());
+        points.setRemark("订单关闭退款：" + order.getOrderNo());
         pointsMapper.insert(points);
     }
 
@@ -597,14 +530,36 @@ public class UserService {
         return "P" + System.currentTimeMillis() + String.format("%04d", new Random().nextInt(10000));
     }
 
-    private String getPointsTypeDesc(Integer type) {
-        if (type == null) return "";
-        switch (type) {
-            case 1: return "发放";
-            case 2: return "扣除";
-            case 3: return "兑换";
-            case 4: return "退款";
-            default: return "";
+    OrderDTO toOrderDTO(Order o) {
+        OrderDTO dto = new OrderDTO();
+        dto.setId(o.getId().toString());
+        dto.setOrderNo(o.getOrderNo());
+        dto.setUserId(o.getUserId().toString());
+        dto.setShopId(o.getShopId().toString());
+        dto.setProductId(o.getProductId().toString());
+        dto.setPoints(o.getPoints());
+        dto.setTotalPoints(o.getPoints() * o.getQuantity());
+        dto.setQuantity(o.getQuantity());
+        dto.setStatus(o.getStatus());
+        dto.setCreatedAt(o.getCreatedAt() != null ? o.getCreatedAt().toString() : null);
+        dto.setCompletedAt(o.getCompletedAt() != null ? o.getCompletedAt().toString() : null);
+        dto.setClosedAt(o.getClosedAt() != null ? o.getClosedAt().toString() : null);
+        dto.setCloseReason(o.getCloseReason());
+        dto.setReceiverName(o.getReceiverName());
+        dto.setReceiverPhone(o.getReceiverPhone());
+        dto.setReceiverProvince(o.getReceiverProvince());
+        dto.setReceiverCity(o.getReceiverCity());
+        dto.setReceiverDistrict(o.getReceiverDistrict());
+        dto.setReceiverDetail(o.getReceiverDetail());
+        dto.setExpressCompany(o.getExpressCompany());
+        dto.setExpressNo(o.getExpressNo());
+        dto.setDeliveryContent(o.getDeliveryContent());
+
+        Product product = productMapper.selectById(o.getProductId());
+        if (product != null) {
+            dto.setProductName(product.getName());
+            dto.setProductImage(product.getMainImage() != null ? product.getMainImage().toString() : null);
         }
+        return dto;
     }
 }

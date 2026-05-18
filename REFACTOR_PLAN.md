@@ -28,7 +28,7 @@ com.sh.aishop
 | 阶段0 | 环境准备 | 已完成 | 2026-05-18 | 2026-05-18 | 删除旧测试、创建目录结构 |
 | 阶段0.5 | 单元测试准备 | 已完成 | 2026-05-18 | 2026-05-18 | 编写AuthServiceTest及必要的DTO/Mapper |
 | 阶段1 | 后端实体/枚举迁移 | 已完成 | 2026-05-18 | 2026-05-18 | entity/enums移到common包 |
-| 阶段2 | 后端Service拆分迁移 | 未开始 | - | - | OperatorService/UserService拆分 |
+| 阶段2 | 后端Service拆分迁移 | 已完成 | 2026-05-18 | 2026-05-18 | OperatorService拆分为ShopService等6个Service | OperatorService/UserService拆分 |
 | 阶段3 | 后端Controller迁移 | 未开始 | - | - | 按模块重组Controller |
 | 阶段4 | 后端Mapper/DTO迁移 | 未开始 | - | - | 按模块重组 |
 | 阶段5 | 后端验证 | 未开始 | - | - | 启动测试、Docker验证 |

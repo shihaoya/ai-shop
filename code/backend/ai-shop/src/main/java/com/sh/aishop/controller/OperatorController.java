@@ -4,7 +4,12 @@ import com.alibaba.excel.EasyExcel;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.dto.PageRequest;
 import com.sh.aishop.dto.UserImportDTO;
-import com.sh.aishop.service.OperatorService;
+import com.sh.aishop.shop.service.ShopService;
+import com.sh.aishop.product.service.ProductService;
+import com.sh.aishop.order.service.OrderService;
+import com.sh.aishop.user.service.PointsService;
+import com.sh.aishop.user.service.UserService;
+import com.sh.aishop.message.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +33,22 @@ import java.util.Map;
 @RequestMapping("/api/operator")
 public class OperatorController {
     @Autowired
-    private OperatorService operatorService;
+    private ShopService shopService;
+
+    @Autowired
+    private ProductService productService;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private PointsService pointsService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Operation(summary = "我的店铺", description = "获取当前运营人员关联的店铺信息")
     @ApiResponses(value = {
@@ -39,7 +59,7 @@ public class OperatorController {
     @GetMapping("/shop")
     public Result<?> getMyShop(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getMyShop(userId);
+        return shopService.getMyShop(userId);
     }
 
     @Operation(summary = "申请店铺", description = "运营人员申请开通店铺")
@@ -49,31 +69,31 @@ public class OperatorController {
         @ApiResponse(responseCode = "409", description = "已存在店铺")
     })
     @PostMapping("/shop")
-    public Result<?> applyShop(HttpServletRequest request, 
+    public Result<?> applyShop(HttpServletRequest request,
                                @Parameter(description = "店铺参数：name(店铺名称), description(店铺描述)") @RequestBody Map<String, String> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.applyShop(userId, params.get("name"), params.get("description"));
+        return shopService.applyShop(userId, params.get("name"), params.get("description"));
     }
 
     @Operation(summary = "修改营业状态", description = "设置店铺是否营业，歇业时用户无法下单")
     @PutMapping("/shop/status")
     public Result<?> changeShopStatus(HttpServletRequest request, @RequestParam Integer isActive) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.changeShopStatus(userId, isActive);
+        return shopService.changeShopStatus(userId, isActive);
     }
 
     @Operation(summary = "分类列表", description = "获取店铺的商品分类")
     @GetMapping("/categories")
     public Result<?> getCategories(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getCategories(userId);
+        return productService.getCategories(userId);
     }
 
     @Operation(summary = "创建分类", description = "新增商品分类")
     @PostMapping("/categories")
     public Result<?> createCategory(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.createCategory(userId,
+        return productService.createCategory(userId,
                 params.get("name").toString(),
                 params.get("sort") != null ? Integer.valueOf(params.get("sort").toString()) : null);
     }
@@ -82,7 +102,7 @@ public class OperatorController {
     @PutMapping("/categories/{id}")
     public Result<?> updateCategory(@PathVariable("id") Long id, HttpServletRequest request, @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.updateCategory(id, userId,
+        return productService.updateCategory(id, userId,
                 params.get("name") != null ? params.get("name").toString() : null,
                 params.get("sort") != null ? Integer.valueOf(params.get("sort").toString()) : null);
     }
@@ -91,7 +111,7 @@ public class OperatorController {
     @DeleteMapping("/categories/{id}")
     public Result<?> deleteCategory(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.deleteCategory(id, userId);
+        return productService.deleteCategory(id, userId);
     }
 
     @Operation(summary = "商品列表", description = "获取当前店铺的商品列表")
@@ -100,10 +120,10 @@ public class OperatorController {
         @ApiResponse(responseCode = "401", description = "未授权")
     })
     @GetMapping("/products")
-    public Result<?> getProducts(HttpServletRequest request, 
+    public Result<?> getProducts(HttpServletRequest request,
                                  @Parameter(description = "分页参数") PageRequest pageRequest) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getProducts(userId, pageRequest);
+        return productService.getProducts(userId, pageRequest);
     }
 
     @Operation(summary = "创建商品", description = "新增商品上架")
@@ -113,31 +133,31 @@ public class OperatorController {
         @ApiResponse(responseCode = "401", description = "未授权")
     })
     @PostMapping("/products")
-    public Result<?> createProduct(HttpServletRequest request, 
+    public Result<?> createProduct(HttpServletRequest request,
                                    @Parameter(description = "商品信息：name, categoryId, type, price, stock等") @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.createProduct(userId, params);
+        return productService.createProduct(userId, params);
     }
 
     @Operation(summary = "商品详情", description = "获取商品详细信息")
     @GetMapping("/products/{id}")
     public Result<?> getProduct(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getProduct(userId, id);
+        return productService.getProduct(userId, id);
     }
 
     @Operation(summary = "更新商品", description = "修改商品信息")
     @PutMapping("/products/{id}")
     public Result<?> updateProduct(@PathVariable("id") Long id, HttpServletRequest request, @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.updateProduct(userId, id, params);
+        return productService.updateProduct(userId, id, params);
     }
 
     @Operation(summary = "删除商品", description = "删除商品")
     @DeleteMapping("/products/{id}")
     public Result<?> deleteProduct(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.deleteProduct(userId, id);
+        return productService.deleteProduct(userId, id);
     }
 
     @Operation(summary = "订单列表", description = "获取店铺的订单列表，可按状态筛选")
@@ -149,7 +169,7 @@ public class OperatorController {
     public Result<?> getOrders(HttpServletRequest request, PageRequest pageRequest,
                                @Parameter(description = "订单状态：1已下单 2已确认 3已发货 4已完成 5已关闭", example = "1") @RequestParam(required = false) Integer status) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getOrders(userId, pageRequest, status);
+        return orderService.getShopOrders(userId, pageRequest, status);
     }
 
     @Operation(summary = "确认订单", description = "运营人员确认用户订单")
@@ -159,10 +179,10 @@ public class OperatorController {
     })
     @PutMapping("/orders/{id}/confirm")
     public Result<?> confirmOrder(
-            @Parameter(description = "订单ID", required = true) @PathVariable("id") Long id, 
+            @Parameter(description = "订单ID", required = true) @PathVariable("id") Long id,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.confirmOrder(userId, id);
+        return orderService.confirmOrder(userId, id);
     }
 
     @Operation(summary = "发货", description = "运营人员发货，填入物流信息")
@@ -172,10 +192,10 @@ public class OperatorController {
         @ApiResponse(responseCode = "404", description = "订单不存在")
     })
     @PutMapping("/orders/{id}/ship")
-    public Result<?> shipOrder(@PathVariable("id") Long id, HttpServletRequest request, 
+    public Result<?> shipOrder(@PathVariable("id") Long id, HttpServletRequest request,
                                @Parameter(description = "物流信息：trackingNo(运单号), carrier(物流公司)") @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.shipOrder(userId, id, params);
+        return orderService.shipOrder(userId, id, params);
     }
 
     @Operation(summary = "关闭订单", description = "运营人员关闭订单，可填写原因")
@@ -183,21 +203,21 @@ public class OperatorController {
     public Result<?> closeOrder(@PathVariable("id") Long id, HttpServletRequest request,
                                 @Parameter(description = "关闭原因") @RequestParam(required = false) String reason) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.closeOrder(userId, id, reason);
+        return orderService.closeShopOrder(userId, id, reason);
     }
 
     @Operation(summary = "完成订单", description = "运营人员完成订单（最终状态）")
     @PutMapping("/orders/{id}/complete")
     public Result<?> completeOrder(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.completeOrder(userId, id);
+        return orderService.completeShopOrder(userId, id);
     }
 
     @Operation(summary = "用户列表", description = "获取当前店铺下的用户列表")
     @GetMapping("/users")
     public Result<?> getUsers(HttpServletRequest request, PageRequest pageRequest) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getUsers(userId, pageRequest);
+        return pointsService.getUsers(userId, pageRequest);
     }
 
     @Operation(summary = "调整积分", description = "运营人员为用户增加或扣除积分")
@@ -210,7 +230,7 @@ public class OperatorController {
     public Result<?> adjustPoints(@PathVariable("id") Long id, HttpServletRequest request,
                                   @Parameter(description = "积分参数：amount(积分数量，正数增加负数扣除), remark(备注)") @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.adjustPoints(userId, id,
+        return pointsService.adjustPoints(userId, id,
                 Integer.valueOf(params.get("amount").toString()),
                 params.get("remark") != null ? params.get("remark").toString() : null);
     }
@@ -219,49 +239,49 @@ public class OperatorController {
     @GetMapping("/users/{id}/points/log")
     public Result<?> getPointsLog(@PathVariable("id") Long id, HttpServletRequest request, PageRequest pageRequest) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getPointsLog(userId, id, pageRequest);
+        return pointsService.getPointsLog(userId, id, pageRequest);
     }
 
     @Operation(summary = "审批用户", description = "审批普通用户注册申请")
     @PutMapping("/users/{id}/approve")
     public Result<?> approveUser(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.approveUser(userId, id);
+        return pointsService.approveUser(userId, id);
     }
 
     @Operation(summary = "拒绝用户", description = "拒绝普通用户注册申请（软删除）")
     @PutMapping("/users/{id}/reject")
     public Result<?> rejectUser(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.rejectUser(userId, id);
+        return pointsService.rejectUser(userId, id);
     }
 
     @Operation(summary = "我的邀请码", description = "获取当前运营人员的邀请码")
     @GetMapping("/invite-code")
     public Result<?> getInviteCode(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getInviteCode(userId);
+        return userService.getInviteCode(userId);
     }
 
     @Operation(summary = "生成邀请码", description = "为当前运营人员生成新的邀请码")
     @PostMapping("/invite-code")
     public Result<?> createInviteCode(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.createInviteCode(userId);
+        return userService.createInviteCode(userId);
     }
 
     @Operation(summary = "创建用户", description = "运营人员手动创建用户账号")
     @PostMapping("/users/create")
     public Result<?> createUser(HttpServletRequest request, @RequestBody Map<String, String> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.createUser(userId, params.get("username"), params.get("nickname"), params.get("password"));
+        return userService.createUser(userId, params.get("username"), params.get("nickname"), params.get("password"));
     }
 
     @Operation(summary = "重置用户密码", description = "强制重置用户密码为新生成的随机密码")
     @PutMapping("/users/{id}/password/reset")
     public Result<?> resetUserPassword(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.resetUserPassword(userId, id);
+        return userService.resetUserPassword(userId, id);
     }
 
     @Operation(summary = "下载导入模板", description = "下载 Excel 导入用户模板")
@@ -286,20 +306,20 @@ public class OperatorController {
     @PostMapping("/users/import")
     public Result<?> importUsers(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.importUsers(userId, file);
+        return userService.importUsers(userId, file);
     }
 
     @Operation(summary = "消息列表", description = "获取系统消息列表")
     @GetMapping("/messages")
     public Result<?> getMessages(HttpServletRequest request, PageRequest pageRequest) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.getMessages(userId, pageRequest);
+        return messageService.getMessages(userId, pageRequest);
     }
 
     @Operation(summary = "标记已读", description = "将消息标记为已读")
     @PutMapping("/messages/{id}/read")
     public Result<?> markMessageRead(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return operatorService.markMessageRead(userId, id);
+        return messageService.markMessageRead(userId, id);
     }
 }

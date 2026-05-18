@@ -1,10 +1,10 @@
 package com.sh.aishop.controller;
 
 import com.sh.aishop.common.Result;
-import com.sh.aishop.dto.LoginRequest;
-import com.sh.aishop.dto.PasswordRequest;
-import com.sh.aishop.dto.RegisterRequest;
-import com.sh.aishop.service.AuthService;
+import com.sh.aishop.auth.dto.LoginRequest;
+import com.sh.aishop.auth.dto.PasswordRequest;
+import com.sh.aishop.auth.dto.RegisterRequest;
+import com.sh.aishop.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,8 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 import java.util.Map;
 

@@ -2,7 +2,7 @@ package com.sh.aishop.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.entity.FileRecord;
-import com.sh.aishop.service.FileService;
+import com.sh.aishop.file.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "文件管理", description = "文件上传、删除、访问")
 @RestController
@@ -44,7 +43,6 @@ public class FileController {
             HttpServletRequest request,
             @RequestParam("file") MultipartFile file) throws IOException {
         Long userId = (Long) request.getAttribute("userId");
-        // businessType固定为product，businessId由前端传入或为空
         return fileService.uploadFile(file, "product", null);
     }
 
