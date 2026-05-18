@@ -2,9 +2,9 @@ package com.sh.aishop.message.service;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.entity.Message;
-import com.sh.aishop.dto.PageRequest;
-import com.sh.aishop.dto.PageResult;
-import com.sh.aishop.mapper.MessageMapper;
+import com.sh.aishop.common.dto.PageRequest;
+import com.sh.aishop.common.dto.PageResult;
+import com.sh.aishop.message.mapper.MessageMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

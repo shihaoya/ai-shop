@@ -2,7 +2,7 @@ package com.sh.aishop.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sh.aishop.common.entity.User;
-import com.sh.aishop.mapper.UserMapper;
+import com.sh.aishop.user.mapper.UserMapper;
 import com.sh.aishop.util.SecurityUtil;
 import com.sh.aishop.util.SnowflakeIdUtil;
 import org.springframework.beans.factory.annotation.Autowired;

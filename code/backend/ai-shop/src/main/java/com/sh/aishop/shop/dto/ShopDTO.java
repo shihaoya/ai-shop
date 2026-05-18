@@ -1,4 +1,4 @@
-package com.sh.aishop.dto;
+package com.sh.aishop.shop.dto;
 
 public class ShopDTO {
     private String id;

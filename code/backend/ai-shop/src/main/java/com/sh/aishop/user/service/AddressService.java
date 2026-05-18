@@ -3,7 +3,7 @@ package com.sh.aishop.user.service;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
 import com.sh.aishop.common.entity.Address;
-import com.sh.aishop.mapper.AddressMapper;
+import com.sh.aishop.user.mapper.AddressMapper;
 import com.sh.aishop.util.SnowflakeIdUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;

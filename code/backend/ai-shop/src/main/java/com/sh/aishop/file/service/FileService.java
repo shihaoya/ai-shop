@@ -5,7 +5,7 @@ import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
 import com.sh.aishop.common.entity.FileRecord;
 import com.sh.aishop.config.UploadConfig;
-import com.sh.aishop.mapper.FileRecordMapper;
+import com.sh.aishop.file.mapper.FileRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

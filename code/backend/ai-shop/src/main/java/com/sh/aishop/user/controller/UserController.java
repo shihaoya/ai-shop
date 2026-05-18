@@ -1,6 +1,7 @@
 package com.sh.aishop.user.controller;
 
 import com.sh.aishop.common.Result;
+import com.sh.aishop.common.dto.PageRequest;
 import com.sh.aishop.user.service.PointsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,7 +29,7 @@ public class UserController {
     @Operation(summary = "积分记录", description = "获取积分变动明细列表")
     @GetMapping("/points/log")
     public Result<?> getPointsLog(HttpServletRequest request,
-                                  @Parameter(description = "分页参数") com.sh.aishop.dto.PageRequest pageRequest) {
+                                  @Parameter(description = "分页参数") PageRequest pageRequest) {
         Long userId = (Long) request.getAttribute("userId");
         return pointsService.getPointsLog(userId, pageRequest);
     }

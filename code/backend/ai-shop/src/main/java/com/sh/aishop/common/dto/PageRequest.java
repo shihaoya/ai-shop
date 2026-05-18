@@ -1,4 +1,4 @@
-package com.sh.aishop.dto;
+package com.sh.aishop.common.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

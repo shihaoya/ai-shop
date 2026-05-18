@@ -5,7 +5,7 @@ import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
 import com.sh.aishop.common.entity.Shop;
 import com.sh.aishop.common.enums.ShopStatus;
-import com.sh.aishop.mapper.ShopMapper;
+import com.sh.aishop.shop.mapper.ShopMapper;
 import com.sh.aishop.util.SnowflakeIdUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

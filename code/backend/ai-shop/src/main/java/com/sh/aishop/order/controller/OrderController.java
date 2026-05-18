@@ -1,7 +1,7 @@
 package com.sh.aishop.order.controller;
 
 import com.sh.aishop.common.Result;
-import com.sh.aishop.dto.PageRequest;
+import com.sh.aishop.common.dto.PageRequest;
 import com.sh.aishop.order.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

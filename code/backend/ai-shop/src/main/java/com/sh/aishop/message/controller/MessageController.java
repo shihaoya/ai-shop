@@ -1,7 +1,7 @@
 package com.sh.aishop.message.controller;
 
 import com.sh.aishop.common.Result;
-import com.sh.aishop.dto.PageRequest;
+import com.sh.aishop.common.dto.PageRequest;
 import com.sh.aishop.message.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

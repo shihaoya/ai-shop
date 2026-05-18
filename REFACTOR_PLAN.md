@@ -30,7 +30,7 @@ com.sh.aishop
 | 阶段1 | 后端实体/枚举迁移 | 已完成 | 2026-05-18 | 2026-05-18 | entity/enums移到common包 |
 | 阶段2 | 后端Service拆分迁移 | 已完成 | 2026-05-18 | 2026-05-18 | OperatorService拆分为ShopService等6个Service | OperatorService/UserService拆分 |
 | 阶段3 | 后端Controller迁移 | 已完成 | 2026-05-18 | 2026-05-18 | 按模块重组Controller，5个拆分为12个 |
-| 阶段4 | 后端Mapper/DTO迁移 | 未开始 | - | - | 按模块重组 |
+| 阶段4 | 后端Mapper/DTO迁移 | 已完成 | 2026-05-18 | 2026-05-18 | 按模块重组mapper/dto，所有import已更新 |
 | 阶段5 | 后端验证 | 未开始 | - | - | 启动测试、Docker验证 |
 | 阶段6 | 前端API重组 | 未开始 | - | - | 按模块重组api/ |
 | 阶段7 | 前端Views重组 | 未开始 | - | - | 按模块重组views/ |
@@ -38,7 +38,7 @@ com.sh.aishop
 
 ---
 
-## 当前阶段：阶段3 - 已完成
+## 当前阶段：阶段4 - 已完成
 
 ### 任务清单
 - [ ] 删除旧单元测试文件

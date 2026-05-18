@@ -2,8 +2,8 @@ package com.sh.aishop.user.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.sh.aishop.common.Result;
-import com.sh.aishop.dto.PageRequest;
-import com.sh.aishop.dto.UserImportDTO;
+import com.sh.aishop.common.dto.PageRequest;
+import com.sh.aishop.user.dto.UserImportDTO;
 import com.sh.aishop.user.service.PointsService;
 import com.sh.aishop.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

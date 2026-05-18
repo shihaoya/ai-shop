@@ -1,4 +1,4 @@
-package com.sh.aishop.mapper;
+package com.sh.aishop.message.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.sh.aishop.common.entity.Message;

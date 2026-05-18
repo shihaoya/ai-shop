@@ -1,4 +1,4 @@
-package com.sh.aishop.dto;
+package com.sh.aishop.user.dto;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
