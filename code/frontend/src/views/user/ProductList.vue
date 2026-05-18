@@ -132,8 +132,6 @@ async function loadProducts() {
       id: String(p.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e?.message || '加载商品失败')
   } finally {
     loading.value = false
   }
@@ -235,14 +233,6 @@ async function handleRedeem() {
 
   redeemLoading.value = true
   try {
-    // 实物商品传地址信息，虚拟商品不传addressId
-    const orderData: any = {
-      productId: selectedProduct.value.id,
-      quantity: redeemQuantity.value,
-    }
-    if (isPhysicalProduct.value) {
-      orderData.addressInfo = redeemAddress.value
-    }
     await createOrder(
       selectedProduct.value.id,
       redeemQuantity.value,
@@ -250,16 +240,13 @@ async function handleRedeem() {
     )
     message.success('兑换成功！')
     redeemVisible.value = false
-    // 刷新积分
-    await loadPoints()
-    // 刷新地址列表
-    await loadAddresses()
-    loadProducts()
-  } catch (e: any) {
-    message.error(e?.message || '兑换失败')
   } finally {
     redeemLoading.value = false
   }
+  // 刷新积分、地址和商品列表
+  loadPoints()
+  loadAddresses()
+  loadProducts()
 }
 
 function getStatusTag(status: number) {

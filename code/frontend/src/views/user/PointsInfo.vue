@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getPoints, getPointsLog } from '@/api/user'
-import { message } from 'ant-design-vue'
 import type { PointsLog } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'
 
@@ -22,34 +21,23 @@ const pagination = ref({ page: 1, size: 10, total: 0 })
 
 async function loadPoints() {
   pointsLoading.value = true
-  try {
-    const res = await getPoints()
-    currentPoints.value = res.points
-  } catch (e) {
-    throw e
-  } finally {
-    pointsLoading.value = false
-  }
+  const res = await getPoints()
+  currentPoints.value = res.points
+  pointsLoading.value = false
 }
 
 async function loadPointsLog() {
   loading.value = true
-  try {
-    const res = await getPointsLog({
-      page: pagination.value.page,
-      size: pagination.value.size
-    })
-    pointsLog.value = res.list.map(log => ({
-      ...log,
-      id: String(log.id)
-    }))
-    pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e?.message || (e as Error)?.message || '获取积分记录失败')
-    throw e
-  } finally {
-    loading.value = false
-  }
+  const res = await getPointsLog({
+    page: pagination.value.page,
+    size: pagination.value.size
+  })
+  pointsLog.value = res.list.map(log => ({
+    ...log,
+    id: String(log.id)
+  }))
+  pagination.value.total = res.total
+  loading.value = false
 }
 
 function handlePageChange(page: number) {

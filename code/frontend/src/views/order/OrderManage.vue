@@ -44,8 +44,6 @@ async function loadOrders() {
       id: String(o.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e?.message || '加载订单失败')
   } finally {
     loading.value = false
   }
@@ -104,14 +102,9 @@ function handleConfirm(order: Order) {
     okText: '确认',
     cancelText: '取消',
     async onOk() {
-      try {
-        await confirmOrder(order.id)
-        message.success('订单已确认')
-        loadOrders()
-      } catch (e: any) {
-        message.error(e?.message || '操作失败')
-        throw e
-      }
+      await confirmOrder(order.id)
+      message.success('订单已确认')
+      loadOrders()
     },
   })
 }
@@ -129,14 +122,10 @@ function closeShipModal() {
 
 // 发货
 async function handleShipOrder(orderId: string, trackingNo: string, carrier: string) {
-  try {
-    await shipOrder(orderId, trackingNo, carrier)
-    message.success('已发货')
-    closeShipModal()
-    loadOrders()
-  } catch (e: any) {
-    message.error(e?.message || '发货失败')
-  }
+  await shipOrder(orderId, trackingNo, carrier)
+  message.success('已发货')
+  closeShipModal()
+  loadOrders()
 }
 
 // 完成订单
@@ -147,14 +136,9 @@ function handleComplete(order: Order) {
     okText: '确认',
     cancelText: '取消',
     async onOk() {
-      try {
-        await completeOrder(order.id)
-        message.success('订单已完成')
-        loadOrders()
-      } catch (e: any) {
-        message.error(e?.message || '操作失败')
-        throw e
-      }
+      await completeOrder(order.id)
+      message.success('订单已完成')
+      loadOrders()
     },
   })
 }
@@ -167,15 +151,10 @@ function handleClose(order: Order) {
     okText: '确认',
     cancelText: '取消',
     async onOk() {
-      try {
-        await closeOrder(order.id, '店铺关闭订单')
-        message.success('订单已关闭，积分已退回用户')
-        closeDetail()
-        loadOrders()
-      } catch (e: any) {
-        message.error(e?.message || '操作失败')
-        throw e
-      }
+      await closeOrder(order.id, '店铺关闭订单')
+      message.success('订单已关闭，积分已退回用户')
+      closeDetail()
+      loadOrders()
     },
   })
 }

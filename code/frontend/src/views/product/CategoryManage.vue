@@ -27,8 +27,6 @@ async function loadCategories() {
       ...c,
       id: String(c.id)
     }))
-  } catch (e: any) {
-    message.error(e?.message || '加载分类失败')
   } finally {
     loading.value = false
   }
@@ -61,21 +59,16 @@ async function handleSubmit() {
     return
   }
   submitLoading.value = true
-  try {
-    if (editingCategory.value) {
-      await updateCategory(editingCategory.value.id, formState.value.name, formState.value.sort)
-      message.success('分类更新成功')
-    } else {
-      await createCategory(formState.value.name, formState.value.sort)
-      message.success('分类创建成功')
-    }
-    modalVisible.value = false
-    loadCategories()
-  } catch (e: any) {
-    message.error(e?.message || '操作失败')
-  } finally {
-    submitLoading.value = false
+  if (editingCategory.value) {
+    await updateCategory(editingCategory.value.id, formState.value.name, formState.value.sort)
+    message.success('分类更新成功')
+  } else {
+    await createCategory(formState.value.name, formState.value.sort)
+    message.success('分类创建成功')
   }
+  submitLoading.value = false
+  modalVisible.value = false
+  loadCategories()
 }
 
 function handleDelete(category: Category) {
@@ -86,13 +79,9 @@ function handleDelete(category: Category) {
     okType: 'danger',
     cancelText: '取消',
     onOk: async () => {
-      try {
-        await deleteCategory(category.id)
-        message.success('删除成功')
-        loadCategories()
-      } catch (e: any) {
-        message.error(e?.message || '删除失败')
-      }
+      await deleteCategory(category.id)
+      message.success('删除成功')
+      loadCategories()
     }
   })
 }

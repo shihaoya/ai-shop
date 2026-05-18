@@ -40,8 +40,6 @@ async function loadUsers() {
       id: String(u.id)
     }))
     pagination.value.total = res.total
-  } catch (e) {
-    throw e
   } finally {
     loading.value = false
   }

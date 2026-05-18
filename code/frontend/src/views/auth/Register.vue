@@ -31,21 +31,16 @@ async function handleRegister() {
   }
 
   loading.value = true
-  try {
-    await authApi.register({
-      username: form.value.username,
-      nickname: form.value.nickname,
-      password: form.value.password,
-      confirmPassword: form.value.confirmPassword,
-      inviteCode: form.value.inviteCode,
-    })
-    message.success('注册成功，请等待审核')
-    router.push('/login')
-  } catch (e: any) {
-    message.error(e?.message || '注册失败')
-  } finally {
-    loading.value = false
-  }
+  await authApi.register({
+    username: form.value.username,
+    nickname: form.value.nickname,
+    password: form.value.password,
+    confirmPassword: form.value.confirmPassword,
+    inviteCode: form.value.inviteCode,
+  })
+  message.success('注册成功，请等待审核')
+  loading.value = false
+  router.push('/login')
 }
 </script>
 

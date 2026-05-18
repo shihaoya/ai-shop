@@ -44,23 +44,16 @@ function openImportModal() {
 
 async function loadUsers() {
   loading.value = true
-  try {
-    const params: any = { page: pagination.value.page, size: pagination.value.size }
-    if (searchQuery.value) params.keyword = searchQuery.value
+  const params: any = { page: pagination.value.page, size: pagination.value.size }
+  if (searchQuery.value) params.keyword = searchQuery.value
 
-    const res = await getUsers(params)
-    users.value = res.list.map((u: UserInfo) => ({
-      ...u,
-      id: String(u.id)
-    }))
-    pagination.value.total = res.total
-  } catch (e: any) {
-    console.error('加载用户列表失败:', e)
-    message.error(e?.message || (e as Error)?.message || '加载失败')
-    throw e
-  } finally {
-    loading.value = false
-  }
+  const res = await getUsers(params)
+  users.value = res.list.map((u: UserInfo) => ({
+    ...u,
+    id: String(u.id)
+  }))
+  pagination.value.total = res.total
+  loading.value = false
 }
 
 function handleSearch() {
@@ -114,18 +107,11 @@ async function handleAdjustPoints() {
   }
 
   adjustLoading.value = true
-  try {
-    await adjustPoints(adjustForm.value.userId, adjustForm.value.amount, adjustForm.value.remark)
-    message.success('积分调整成功')
-    adjustModalVisible.value = false
-    loadUsers()
-  } catch (e: any) {
-    console.error('调整用户积分失败:', e)
-    message.error(e?.message || (e as Error)?.message || '调整失败')
-    throw e
-  } finally {
-    adjustLoading.value = false
-  }
+  await adjustPoints(adjustForm.value.userId, adjustForm.value.amount, adjustForm.value.remark)
+  message.success('积分调整成功')
+  adjustModalVisible.value = false
+  adjustLoading.value = false
+  loadUsers()
 }
 
 async function handleApprove(userId: string) {
@@ -176,16 +162,9 @@ async function openPointsLogModal(userId: string, username: string) {
   currentLogUser.value = username
   pointsLogVisible.value = true
   pointsLogLoading.value = true
-  try {
-    const res = await getPointsLog(userId, { page: 1, size: 100 })
-    pointsLogList.value = (res.list || []).map((item: PointsLog) => ({
-      ...item,
-    }))
-  } catch {
-    message.error('获取积分流水失败')
-  } finally {
-    pointsLogLoading.value = false
-  }
+  const res = await getPointsLog(userId, { page: 1, size: 100 })
+  pointsLogList.value = res.list || []
+  pointsLogLoading.value = false
 }
 
 async function handleResetPassword(userId: string, username: string) {
@@ -209,15 +188,10 @@ async function handleResetPassword(userId: string, username: string) {
 
   resetPwdForm.value = { userId, username, newPassword: '' }
   resetPwdLoading.value = true
-  try {
-    const res = await resetPassword(userId)
-    resetPwdForm.value.newPassword = res.password
-    resetPwdVisible.value = true
-  } catch (e: any) {
-    message.error(e?.message || (e as Error)?.message || '重置密码失败')
-  } finally {
-    resetPwdLoading.value = false
-  }
+  const res = await resetPassword(userId)
+  resetPwdForm.value.newPassword = res.password
+  resetPwdVisible.value = true
+  resetPwdLoading.value = false
 }
 
 function copyPassword() {

@@ -32,8 +32,6 @@ async function loadShops() {
       id: String(s.id)
     }))
     pagination.value.total = res.total
-  } catch (e) {
-    throw e
   } finally {
     loading.value = false
   }

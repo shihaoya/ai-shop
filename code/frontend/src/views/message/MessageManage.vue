@@ -2,7 +2,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { getMessages, markMessageRead } from '@/api/operator'
-import { message } from 'ant-design-vue'
 import type { Message } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'
 
@@ -32,25 +31,15 @@ async function loadMessages() {
       id: String(m.id)
     }))
     pagination.value.total = res.total
-  } catch (e) {
-    throw e
   } finally {
     loading.value = false
   }
 }
 
 async function handleMessageClick(msg: Message) {
-  // 点击未读消息，标记为已读
   if (msg.isRead === 0) {
-    try {
-      await markMessageRead(msg.id)
-      // 刷新列表
-      await loadMessages()
-    } catch (e: any) {
-      console.error('标记消息已读失败:', e)
-      message.error(e?.message || (e as Error)?.message || '标记已读失败')
-      throw e
-    }
+    await markMessageRead(msg.id)
+    await loadMessages()
   }
 }
 

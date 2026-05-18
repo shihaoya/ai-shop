@@ -55,16 +55,11 @@ async function loadInviteCode() {
 
 async function doGenerate() {
   generating.value = true
-  try {
-    const code = await getCreateInviteCodeApi()
-    inviteCode.value = code || ''
-    createdAt.value = new Date().toLocaleString('zh-CN')
-    message.success('邀请码已生成')
-  } catch {
-    message.error('生成失败')
-  } finally {
-    generating.value = false
-  }
+  const code = await getCreateInviteCodeApi()
+  inviteCode.value = code || ''
+  createdAt.value = new Date().toLocaleString('zh-CN')
+  message.success('邀请码已生成')
+  generating.value = false
 }
 
 async function handleGenerateInviteCode() {

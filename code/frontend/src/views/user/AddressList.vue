@@ -61,14 +61,9 @@ onMounted(() => {
 
 async function loadAddresses() {
   loading.value = true
-  try {
-    const res = await getAddresses()
-    addressList.value = res.map(toAddressItem)
-  } catch (e) {
-    throw e
-  } finally {
-    loading.value = false
-  }
+  const res = await getAddresses()
+  addressList.value = res.map(toAddressItem)
+  loading.value = false
 }
 
 function toAddressItem(addr: Address): Address {
@@ -135,31 +130,17 @@ async function handleSubmit() {
   }
 
   loading.value = true
-  try {
-    if (editingId.value) {
-      const res = await updateAddress(editingId.value, form.value)
-      if (res) {
-        message.success('更新成功')
-        showModal.value = false
-        loadAddresses()
-      } else {
-        message.error('更新失败')
-      }
-    } else {
-      const res = await createAddress(form.value)
-      if (res) {
-        message.success('创建成功')
-        showModal.value = false
-        loadAddresses()
-      } else {
-        message.error('创建失败')
-      }
-    }
-  } catch {
-    message.error('操作失败')
-  } finally {
-    loading.value = false
+  if (editingId.value) {
+    await updateAddress(editingId.value, form.value)
+    message.success('更新成功')
+    showModal.value = false
+  } else {
+    await createAddress(form.value)
+    message.success('创建成功')
+    showModal.value = false
   }
+  loading.value = false
+  loadAddresses()
 }
 
 function handleDelete(addr: Address) {
@@ -170,20 +151,11 @@ function handleDelete(addr: Address) {
     cancelText: '取消',
     async onOk() {
       loading.value = true
-      try {
-        const id = String(addr.id)
-        const res = await deleteAddress(id)
-        if (res) {
-          message.success('删除成功')
-          loadAddresses()
-        } else {
-          message.error('删除失败')
-        }
-      } catch {
-        message.error('删除失败')
-      } finally {
-        loading.value = false
-      }
+      const id = String(addr.id)
+      await deleteAddress(id)
+      message.success('删除成功')
+      loading.value = false
+      loadAddresses()
     },
   })
 }
@@ -191,16 +163,11 @@ function handleDelete(addr: Address) {
 async function handleSetDefault(addr: Address) {
   if (addr.isDefault === 1) return
   loading.value = true
-  try {
-    const id = String(addr.id)
-    await setDefaultAddress(id)
-    message.success('设置成功')
-    await loadAddresses()
-  } catch (e) {
-    message.error('设置默认地址失败')
-  } finally {
-    loading.value = false
-  }
+  const id = String(addr.id)
+  await setDefaultAddress(id)
+  message.success('设置成功')
+  loading.value = false
+  loadAddresses()
 }
 </script>
 

@@ -32,25 +32,15 @@ async function loadMessages() {
       id: String(m.id)
     }))
     pagination.value.total = res.total
-  } catch (e: any) {
-    message.error(e?.message || (e as Error)?.message || '加载失败')
-    throw e
   } finally {
     loading.value = false
   }
 }
 
 async function handleMessageClick(msg: Message) {
-  // 点击未读消息，标记为已读
   if (msg.isRead === 0) {
-    try {
-      await markMessageRead(msg.id)
-      // 刷新列表
-      await loadMessages()
-    } catch (e: any) {
-      message.error(e?.message || (e as Error)?.message || '标记已读失败')
-      throw e
-    }
+    await markMessageRead(msg.id)
+    await loadMessages()
   }
 }
 

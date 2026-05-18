@@ -24,32 +24,29 @@ request.interceptors.response.use(
     if (res.code !== 200) {
       // 认证令牌无效（1005）或用户不存在（1003）视为未登录，跳转登录页
       if (res.code === 1005 || res.code === 1003) {
-        // 避免在登录页触发循环 logout
         if (router.currentRoute.value.name !== 'Login') {
           const userStore = useUserStore()
           userStore.logout()
           router.push('/login')
           message.error('登录已过期，请重新登录')
         }
-      } else {
-        message.error(res.message || '请求失败')
       }
-      return Promise.reject(new Error(res.message))
+      return Promise.reject(new Error(res.message || '请求失败'))
     }
-    // 返回内部真实数据（解包装）
     return res.data
   },
   (error) => {
     if (error.response?.status === 401) {
-      // 避免在登录页触发循环 logout
       if (router.currentRoute.value.name !== 'Login') {
         const userStore = useUserStore()
         userStore.logout()
         router.push('/login')
         message.error('登录已过期，请重新登录')
       }
-    } else {
-      message.error(error.response?.data?.message || error.message || '网络异常')
+    } else if (error.response?.status >= 500) {
+      message.error('服务器异常')
+    } else if (error.message) {
+      message.error(error.message)
     }
     return Promise.reject(error)
   },

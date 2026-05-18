@@ -32,29 +32,24 @@ const shopStatus = computed(() => {
 
 async function loadMyShop() {
   loading.value = true
-  try {
-    const res: any = await getMyShop()
-    if (res && res.hasShop === false) {
-      shop.value = null
-      setHasShop(false, null)
-    } else if (res) {
-      shop.value = {
-        id: String(res.id),
-        name: res.name,
-        description: res.description,
-        status: res.status,
-        isActive: res.isActive,
-        createdAt: res.createdAt,
-      }
-      setHasShop(true, res.status ?? null)
-    } else {
-      shop.value = null
+  const res: any = await getMyShop()
+  if (res && res.hasShop === false) {
+    shop.value = null
+    setHasShop(false, null)
+  } else if (res) {
+    shop.value = {
+      id: String(res.id),
+      name: res.name,
+      description: res.description,
+      status: res.status,
+      isActive: res.isActive,
+      createdAt: res.createdAt,
     }
-  } catch (e) {
-    throw e
-  } finally {
-    loading.value = false
+    setHasShop(true, res.status ?? null)
+  } else {
+    shop.value = null
   }
+  loading.value = false
 }
 
 function openApplyModal() {
@@ -70,14 +65,12 @@ async function handleApply() {
   applyLoading.value = true
   try {
     await applyShop(applyForm.value.name.trim(), applyForm.value.description.trim())
-    message.success('申请已提交，请等待审核')
-    applyModalVisible.value = false
-    loadMyShop()
-  } catch (e) {
-    throw e
   } finally {
     applyLoading.value = false
   }
+  message.success('申请已提交，请等待审核')
+  applyModalVisible.value = false
+  loadMyShop()
 }
 
 function handleToggleStatus() {
@@ -91,15 +84,9 @@ function handleToggleStatus() {
     okText: '确定',
     cancelText: '取消',
     onOk: async () => {
-      try {
-        await changeShopStatus(newStatus)
-        message.success(`店铺已设置为${actionText}`)
-        loadMyShop()
-      } catch (e: any) {
-        console.error('切换营业状态失败:', e)
-        message.error(e?.message || (e as Error)?.message || '操作失败')
-        throw e
-      }
+      await changeShopStatus(newStatus)
+      message.success(`店铺已设置为${actionText}`)
+      loadMyShop()
     }
   })
 }

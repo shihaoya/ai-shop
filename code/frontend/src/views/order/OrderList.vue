@@ -50,22 +50,17 @@ const canComplete = computed(() => selectedOrder.value?.status === 3)
 
 async function loadOrders() {
   loading.value = true
-  try {
-    const res = await getOrders({
-      page: pagination.value.page,
-      size: pagination.value.size,
-      status: selectedStatus.value
-    })
-    orders.value = res.list.map(o => ({
-      ...o,
-      id: String(o.id)
-    }))
-    pagination.value.total = res.total
-  } catch (e) {
-    throw e
-  } finally {
-    loading.value = false
-  }
+  const res = await getOrders({
+    page: pagination.value.page,
+    size: pagination.value.size,
+    status: selectedStatus.value
+  })
+  orders.value = res.list.map(o => ({
+    ...o,
+    id: String(o.id)
+  }))
+  pagination.value.total = res.total
+  loading.value = false
 }
 
 function handleStatusChange(status: number | undefined) {
@@ -84,41 +79,27 @@ async function viewDetail(order: Order) {
   selectedOrder.value = null
   detailVisible.value = true
   detailLoading.value = true
-  try {
-    const res = await getOrder(order.id)
-    selectedOrder.value = { ...res, id: String(res.id) }
-  } catch {
-    message.error('获取订单详情失败')
-    detailVisible.value = false
-  } finally {
-    detailLoading.value = false
-  }
+  const res = await getOrder(order.id)
+  selectedOrder.value = { ...res, id: String(res.id) }
+  detailLoading.value = false
 }
 
 // 取消订单
 async function handleCancel() {
   if (!selectedOrder.value) return
-  try {
-    await closeOrder(selectedOrder.value.id)
-    message.success('订单已取消')
-    detailVisible.value = false
-    loadOrders()
-  } catch {
-    message.error('取消订单失败')
-  }
+  await closeOrder(selectedOrder.value.id)
+  message.success('订单已取消')
+  detailVisible.value = false
+  loadOrders()
 }
 
 // 确认收货
 async function handleComplete() {
   if (!selectedOrder.value) return
-  try {
-    await completeOrder(selectedOrder.value.id)
-    message.success('已确认收货')
-    detailVisible.value = false
-    loadOrders()
-  } catch {
-    message.error('确认收货失败')
-  }
+  await completeOrder(selectedOrder.value.id)
+  message.success('已确认收货')
+  detailVisible.value = false
+  loadOrders()
 }
 
 function getStatusTag(status: number) {
