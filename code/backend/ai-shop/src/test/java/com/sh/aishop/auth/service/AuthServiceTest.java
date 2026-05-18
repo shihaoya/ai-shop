@@ -1,27 +1,25 @@
-package com.sh.aishop.service;
+package com.sh.aishop.auth.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.ResultCode;
-import com.sh.aishop.dto.*;
-import com.sh.aishop.entity.*;
-import com.sh.aishop.entity.enums.*;
-import com.sh.aishop.mapper.*;
+import com.sh.aishop.auth.dto.*;
+import com.sh.aishop.common.entity.*;
+import com.sh.aishop.common.enums.*;
+import com.sh.aishop.auth.mapper.InviteCodeMapper;
+import com.sh.aishop.auth.mapper.UserMapper;
+import com.sh.aishop.user.mapper.PointsMapper;
 import com.sh.aishop.util.JwtUtil;
 import com.sh.aishop.util.SecurityUtil;
-import com.sh.aishop.util.SnowflakeIdUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,15 +49,12 @@ class AuthServiceTest {
     private ValueOperations<String, String> valueOperations;
 
     @InjectMocks
-    private AuthService authService;
+    private com.sh.aishop.auth.service.AuthService authService;
 
-    // 明文密码，用于 SecurityUtil 测试
     private static final String PLAIN_PASSWORD = "password123";
-    // BCrypt 编码后的密码
     private static String ENCODED_PASSWORD;
 
     static {
-        // 静态初始化块，在类加载时生成编码后的密码
         ENCODED_PASSWORD = SecurityUtil.encryptPassword(PLAIN_PASSWORD);
     }
 
@@ -92,21 +87,17 @@ class AuthServiceTest {
         @Test
         @DisplayName("登录成功 - 返回token和用户信息")
         void login_Success() {
-            // 准备测试数据
             User user = createTestUser(1L, "testuser", UserStatus.NORMAL.getCode(), RoleEnum.NORMAL_USER.getCode());
             LoginRequest request = new LoginRequest();
             request.setUsername("testuser");
             request.setPassword(PLAIN_PASSWORD);
 
-            // Mock 用户查询
             when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(user);
             when(jwtUtil.generateToken(eq(1L), eq("testuser"), eq(RoleEnum.NORMAL_USER.getCode())))
                     .thenReturn("mock-jwt-token");
 
-            // 执行登录
             Result<?> result = authService.login(request);
 
-            // 验证结果
             assertEquals(ResultCode.SUCCESS, result.getCode());
             assertNotNull(result.getData());
             assertTrue(result.getData() instanceof java.util.Map);
@@ -198,11 +189,11 @@ class AuthServiceTest {
             User creator = createTestUser(100L, "creator", UserStatus.NORMAL.getCode(), RoleEnum.ADMIN.getCode());
 
             when(inviteCodeMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(inviteCode);
-            when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(null); // 用户名不存在
+            when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(null);
             when(userMapper.selectById(100L)).thenReturn(creator);
             when(userMapper.insert(any(User.class))).thenAnswer(invocation -> {
                 User u = invocation.getArgument(0);
-                u.setId(999L); // 模拟 MyBatis-Plus insert 后回写 ID
+                u.setId(999L);
                 return 1;
             });
 
