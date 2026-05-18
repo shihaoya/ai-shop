@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { authApi } from '@/api/auth'
-import { userApi } from '@/api/user'
 import type { UserInfo, LoginParams } from '@/types/api'
 
 export const useUserStore = defineStore('user', () => {
@@ -53,8 +52,8 @@ export const useUserStore = defineStore('user', () => {
 
   async function fetchUserInfo() {
     try {
-      const res = await userApi.getUserInfo()
-      userInfo.value = res as any
+      const res = await authApi.getUserInfo()
+      userInfo.value = res
       localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo.value))
     } catch (error) {
       console.error('获取用户信息失败', error)

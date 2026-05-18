@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { authApi } from '@/api/auth'
-import { getPoints, getPointsLog, userApi } from '@/api/user'
+import { getPoints, getPointsLog } from '@/api/user'
 import { getInviteCode as adminGetInviteCode, createInviteCode as adminCreateInviteCode } from '@/api/admin'
 import { getInviteCode as operatorGetInviteCode, createInviteCode as operatorCreateInviteCode } from '@/api/operator'
 import { message, Modal } from 'ant-design-vue'
@@ -140,7 +140,7 @@ async function handleSaveNickname() {
   }
   editNicknameLoading.value = true
   try {
-    const res = await userApi.updateUserInfo({ nickname })
+    const res = await authApi.updateUserInfo({ nickname })
     userStore.setUserInfo(res as any)
     message.success('昵称修改成功')
     editNicknameVisible.value = false

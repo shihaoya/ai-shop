@@ -44,11 +44,11 @@
           v-for="size in pageSizeOptions"
           :key="size"
           class="size-option"
-          :class="{ active: Number(size) === internalPageSize }"
+          :class="{ active: size === internalPageSize }"
           @click="selectSize(size)"
         >
           <span>{{ size }}条/页</span>
-          <i v-if="Number(size) === internalPageSize" class="fas fa-check"></i>
+          <i v-if="size === internalPageSize" class="fas fa-check"></i>
         </div>
       </div>
     </div>
@@ -139,15 +139,14 @@ const visiblePages = computed(() => {
   return pages
 })
 
-function goTo(page: number | string) {
-  const numPage = typeof page === 'string' ? parseInt(page, 10) : page
-  if (numPage < 1 || numPage > totalPages.value || numPage === props.current) return
-  emit('update:current', numPage)
-  emit('change', numPage, props.pageSize)
+function goTo(page: number) {
+  if (page < 1 || page > totalPages.value || page === props.current) return
+  emit('update:current', page)
+  emit('change', page, props.pageSize)
 }
 
-function selectSize(size: string | number) {
-  const numSize = typeof size === 'string' ? Number(size) : size
+function selectSize(size: string) {
+  const numSize = Number(size)
   internalPageSize.value = numSize
   showSizeDropdown.value = false
   emit('update:pageSize', numSize)

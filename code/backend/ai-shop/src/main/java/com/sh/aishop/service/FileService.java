@@ -52,8 +52,8 @@ public class FileService {
     }
 
     @Transactional
-    public Result<?> deleteFile(String fileId) {
-        FileRecord file = fileRecordMapper.selectById(Long.parseLong(fileId));
+    public Result<?> deleteFile(Long fileId) {
+        FileRecord file = fileRecordMapper.selectById(fileId);
         if (file == null || file.getDeleted() == 1) {
             return Result.fail(ResultCode.DATA_NOT_FOUND, "文件不存在");
         }
@@ -65,9 +65,9 @@ public class FileService {
         return Result.success();
     }
 
-    public Result<FileRecord> getFile(String fileId) {
+    public Result<FileRecord> getFile(Long fileId) {
         FileRecord file = fileRecordMapper.selectOne(new LambdaQueryWrapper<FileRecord>()
-                .eq(FileRecord::getId, Long.parseLong(fileId))
+                .eq(FileRecord::getId, fileId)
                 .eq(FileRecord::getDeleted, 0));
         if (file == null) {
             return Result.fail(ResultCode.DATA_NOT_FOUND, "文件不存在");

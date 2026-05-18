@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { adjustPoints, getPointsLog, getUsers, downloadImportTemplate } from '@/api/operator'
-import { approveUser as adminApproveUser, rejectUser as adminRejectUser, resetPassword as adminResetPassword } from '@/api/admin'
+import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser, resetPassword, downloadImportTemplate } from '@/api/operator'
 import { useThemeStore } from '@/stores/theme'
 import type { UserInfo, PointsLog } from '@/types/api'
 import { PointsTypeText } from '@/types/enums'
@@ -141,7 +140,7 @@ async function handleApprove(userId: string) {
         onCancel: () => reject(new Error('cancel'))
       })
     })
-    await adminApproveUser(userId)
+    await approveUser(userId)
     message.success('已通过审核')
     loadUsers()
   } catch (e: any) {
@@ -163,7 +162,7 @@ async function handleReject(userId: string) {
         onCancel: () => reject(new Error('cancel'))
       })
     })
-    await adminRejectUser(userId)
+    await rejectUser(userId)
     message.success('已拒绝')
     loadUsers()
   } catch (e: any) {
@@ -211,7 +210,7 @@ async function handleResetPassword(userId: string, username: string) {
   resetPwdForm.value = { userId, username, newPassword: '' }
   resetPwdLoading.value = true
   try {
-    const res = await adminResetPassword(userId)
+    const res = await resetPassword(userId)
     resetPwdForm.value.newPassword = res.password
     resetPwdVisible.value = true
   } catch (e: any) {

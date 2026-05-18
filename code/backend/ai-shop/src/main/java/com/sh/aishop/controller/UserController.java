@@ -2,8 +2,6 @@ package com.sh.aishop.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.dto.PageRequest;
-import com.sh.aishop.service.AddressService;
-import com.sh.aishop.service.PointsService;
 import com.sh.aishop.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,143 +14,152 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Tag(name = "用户", description = "用户信息、地址、积分管理")
+@Tag(name = "用户端", description = "普通用户操作：商品浏览、订单管理、积分、地址")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 public class UserController {
     @Autowired
     private UserService userService;
-    @Autowired
-    private AddressService addressService;
-    @Autowired
-    private PointsService pointsService;
 
-    // ============ 用户信息 ============
-
-    @Operation(summary = "获取当前用户信息", description = "获取当前登录用户的基本信息")
+    @Operation(summary = "商品列表", description = "分页获取可购买的商品列表")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "获取成功"),
         @ApiResponse(responseCode = "401", description = "未授权")
     })
-    @GetMapping("/me")
-    public Result<?> getCurrentUser(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return userService.getUserInfo(userId);
+    @GetMapping("/products")
+    public Result<?> getProducts(
+            @Parameter(description = "分页参数") PageRequest pageRequest) {
+        return userService.getProducts(pageRequest);
     }
 
-    @Operation(summary = "更新用户信息", description = "修改当前用户信息（昵称等）")
+    @Operation(summary = "商品详情", description = "获取单个商品的详细信息")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "更新成功"),
+        @ApiResponse(responseCode = "200", description = "获取成功"),
+        @ApiResponse(responseCode = "404", description = "商品不存在")
+    })
+    @GetMapping("/products/{id}")
+    public Result<?> getProduct(
+            @Parameter(description = "商品ID", required = true, example = "1234567890") @PathVariable("id") Long id) {
+        return userService.getProduct(id);
+    }
+
+    @Operation(summary = "创建订单", description = "用户购买商品创建订单")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "订单创建成功"),
+        @ApiResponse(responseCode = "400", description = "参数错误或库存不足"),
         @ApiResponse(responseCode = "401", description = "未授权")
     })
-    @PutMapping("/me")
-    public Result<?> updateCurrentUser(HttpServletRequest request, @RequestBody Map<String, String> body) {
+    @PostMapping("/orders")
+    public Result<?> createOrder(HttpServletRequest request,
+                                 @Parameter(description = "订单参数：productId(商品ID), quantity(数量), addressInfo(地址信息，可选)") @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        String nickname = body.get("nickname");
-        return userService.updateUserInfo(userId, nickname);
+        Long productId = Long.valueOf(params.get("productId").toString());
+        Integer quantity = Integer.valueOf(params.getOrDefault("quantity", 1).toString());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> addressInfo = (Map<String, Object>) params.get("addressInfo");
+        return userService.createOrder(userId, productId, quantity, addressInfo);
     }
 
-    @Operation(summary = "修改密码", description = "修改当前用户的登录密码")
+    @Operation(summary = "订单列表", description = "获取当前用户的订单列表，可按状态筛选")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "修改成功"),
-        @ApiResponse(responseCode = "400", description = "旧密码错误"),
+        @ApiResponse(responseCode = "200", description = "获取成功"),
         @ApiResponse(responseCode = "401", description = "未授权")
     })
-    @PutMapping("/me/password")
-    public Result<?> changePassword(HttpServletRequest request, @RequestBody Map<String, String> body) {
+    @GetMapping("/orders")
+    public Result<?> getOrders(HttpServletRequest request, PageRequest pageRequest,
+                              @Parameter(description = "订单状态：1已下单 2已确认 3已发货 4已完成 5已关闭", example = "1") @RequestParam(required = false) Integer status) {
         Long userId = (Long) request.getAttribute("userId");
-        return userService.changePassword(userId, body.get("oldPassword"), body.get("newPassword"));
+        return userService.getOrders(userId, pageRequest, status);
     }
 
-    // ============ 积分 ============
+    @Operation(summary = "订单详情", description = "获取订单详细信息")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "获取成功"),
+        @ApiResponse(responseCode = "404", description = "订单不存在")
+    })
+    @GetMapping("/orders/{id}")
+    public Result<?> getOrder(
+            @Parameter(description = "订单ID", required = true) @PathVariable("id") Long id, 
+            HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.getOrder(userId, id);
+    }
+
+    @Operation(summary = "取消订单", description = "用户取消未完成的订单")
+    @PutMapping("/orders/{id}/close")
+    public Result<?> closeOrder(@PathVariable("id") Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.closeOrder(userId, id);
+    }
+
+    @Operation(summary = "确认收货", description = "用户确认已收到商品，完成订单")
+    @PutMapping("/orders/{id}/complete")
+    public Result<?> completeOrder(@PathVariable("id") Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.completeOrder(userId, id);
+    }
 
     @Operation(summary = "我的积分", description = "获取当前用户的积分余额")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "获取成功"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @GetMapping("/points")
     public Result<?> getPoints(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return pointsService.getPointsBalance(userId);
+        return userService.getPoints(userId);
     }
 
     @Operation(summary = "积分记录", description = "获取积分变动明细列表")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "获取成功"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @GetMapping("/points/log")
     public Result<?> getPointsLog(HttpServletRequest request, PageRequest pageRequest) {
         Long userId = (Long) request.getAttribute("userId");
-        return pointsService.getPointsLog(userId, pageRequest);
+        return userService.getPointsLog(userId, pageRequest);
     }
 
-    // ============ 收货地址 ============
-
     @Operation(summary = "地址列表", description = "获取用户的收货地址列表")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "获取成功"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @GetMapping("/addresses")
     public Result<?> getAddresses(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return addressService.getAddresses(userId);
+        return userService.getAddresses(userId);
     }
 
     @Operation(summary = "添加地址", description = "新增收货地址")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "添加成功"),
-        @ApiResponse(responseCode = "400", description = "地址数量已达上限"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @PostMapping("/addresses")
     public Result<?> createAddress(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return addressService.createAddress(userId, params);
+        return userService.createAddress(userId, params);
     }
 
     @Operation(summary = "修改地址", description = "更新收货地址信息")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "更新成功"),
-        @ApiResponse(responseCode = "404", description = "地址不存在"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @PutMapping("/addresses/{id}")
-    public Result<?> updateAddress(
-            @Parameter(description = "地址ID", required = true) @PathVariable("id") String id,
-            HttpServletRequest request,
-            @RequestBody Map<String, Object> params) {
+    public Result<?> updateAddress(@PathVariable("id") Long id, HttpServletRequest request,
+                                  @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return addressService.updateAddress(userId, id, params);
+        return userService.updateAddress(userId, id, params);
     }
 
     @Operation(summary = "删除地址", description = "删除收货地址")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "删除成功"),
-        @ApiResponse(responseCode = "404", description = "地址不存在"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @DeleteMapping("/addresses/{id}")
-    public Result<?> deleteAddress(
-            @Parameter(description = "地址ID", required = true) @PathVariable("id") String id,
-            HttpServletRequest request) {
+    public Result<?> deleteAddress(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return addressService.deleteAddress(userId, id);
+        return userService.deleteAddress(userId, id);
     }
 
     @Operation(summary = "设为默认地址", description = "将指定地址设为默认收货地址")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "设置成功"),
-        @ApiResponse(responseCode = "404", description = "地址不存在"),
-        @ApiResponse(responseCode = "401", description = "未授权")
-    })
     @PutMapping("/addresses/{id}/default")
-    public Result<?> setDefaultAddress(
-            @Parameter(description = "地址ID", required = true) @PathVariable("id") String id,
-            HttpServletRequest request) {
+    public Result<?> setDefaultAddress(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return addressService.setDefaultAddress(userId, id);
+        return userService.setDefaultAddress(userId, id);
+    }
+
+    @Operation(summary = "消息列表", description = "获取用户的系统消息列表")
+    @GetMapping("/messages")
+    public Result<?> getMessages(HttpServletRequest request, PageRequest pageRequest) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.getMessages(userId, pageRequest);
+    }
+
+    @Operation(summary = "标记已读", description = "将消息标记为已读")
+    @PutMapping("/messages/{id}/read")
+    public Result<?> markMessageRead(@PathVariable("id") Long id, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return userService.markMessageRead(userId, id);
     }
 }

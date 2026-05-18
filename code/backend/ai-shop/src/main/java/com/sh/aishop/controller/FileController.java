@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Tag(name = "文件管理", description = "文件上传、删除、访问")
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api/file")
 public class FileController {
     @Autowired
     private FileService fileService;
@@ -50,13 +50,13 @@ public class FileController {
 
     @Operation(summary = "删除文件")
     @DeleteMapping("/{fileId}")
-    public Result<?> delete(@PathVariable String fileId) {
+    public Result<?> delete(@PathVariable Long fileId) {
         return fileService.deleteFile(fileId);
     }
 
     @Operation(summary = "获取文件信息")
     @GetMapping("/{fileId}")
-    public Result<FileRecord> getFile(@PathVariable String fileId) {
+    public Result<FileRecord> getFile(@PathVariable Long fileId) {
         return fileService.getFile(fileId);
     }
 
@@ -70,7 +70,7 @@ public class FileController {
 
     @Operation(summary = "访问文件")
     @GetMapping("/view/{fileId}")
-    public ResponseEntity<Resource> view(@PathVariable String fileId) throws IOException {
+    public ResponseEntity<Resource> view(@PathVariable Long fileId) throws IOException {
         Result<FileRecord> result = fileService.getFile(fileId);
         if (result.getCode() != 200 || result.getData() == null) {
             return ResponseEntity.notFound().build();

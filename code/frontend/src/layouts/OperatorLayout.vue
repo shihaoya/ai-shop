@@ -10,7 +10,6 @@ import { useUserStore } from '@/stores/user'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
 import { getMyShop } from '@/api/operator'
 import { authApi } from '@/api/auth'
-import { userApi } from '@/api/user'
 
 const themeStore = useThemeStore()
 const sidebarStore = useSidebarStore()
@@ -44,7 +43,7 @@ async function handleChangePwd() {
   }
   changePwdLoading.value = true
   try {
-    await userApi.changePassword(oldPassword, newPassword)
+    await authApi.updatePassword({ oldPassword, newPassword })
     message.success('密码修改成功')
     changePwdVisible.value = false
   } catch (_e) {
