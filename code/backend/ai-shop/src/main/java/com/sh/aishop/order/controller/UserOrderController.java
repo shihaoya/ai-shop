@@ -1,12 +1,8 @@
-package com.sh.aishop.controller;
+package com.sh.aishop.order.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.dto.PageRequest;
 import com.sh.aishop.order.service.OrderService;
-import com.sh.aishop.user.service.PointsService;
-import com.sh.aishop.user.service.AddressService;
-import com.sh.aishop.user.service.UserService;
-import com.sh.aishop.message.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,24 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@Tag(name = "用户端", description = "普通用户操作：商品浏览、订单管理、积分、地址")
+@Tag(name = "订单管理(用户)", description = "普通用户操作：商品浏览、订单管理")
 @RestController
 @RequestMapping("/api/user")
-public class UserController {
+public class UserOrderController {
     @Autowired
     private OrderService orderService;
-
-    @Autowired
-    private PointsService pointsService;
-
-    @Autowired
-    private AddressService addressService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private MessageService messageService;
 
     @Operation(summary = "商品列表", description = "分页获取可购买的商品列表")
     @ApiResponses(value = {
@@ -113,69 +97,5 @@ public class UserController {
     public Result<?> completeOrder(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return orderService.completeUserOrder(userId, id);
-    }
-
-    @Operation(summary = "我的积分", description = "获取当前用户的积分余额")
-    @GetMapping("/points")
-    public Result<?> getPoints(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return pointsService.getPoints(userId);
-    }
-
-    @Operation(summary = "积分记录", description = "获取积分变动明细列表")
-    @GetMapping("/points/log")
-    public Result<?> getPointsLog(HttpServletRequest request, PageRequest pageRequest) {
-        Long userId = (Long) request.getAttribute("userId");
-        return pointsService.getPointsLog(userId, pageRequest);
-    }
-
-    @Operation(summary = "地址列表", description = "获取用户的收货地址列表")
-    @GetMapping("/addresses")
-    public Result<?> getAddresses(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return addressService.getAddresses(userId);
-    }
-
-    @Operation(summary = "添加地址", description = "新增收货地址")
-    @PostMapping("/addresses")
-    public Result<?> createAddress(HttpServletRequest request, @RequestBody Map<String, Object> params) {
-        Long userId = (Long) request.getAttribute("userId");
-        return addressService.createAddress(userId, params);
-    }
-
-    @Operation(summary = "修改地址", description = "更新收货地址信息")
-    @PutMapping("/addresses/{id}")
-    public Result<?> updateAddress(@PathVariable("id") Long id, HttpServletRequest request,
-                                  @RequestBody Map<String, Object> params) {
-        Long userId = (Long) request.getAttribute("userId");
-        return addressService.updateAddress(userId, id, params);
-    }
-
-    @Operation(summary = "删除地址", description = "删除收货地址")
-    @DeleteMapping("/addresses/{id}")
-    public Result<?> deleteAddress(@PathVariable("id") Long id, HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return addressService.deleteAddress(userId, id);
-    }
-
-    @Operation(summary = "设为默认地址", description = "将指定地址设为默认收货地址")
-    @PutMapping("/addresses/{id}/default")
-    public Result<?> setDefaultAddress(@PathVariable("id") Long id, HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return addressService.setDefaultAddress(userId, id);
-    }
-
-    @Operation(summary = "消息列表", description = "获取用户的系统消息列表")
-    @GetMapping("/messages")
-    public Result<?> getMessages(HttpServletRequest request, PageRequest pageRequest) {
-        Long userId = (Long) request.getAttribute("userId");
-        return messageService.getMessages(userId, pageRequest);
-    }
-
-    @Operation(summary = "标记已读", description = "将消息标记为已读")
-    @PutMapping("/messages/{id}/read")
-    public Result<?> markMessageRead(@PathVariable("id") Long id, HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return messageService.markMessageRead(userId, id);
     }
 }
