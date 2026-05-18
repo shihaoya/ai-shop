@@ -1,4 +1,4 @@
-import request from './request'
+import request from '../request'
 import type { PageRequest, Product, Order, Address, PointsLog, Message } from '@/types/api'
 
 type ListResponse<T> = { list: T[]; total: number; page: number; size: number }

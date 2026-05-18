@@ -1,4 +1,4 @@
-import request from './request'
+import request from '../request'
 import type { LoginParams, RegisterParams, UserInfo } from '@/types/api'
 
 export const authApi = {
@@ -21,3 +21,5 @@ export const authApi = {
     return request.put<UserInfo>('/auth/info', data) as any
   },
 }
+
+export type { LoginParams, RegisterParams, UserInfo }

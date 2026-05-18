@@ -411,7 +411,6 @@ function getTypeText(type: string | number) {
           v-model:current="pagination.page"
           v-model:pageSize="pagination.size"
           :total="pagination.total"
-          :show-total="total => `共 ${total} 条`"
           @change="handlePageChange"
         />
       </div>

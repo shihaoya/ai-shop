@@ -1,4 +1,4 @@
-import request from './request'
+import request from '../request'
 import type { PageResult, PageRequest, Shop, UserInfo } from '@/types/api'
 
 type AdminListResponse<T> = { list: T[]; total: number; page: number; pageSize: number }
