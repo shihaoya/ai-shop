@@ -7,7 +7,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-@MapperScan("com.sh.aishop.mapper")
+@MapperScan({"com.sh.aishop.auth.mapper",
+               "com.sh.aishop.shop.mapper",
+               "com.sh.aishop.product.mapper",
+               "com.sh.aishop.order.mapper",
+               "com.sh.aishop.user.mapper",
+               "com.sh.aishop.message.mapper",
+               "com.sh.aishop.file.mapper"})
 public class AiShopApplication {
 
     public static void main(String[] args) {

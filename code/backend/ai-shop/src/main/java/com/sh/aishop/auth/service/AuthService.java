@@ -8,7 +8,7 @@ import com.sh.aishop.auth.dto.*;
 import com.sh.aishop.common.entity.*;
 import com.sh.aishop.common.enums.*;
 import com.sh.aishop.auth.mapper.InviteCodeMapper;
-import com.sh.aishop.auth.mapper.UserMapper;
+import com.sh.aishop.user.mapper.UserMapper;
 import com.sh.aishop.user.mapper.PointsMapper;
 import com.sh.aishop.util.JwtUtil;
 import com.sh.aishop.util.SecurityUtil;
