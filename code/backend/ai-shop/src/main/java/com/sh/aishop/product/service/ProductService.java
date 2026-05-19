@@ -79,9 +79,14 @@ public class ProductService {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
+        Long shopId = Long.parseLong(shopData.get("id").toString());
+        if (categoryMapper.existsByShopIdAndName(shopId, name)) {
+            return Result.fail(ResultCode.CATEGORY_DUPLICATE, "分类名称已存在");
+        }
+
         Category category = new Category();
         category.setId(SnowflakeIdUtil.nextId());
-        category.setShopId(Long.parseLong(shopData.get("id").toString()));
+        category.setShopId(shopId);
         category.setName(name);
         category.setSort(sort != null ? sort : 0);
         categoryMapper.insert(category);
@@ -105,7 +110,12 @@ public class ProductService {
             return Result.fail(ResultCode.CATEGORY_NOT_FOUND, "分类不存在");
         }
 
-        if (StringUtils.hasText(name)) category.setName(name);
+        if (StringUtils.hasText(name)) {
+            if (categoryMapper.existsByShopIdAndNameExcluding(category.getShopId(), name, categoryId)) {
+                return Result.fail(ResultCode.CATEGORY_DUPLICATE, "分类名称已存在");
+            }
+            category.setName(name);
+        }
         if (sort != null) category.setSort(sort);
         categoryMapper.updateById(category);
 
@@ -189,6 +199,14 @@ public class ProductService {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
+        String name = params.get("name") != null ? params.get("name").toString() : null;
+        if (StringUtils.hasText(name)) {
+            Long shopId = Long.parseLong(shopData.get("id").toString());
+            if (productMapper.existsByShopIdAndName(shopId, name)) {
+                return Result.fail(ResultCode.PRODUCT_DUPLICATE, "商品名称已存在");
+            }
+        }
+
         Product product = new Product();
         product.setId(SnowflakeIdUtil.nextId());
         product.setShopId(Long.parseLong(shopData.get("id").toString()));
@@ -231,6 +249,13 @@ public class ProductService {
         Product product = productMapper.selectById(productId);
         if (product == null || !product.getShopId().toString().equals(shopData.get("id").toString())) {
             return Result.fail(ResultCode.PRODUCT_NOT_FOUND, "商品不存在");
+        }
+
+        String name = params.get("name") != null ? params.get("name").toString() : null;
+        if (StringUtils.hasText(name)) {
+            if (productMapper.existsByShopIdAndNameExcluding(product.getShopId(), name, productId)) {
+                return Result.fail(ResultCode.PRODUCT_DUPLICATE, "商品名称已存在");
+            }
         }
 
         setProductFields(product, params);

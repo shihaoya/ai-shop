@@ -106,7 +106,7 @@ async function openAddModal() {
   editingProduct.value = null
   formState.value = {
     name: '',
-    categoryId: categories.value[0]?.id || '',
+    categoryId: '',
     type: 1,
     price: 0,
     stock: 0,
@@ -132,7 +132,7 @@ async function openEditModal(product: Product) {
   }
   formState.value = {
     name: product.name,
-    categoryId: String(product.categoryId),
+    categoryId: product.categoryId ? String(product.categoryId) : '',
     type: Number(product.type),
     price: product.price,
     stock: product.stock,
@@ -149,10 +149,6 @@ async function handleSubmit() {
     message.warning('请输入商品名称')
     return
   }
-  if (!formState.value.categoryId) {
-    message.warning('请选择分类')
-    return
-  }
   if (formState.value.price <= 0) {
     message.warning('请输入有效的积分价格')
     return
@@ -166,12 +162,15 @@ async function handleSubmit() {
     const isEdit = !!editingProduct.value
     const data: Record<string, any> = {
       name: formState.value.name.trim(),
-      categoryId: formState.value.categoryId,
       type: Number(formState.value.type),
       price: Number(formState.value.price),
       stock: Number(formState.value.stock),
       limitPerUser: Number(formState.value.limitPerUser) || 0,
       description: formState.value.description.trim() || undefined
+    }
+    // 分类非必填，传空字符串或null可清空
+    if (formState.value.categoryId) {
+      data.categoryId = formState.value.categoryId
     }
     // 主图：ImageUploader 返回值是数组，但后端字段是单字符串，取第一个
     const mainId = formState.value.mainImage?.[0] || null
@@ -462,16 +461,17 @@ function getTypeTag(type: string | number) {
             <input v-model="formState.name" class="cyber-input" type="text" placeholder="请输入商品名称" style="width:100%;" />
           </div>
           <div style="margin-bottom:16px;">
-            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品分类 <span style="color:#ef4444;">*</span></label>
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">商品分类</label>
             <AnimatedSelect
               v-model="formState.categoryId"
               :options="categoryOptions"
-              placeholder="请选择分类"
+              placeholder="不选则不设置分类"
               searchable
+              clearable
             />
           </div>
           <div style="margin-bottom:16px;">
-            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">发货类型</label>
+            <label style="display:block;margin-bottom:6px;color:var(--text-secondary);font-size:13px;">发货类型 <span style="color:#ef4444;">*</span></label>
             <div class="radio-group">
               <label class="radio-item" :class="{ active: formState.type === 1 }">
                 <input type="radio" v-model.number="formState.type" :value="1" />

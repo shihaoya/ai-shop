@@ -22,6 +22,7 @@ request.interceptors.response.use(
   (response) => {
     const res = response.data
     if (res.code !== 200) {
+      message.error(res.message || '请求失败')
       // 认证令牌无效（1005）或用户不存在（1003）视为未登录，跳转登录页
       if (res.code === 1005 || res.code === 1003) {
         if (router.currentRoute.value.name !== 'Login') {

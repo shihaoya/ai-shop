@@ -59,16 +59,21 @@ async function handleSubmit() {
     return
   }
   submitLoading.value = true
-  if (editingCategory.value) {
-    await updateCategory(editingCategory.value.id, formState.value.name, formState.value.sort)
-    message.success('分类更新成功')
-  } else {
-    await createCategory(formState.value.name, formState.value.sort)
-    message.success('分类创建成功')
+  try {
+    if (editingCategory.value) {
+      await updateCategory(editingCategory.value.id, formState.value.name, formState.value.sort)
+      message.success('分类更新成功')
+    } else {
+      await createCategory(formState.value.name, formState.value.sort)
+      message.success('分类创建成功')
+    }
+    modalVisible.value = false
+    loadCategories()
+  } catch {
+    // 错误已全局处理
+  } finally {
+    submitLoading.value = false
   }
-  submitLoading.value = false
-  modalVisible.value = false
-  loadCategories()
 }
 
 function handleDelete(category: Category) {

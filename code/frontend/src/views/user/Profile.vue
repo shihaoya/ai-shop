@@ -81,11 +81,33 @@ async function handleGenerateInviteCode() {
 
 function handleCopyInviteCode() {
   if (!inviteCode.value) return
-  navigator.clipboard.writeText(inviteCode.value).then(() => {
+
+  // 优先使用 navigator.clipboard，不可用时使用旧方法
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(inviteCode.value).then(() => {
+      message.success('已复制到剪贴板')
+    }).catch(() => {
+      fallbackCopy(inviteCode.value)
+    })
+  } else {
+    fallbackCopy(inviteCode.value)
+  }
+}
+
+function fallbackCopy(text: string) {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  try {
+    document.execCommand('copy')
     message.success('已复制到剪贴板')
-  }).catch(() => {
-    message.error('复制失败')
-  })
+  } catch {
+    message.error('复制失败，请手动复制')
+  }
+  document.body.removeChild(textarea)
 }
 
 async function loadPoints() {

@@ -60,12 +60,15 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  function logout() {
-    authApi.logout().catch(console.error)
+  async function logout() {
+    // 先调用后端接口，服务端清理 token
+    await authApi.logout().catch(() => {})
+    // 再清理本地
     token.value = ''
     userInfo.value = null
     localStorage.removeItem('token')
     localStorage.removeItem(USER_INFO_KEY)
+    message.success('已退出登录')
     router.push('/login')
   }
 

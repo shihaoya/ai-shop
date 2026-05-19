@@ -37,5 +37,7 @@ public class ResultCode {
     public static final int ADDRESS_NOT_FOUND = 2009;
     public static final int CATEGORY_NOT_FOUND = 2010;
     public static final int USER_NOT_APPROVED = 2011;
+    public static final int CATEGORY_DUPLICATE = 2012;
+    public static final int PRODUCT_DUPLICATE = 2013;
     public static final int ADDRESS_LIMIT_EXCEEDED = 2012;  // 地址数量达到上限
 }
