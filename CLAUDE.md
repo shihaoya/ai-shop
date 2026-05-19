@@ -171,3 +171,27 @@ docker compose down -v          # 停止并清理数据
 - **测试目录**: `src/test/java/com/sh/aishop/service/`
 - **现有测试**: `AuthServiceTest`, `AdminServiceTest`, `OperatorServiceTest`, `UserServiceTest`
 - **注意事项**: 部分现有测试有未解决的mock问题（pointsMapper等），运行前注意
+
+## 开发文档
+
+| 文档 | 说明 |
+|------|------|
+| `docs/前端开发文档.md` | 前端开发规范、组件使用、AI自检清单 |
+| `docs/后端开发文档.md` | 后端开发规范、分层模式、AI自检清单 |
+
+## AI 自检命令
+
+修改代码后运行以下命令自检：
+
+### 前端
+```bash
+cd code/frontend
+pnpm type-check   # TypeScript 类型检查
+pnpm lint          # ESLint 检查
+```
+
+### 后端
+```bash
+cd code/backend/ai-shop
+./mvnw test       # 单元测试
+```

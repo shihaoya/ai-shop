@@ -51,5 +51,22 @@ ai-shop/
 
 | 端 | 文档 | 说明 |
 |---|------|------|
-| 前端 | `docs/前端开发文档.md` | 技术栈、命令、组件、路由、API约定、前端开发指南 |
-| 后端 | `docs/后端开发文档.md` | 、技术栈、命令、数据库规范、API接口、后端开发指南 |
+| 前端 | `docs/前端开发文档.md` | 技术栈、命令、组件、路由、API约定、开发规范、AI自检清单 |
+| 后端 | `docs/后端开发文档.md` | 技术栈、命令、数据库规范、API接口、分层开发、AI自检清单 |
+
+## AI 自检命令
+
+### 前端自检
+
+```bash
+cd code/frontend
+pnpm type-check   # TypeScript 类型检查
+pnpm lint         # ESLint 检查
+```
+
+### 后端自检
+
+```bash
+cd code/backend/ai-shop
+./mvnw test      # 单元测试
+```
