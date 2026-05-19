@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser, resetPassword, downloadImportTemplate } from '@/api/operator'
+import { adjustPoints, getPointsLog, getUsers, approveUser, rejectUser, resetPassword, downloadImportTemplate } from '@/api/modules/operator'
 import { useThemeStore } from '@/stores/theme'
 import type { UserInfo, PointsLog } from '@/types/api'
 import { PointsTypeText } from '@/types/enums'

@@ -1,75 +1,42 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message, Modal, Upload } from 'ant-design-vue'
 import { PlusOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons-vue'
-import { getProducts, createProduct, updateProduct, deleteProduct, getCategories } from '@/api/operator'
+import { createProduct, updateProduct, deleteProduct } from '@/api/modules/operator'
 import ImageUploader from '@/components/upload/ImageUploader.vue'
 import AnimatedSelect from '@/components/AnimatedSelect.vue'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useOperatorShop } from '@/composables/useOperatorShop'
 import { ProductStatus, ProductStatusText, ProductStatusClass } from '@/types/enums'
-import type { Product, Category } from '@/types/api'
+import type { Product } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'
+import { useProductFilter } from '@/composables/useProductFilter'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()
 const router = useRouter()
 const { isApproved } = useOperatorShop()
+const {
+  products,
+  categories,
+  loading,
+  categoryOptions,
+  pagination,
+  page,
+  pageSize,
+  total,
+  loadProducts,
+  loadCategories,
+  ensureCategories,
+  onPageChange,
+} = useProductFilter()
 
 onMounted(() => {
   themeStore.init()
   loadProducts()
 })
-
-const loading = ref(false)
-const products = ref<Product[]>([])
-const categories = ref<Category[]>([])
-const pagination = ref({ page: 1, size: 10, total: 0 })
-
-async function loadProducts() {
-  loading.value = true
-  try {
-    const res = await getProducts({ page: pagination.value.page, size: pagination.value.size })
-    products.value = res.list.map((p: Product) => ({
-      ...p,
-      id: String(p.id)
-    }))
-    pagination.value.total = res.total
-  } catch (e: any) {
-    // 全局拦截器已处理错误提示，组件内不重复处理
-  } finally {
-    loading.value = false
-  }
-}
-
-const categoryOptions = computed(() =>
-  categories.value.map(c => ({ label: c.name, value: c.id }))
-)
-
-async function loadCategories() {
-  try {
-    const res = await getCategories()
-    categories.value = res.map((c: Category) => ({
-      ...c,
-      id: String(c.id)
-    }))
-  } catch (e: any) {
-    // 全局拦截器已处理错误提示，组件内不重复处理
-  }
-}
-
-async function ensureCategories() {
-  if (categories.value.length === 0) {
-    await loadCategories()
-  }
-}
-
-function handlePageChange(page: number) {
-  pagination.value.page = page
-  loadProducts()
-}
 
 // 新增商品弹框
 const modalVisible = ref(false)
@@ -437,12 +404,12 @@ function getTypeTag(type: string | number) {
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-wrap" v-if="pagination.total > 0">
+      <div class="pagination-wrap" v-if="total > 0">
         <CyberPagination
-          v-model:current="pagination.page"
-          v-model:pageSize="pagination.size"
-          :total="pagination.total"
-          @change="handlePageChange"
+          v-model:current="page"
+          v-model:pageSize="pageSize"
+          :total="total"
+          @change="loadProducts"
         />
       </div>
     </div>

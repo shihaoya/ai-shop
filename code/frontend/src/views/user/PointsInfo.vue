@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getPoints, getPointsLog } from '@/api/user'
+import { getPoints, getPointsLog } from '@/api/modules/user'
 import type { PointsLog } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'
 

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class MessageService {
+public class MessageService implements IMessageService {
     @Autowired
     private MessageMapper messageMapper;
 

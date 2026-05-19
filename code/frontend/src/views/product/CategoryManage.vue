@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { message, Modal } from 'ant-design-vue'
-import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/operator'
+import { getCategories, createCategory, updateCategory, deleteCategory } from '@/api/modules/operator'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
 import { useOperatorShop } from '@/composables/useOperatorShop'

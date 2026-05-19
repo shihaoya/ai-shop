@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
 import { useUserStore } from '@/stores/user'
-import { getProducts, createOrder, getAddresses, getPoints } from '@/api/user'
+import { getProducts, createOrder, getAddresses, getPoints } from '@/api/modules/user'
 import { message } from 'ant-design-vue'
 import type { Product, Address } from '@/types/api'
 import pcaData from 'china-division/dist/pca.json'

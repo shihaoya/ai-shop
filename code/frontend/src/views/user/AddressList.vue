@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getAddresses, createAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/api/user'
+import { getAddresses, createAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/api/modules/user'
 import { message, Modal } from 'ant-design-vue'
 import type { Address } from '@/types/api'
 import pcaData from 'china-division/dist/pca.json'

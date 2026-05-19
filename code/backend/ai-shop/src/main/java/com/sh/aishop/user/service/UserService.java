@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
-public class UserService {
+public class UserService implements IUserService {
     @Autowired
     private UserMapper userMapper;
 

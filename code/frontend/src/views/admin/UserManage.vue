@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getUsers, changeUserStatus, approveUser, rejectUser, resetPassword } from '@/api/admin'
+import { getUsers, changeUserStatus, approveUser, rejectUser, resetPassword } from '@/api/modules/admin'
 import { message, Modal } from 'ant-design-vue'
 import type { UserInfo } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'

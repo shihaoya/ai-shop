@@ -1,4 +1,4 @@
-import request from '../request'
+import request from '../../request'
 import type { Shop } from '@/types/api'
 
 export function getMyShop(): Promise<any> {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getShops, auditShop } from '@/api/admin'
+import { getShops, auditShop } from '@/api/modules/admin'
 import { message, Modal } from 'ant-design-vue'
 import { ShopStatus, ShopStatusText, ShopStatusClass } from '@/types/enums'
 import type { Shop } from '@/types/api'

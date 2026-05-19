@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductService {
+public class ProductServiceImpl implements IProductService {
     @Autowired
     private ProductMapper productMapper;
     @Autowired
@@ -35,102 +35,6 @@ public class ProductService {
     private FileRecordMapper fileRecordMapper;
     @Autowired
     private ShopService shopService;
-
-    public Result<?> getCategories(Long operatorId) {
-        var shopResult = shopService.getMyShop(operatorId);
-        if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-        Map<?, ?> shopData = (Map<?, ?>) shopResult.getData();
-        if (!Boolean.TRUE.equals(shopData.get("hasShop"))) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-
-        List<Category> categories = categoryMapper.selectList(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Category>()
-                        .eq(Category::getShopId, Long.parseLong(shopData.get("id").toString()))
-                        .eq(Category::getDeleted, 0)
-                        .orderByAsc(Category::getSort));
-
-        List<Map<String, Object>> result = categories.stream().map(c -> {
-            Map<String, Object> map = new java.util.HashMap<>();
-            map.put("id", c.getId().toString());
-            map.put("name", c.getName());
-            map.put("sort", c.getSort());
-            long count = productMapper.selectCount(
-                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<Product>()
-                            .eq(Product::getCategoryId, c.getId())
-                            .eq(Product::getDeleted, 0));
-            map.put("productCount", count);
-            return map;
-        }).collect(Collectors.toList());
-
-        return Result.success(result);
-    }
-
-    @Transactional
-    public Result<?> createCategory(Long operatorId, String name, Integer sort) {
-        var shopResult = shopService.getMyShop(operatorId);
-        if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-        Map<?, ?> shopData = (Map<?, ?>) shopResult.getData();
-        if (!Boolean.TRUE.equals(shopData.get("hasShop"))) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-
-        Category category = new Category();
-        category.setId(SnowflakeIdUtil.nextId());
-        category.setShopId(Long.parseLong(shopData.get("id").toString()));
-        category.setName(name);
-        category.setSort(sort != null ? sort : 0);
-        categoryMapper.insert(category);
-
-        return Result.success(category.getId().toString());
-    }
-
-    @Transactional
-    public Result<?> updateCategory(Long categoryId, Long operatorId, String name, Integer sort) {
-        var shopResult = shopService.getMyShop(operatorId);
-        if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-        Map<?, ?> shopData = (Map<?, ?>) shopResult.getData();
-        if (!Boolean.TRUE.equals(shopData.get("hasShop"))) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-
-        Category category = categoryMapper.selectById(categoryId);
-        if (category == null || !category.getShopId().toString().equals(shopData.get("id").toString())) {
-            return Result.fail(ResultCode.CATEGORY_NOT_FOUND, "分类不存在");
-        }
-
-        if (StringUtils.hasText(name)) category.setName(name);
-        if (sort != null) category.setSort(sort);
-        categoryMapper.updateById(category);
-
-        return Result.success();
-    }
-
-    @Transactional
-    public Result<?> deleteCategory(Long categoryId, Long operatorId) {
-        var shopResult = shopService.getMyShop(operatorId);
-        if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-        Map<?, ?> shopData = (Map<?, ?>) shopResult.getData();
-        if (!Boolean.TRUE.equals(shopData.get("hasShop"))) {
-            return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
-        }
-
-        Category category = categoryMapper.selectById(categoryId);
-        if (category == null || !category.getShopId().toString().equals(shopData.get("id").toString())) {
-            return Result.fail(ResultCode.CATEGORY_NOT_FOUND, "分类不存在");
-        }
-
-        categoryMapper.deleteById(categoryId);
-        return Result.success();
-    }
 
     public Result<?> getProducts(Long operatorId, PageRequest pageRequest) {
         var shopResult = shopService.getMyShop(operatorId);

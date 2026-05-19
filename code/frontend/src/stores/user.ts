@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { authApi } from '@/api/auth'
+import { authApi } from '@/api/modules/auth'
 import type { UserInfo, LoginParams } from '@/types/api'
 
 export const useUserStore = defineStore('user', () => {

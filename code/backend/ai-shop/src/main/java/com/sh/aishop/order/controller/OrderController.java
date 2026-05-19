@@ -2,7 +2,7 @@ package com.sh.aishop.order.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.dto.PageRequest;
-import com.sh.aishop.order.service.OrderService;
+import com.sh.aishop.order.service.IOrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +19,7 @@ import java.util.Map;
 @RequestMapping("/api/operator")
 public class OrderController {
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
 
     @Operation(summary = "订单列表", description = "获取店铺的订单列表，可按状态筛选")
     @ApiResponses(value = {

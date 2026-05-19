@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getMessages, markMessageRead } from '@/api/operator'
+import { getMessages, markMessageRead } from '@/api/modules/operator'
 import type { Message } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'
 

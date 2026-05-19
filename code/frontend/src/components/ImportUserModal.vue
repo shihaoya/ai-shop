@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
-import { importUsers, downloadImportTemplate } from '@/api/operator'
-import type { ImportResult } from '@/api/operator'
+import { importUsers, downloadImportTemplate } from '@/api/modules/operator'
+import type { ImportResult } from '@/api/modules/operator'
 import * as XLSX from 'xlsx'
 
 const props = defineProps<{ visible: boolean }>()

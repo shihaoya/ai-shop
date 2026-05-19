@@ -1,74 +1,61 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getOrders, confirmOrder, shipOrder, completeOrder, closeOrder } from '@/api/operator'
+import { confirmOrder, shipOrder, completeOrder, closeOrder } from '@/api/modules/operator'
 import { message, Modal } from 'ant-design-vue'
 import type { Order } from '@/types/api'
-import { OrderStatus, OrderStatusText, OrderStatusClass } from '@/types/enums'
+import { OrderStatusText, OrderStatusClass } from '@/types/enums'
 import CyberPagination from '@/components/CyberPagination.vue'
 import OrderDetailModal from '@/components/operator/OrderDetailModal.vue'
 import OrderShipModal from '@/components/operator/OrderShipModal.vue'
+import { useOrderSearch } from '@/composables/useOrderSearch'
 
 const themeStore = useThemeStore()
+const {
+  orders,
+  loading,
+  searchParams,
+  statusOptions,
+  pagination,
+  page,
+  pageSize,
+  total,
+  loadOrders,
+  handleSearch,
+  handleReset,
+  handleStatusChange,
+  onPageChange,
+} = useOrderSearch()
 
 onMounted(() => {
   themeStore.init()
   loadOrders()
 })
 
-const loading = ref(false)
-const orders = ref<Order[]>([])
-const pagination = ref({ page: 1, size: 10, total: 0 })
-
 const searchQuery = ref('')
-const statusFilter = ref<number | undefined>(undefined)
 
-// 订单详情弹框
 const detailVisible = ref(false)
 const currentOrder = ref<Order | null>(null)
 
-// 发货弹框
 const shipVisible = ref(false)
 const shipOrderData = ref<Order | null>(null)
 
-async function loadOrders() {
-  loading.value = true
-  try {
-    const params: any = { page: pagination.value.page, size: pagination.value.size }
-    if (searchQuery.value) params.keyword = searchQuery.value
-    if (statusFilter.value !== undefined) params.status = statusFilter.value
-
-    const res = await getOrders(params)
-    orders.value = res.list.map((o: Order) => ({
-      ...o,
-      id: String(o.id)
-    }))
-    pagination.value.total = res.total
-  } finally {
-    loading.value = false
-  }
+function handleSearchWrapper() {
+  searchParams.value.keyword = searchQuery.value
+  handleSearch()
 }
 
-function handleSearch() {
-  pagination.value.page = 1
-  loadOrders()
-}
-
-function handleReset() {
+function handleResetWrapper() {
   searchQuery.value = ''
-  statusFilter.value = undefined
-  pagination.value.page = 1
-  loadOrders()
+  handleReset()
 }
 
-function handleStatusChange(status: number | undefined) {
-  statusFilter.value = status
-  pagination.value.page = 1
-  loadOrders()
+function handleStatusChangeWrapper(status: number | undefined) {
+  handleStatusChange(status)
 }
 
-function handlePageChange(page: number) {
-  pagination.value.page = page
+function handlePageChangeWrapper(p: number) {
+  onPageChange(p)
   loadOrders()
 }
 
@@ -182,20 +169,15 @@ function handleClose(order: Order) {
             type="text"
             placeholder="搜索订单号..."
             style="flex:1;max-width:220px;"
-            @keyup.enter="handleSearch"
+            @keyup.enter="handleSearchWrapper"
           />
-          <select v-model="statusFilter" class="cyber-input" style="max-width:130px;cursor:pointer;" @change="handleStatusChange(statusFilter)">
-            <option :value="undefined">全部状态</option>
-            <option :value="OrderStatus.PENDING">待确认</option>
-            <option :value="OrderStatus.CONFIRMED">已确认</option>
-            <option :value="OrderStatus.SHIPPED">已发货</option>
-            <option :value="OrderStatus.COMPLETED">已完成</option>
-            <option :value="OrderStatus.CLOSED">已关闭</option>
+          <select v-model="searchParams.status" class="cyber-input" style="max-width:130px;cursor:pointer;" @change="handleStatusChangeWrapper(searchParams.status)">
+            <option v-for="opt in statusOptions" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
           </select>
-          <button class="cyber-btn-primary" style="padding:9px 16px;" @click="handleSearch">
+          <button class="cyber-btn-primary" style="padding:9px 16px;" @click="handleSearchWrapper">
             <i class="fas fa-search" style="margin-right:5px;"></i>搜索
           </button>
-          <button class="cyber-btn" style="padding:9px 16px;" @click="handleReset">
+          <button class="cyber-btn" style="padding:9px 16px;" @click="handleResetWrapper">
             <i class="fas fa-undo"></i>
           </button>
         </div>
@@ -274,12 +256,12 @@ function handleClose(order: Order) {
       </div>
 
       <!-- Pagination -->
-      <div class="pagination-wrap" v-if="pagination.total > 0">
+      <div class="pagination-wrap" v-if="total > 0">
         <CyberPagination
-          v-model:current="pagination.page"
-          v-model:pageSize="pagination.size"
-          :total="pagination.total"
-          @change="handlePageChange"
+          v-model:current="page"
+          v-model:pageSize="pageSize"
+          :total="total"
+          @change="loadOrders"
         />
       </div>
     </div>

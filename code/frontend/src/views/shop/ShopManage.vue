@@ -1,95 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getMyShop, applyShop, changeShopStatus } from '@/api/operator'
-import { message, Modal } from 'ant-design-vue'
-import type { Shop } from '@/types/api'
-import { useOperatorShop } from '@/composables/useOperatorShop'
-import { ShopStatus, ShopStatusText, ShopStatusClass, ShopActiveStatus, ShopActiveStatusText, ShopActiveStatusClass } from '@/types/enums'
-
-const { setHasShop } = useOperatorShop()
+import { ShopActiveStatus, ShopActiveStatusText, ShopActiveStatusClass } from '@/types/enums'
+import { useShop } from '@/composables/useShop'
 
 const themeStore = useThemeStore()
+const {
+  shop,
+  loading,
+  shopStatus,
+  loadMyShop,
+  handleApply,
+  handleToggleStatus,
+  applyModalVisible,
+  applyForm,
+  applyLoading,
+  openApplyModal,
+} = useShop()
 
 onMounted(() => {
   themeStore.init()
   loadMyShop()
 })
-
-const loading = ref(false)
-const shop = ref<Shop | null>(null)
-const applyModalVisible = ref(false)
-const applyForm = ref({ name: '', description: '' })
-const applyLoading = ref(false)
-
-// 判断店铺状态
-const shopStatus = computed(() => {
-  if (!shop.value) return 'none' // 无店铺
-  if (shop.value.status === ShopStatus.PENDING) return 'pending' // 待审核
-  if (shop.value.status === ShopStatus.REJECTED) return 'rejected' // 被拒绝
-  return 'approved' // 已通过
-})
-
-async function loadMyShop() {
-  loading.value = true
-  const res: any = await getMyShop()
-  if (res && res.hasShop === false) {
-    shop.value = null
-    setHasShop(false, null)
-  } else if (res) {
-    shop.value = {
-      id: String(res.id),
-      name: res.name,
-      description: res.description,
-      status: res.status,
-      isActive: res.isActive,
-      createdAt: res.createdAt,
-    }
-    setHasShop(true, res.status ?? null)
-  } else {
-    shop.value = null
-  }
-  loading.value = false
-}
-
-function openApplyModal() {
-  applyForm.value = { name: '', description: '' }
-  applyModalVisible.value = true
-}
-
-async function handleApply() {
-  if (!applyForm.value.name.trim()) {
-    message.warning('请输入店铺名称')
-    return
-  }
-  applyLoading.value = true
-  try {
-    await applyShop(applyForm.value.name.trim(), applyForm.value.description.trim())
-  } finally {
-    applyLoading.value = false
-  }
-  message.success('申请已提交，请等待审核')
-  applyModalVisible.value = false
-  loadMyShop()
-}
-
-function handleToggleStatus() {
-  if (!shop.value) return
-  const newStatus = shop.value.isActive === 1 ? 0 : 1
-  const actionText = newStatus === 1 ? '营业' : '歇业'
-
-  Modal.confirm({
-    title: '切换营业状态',
-    content: `确定要将店铺设置为"${actionText}"吗？`,
-    okText: '确定',
-    cancelText: '取消',
-    onOk: async () => {
-      await changeShopStatus(newStatus)
-      message.success(`店铺已设置为${actionText}`)
-      loadMyShop()
-    }
-  })
-}
 </script>
 
 <template>
@@ -241,7 +173,7 @@ function handleToggleStatus() {
         </div>
         <div class="modal-footer">
           <button class="cyber-btn" @click="applyModalVisible = false">取消</button>
-          <button class="cyber-btn-primary" @click="handleApply" :disabled="applyLoading">
+          <button class="cyber-btn-primary" @click="handleApply(applyForm.name, applyForm.description)" :disabled="applyLoading">
             <span v-if="applyLoading"><i class="fas fa-spinner fa-spin" style="margin-right:5px;"></i>提交中...</span>
             <span v-else><i class="fas fa-paper-plane" style="margin-right:5px;"></i>提交申请</span>
           </button>

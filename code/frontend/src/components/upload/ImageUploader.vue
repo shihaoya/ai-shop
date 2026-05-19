@@ -3,7 +3,7 @@ import { ref, watch, shallowRef } from 'vue'
 import { Modal, message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { Upload } from 'ant-design-vue'
-import { uploadFile, deleteFile, getFile } from '@/api/upload'
+import { uploadFile, deleteFile, getFile } from '@/api'
 
 const props = defineProps<{
   modelValue: string[]

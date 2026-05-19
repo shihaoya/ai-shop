@@ -2,7 +2,8 @@ package com.sh.aishop.order.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.dto.PageRequest;
-import com.sh.aishop.order.service.OrderService;
+import com.sh.aishop.order.service.UserOrderService;
+import com.sh.aishop.product.service.ProductQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +20,10 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class UserOrderController {
     @Autowired
-    private OrderService orderService;
+    private ProductQueryService productQueryService;
+
+    @Autowired
+    private UserOrderService userOrderService;
 
     @Operation(summary = "商品列表", description = "分页获取可购买的商品列表")
     @ApiResponses(value = {
@@ -29,7 +33,7 @@ public class UserOrderController {
     @GetMapping("/products")
     public Result<?> getProducts(
             @Parameter(description = "分页参数") PageRequest pageRequest) {
-        return orderService.getProducts(pageRequest);
+        return productQueryService.getProducts(pageRequest);
     }
 
     @Operation(summary = "商品详情", description = "获取单个商品的详细信息")
@@ -40,7 +44,7 @@ public class UserOrderController {
     @GetMapping("/products/{id}")
     public Result<?> getProduct(
             @Parameter(description = "商品ID", required = true, example = "1234567890") @PathVariable("id") Long id) {
-        return orderService.getProduct(id);
+        return productQueryService.getProduct(id);
     }
 
     @Operation(summary = "创建订单", description = "用户购买商品创建订单")
@@ -57,7 +61,7 @@ public class UserOrderController {
         Integer quantity = Integer.valueOf(params.getOrDefault("quantity", 1).toString());
         @SuppressWarnings("unchecked")
         Map<String, Object> addressInfo = (Map<String, Object>) params.get("addressInfo");
-        return orderService.createOrder(userId, productId, quantity, addressInfo);
+        return userOrderService.createOrder(userId, productId, quantity, addressInfo);
     }
 
     @Operation(summary = "订单列表", description = "获取当前用户的订单列表，可按状态筛选")
@@ -67,9 +71,9 @@ public class UserOrderController {
     })
     @GetMapping("/orders")
     public Result<?> getOrders(HttpServletRequest request, PageRequest pageRequest,
-                              @Parameter(description = "订单状态：1已下单 2已确认 3已发货 4已完成 5已关闭", example = "1") @RequestParam(required = false) Integer status) {
+                               @Parameter(description = "订单状态：1已下单 2已确认 3已发货 4已完成 5已关闭", example = "1") @RequestParam(required = false) Integer status) {
         Long userId = (Long) request.getAttribute("userId");
-        return orderService.getUserOrders(userId, pageRequest, status);
+        return userOrderService.getMyOrders(userId, pageRequest, status);
     }
 
     @Operation(summary = "订单详情", description = "获取订单详细信息")
@@ -82,20 +86,20 @@ public class UserOrderController {
             @Parameter(description = "订单ID", required = true) @PathVariable("id") Long id,
             HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return orderService.getOrder(userId, id);
+        return userOrderService.getOrder(userId, id);
     }
 
     @Operation(summary = "取消订单", description = "用户取消未完成的订单")
     @PutMapping("/orders/{id}/close")
     public Result<?> closeOrder(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return orderService.closeUserOrder(userId, id);
+        return userOrderService.cancelOrder(userId, id);
     }
 
     @Operation(summary = "确认收货", description = "用户确认已收到商品，完成订单")
     @PutMapping("/orders/{id}/complete")
     public Result<?> completeOrder(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return orderService.completeUserOrder(userId, id);
+        return userOrderService.completeOrder(userId, id);
     }
 }

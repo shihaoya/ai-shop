@@ -6,7 +6,7 @@ import { useThemeStore } from '@/stores/theme'
 import { useSidebarMenu } from '@/composables/useSidebarMenu'
 import { useUserStore } from '@/stores/user'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
-import { authApi } from '@/api/auth'
+import { authApi } from '@/api/modules/auth'
 
 const themeStore = useThemeStore()
 const userStore = useUserStore()

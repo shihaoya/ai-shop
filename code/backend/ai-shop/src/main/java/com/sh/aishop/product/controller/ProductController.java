@@ -2,7 +2,8 @@ package com.sh.aishop.product.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.dto.PageRequest;
-import com.sh.aishop.product.service.ProductService;
+import com.sh.aishop.product.service.CategoryService;
+import com.sh.aishop.product.service.IProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,20 +20,22 @@ import java.util.Map;
 @RequestMapping("/api/operator")
 public class ProductController {
     @Autowired
-    private ProductService productService;
+    private IProductService productService;
+    @Autowired
+    private CategoryService categoryService;
 
     @Operation(summary = "分类列表", description = "获取店铺的商品分类")
     @GetMapping("/categories")
     public Result<?> getCategories(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return productService.getCategories(userId);
+        return categoryService.getCategories(userId);
     }
 
     @Operation(summary = "创建分类", description = "新增商品分类")
     @PostMapping("/categories")
     public Result<?> createCategory(HttpServletRequest request, @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return productService.createCategory(userId,
+        return categoryService.createCategory(userId,
                 params.get("name").toString(),
                 params.get("sort") != null ? Integer.valueOf(params.get("sort").toString()) : null);
     }
@@ -41,7 +44,7 @@ public class ProductController {
     @PutMapping("/categories/{id}")
     public Result<?> updateCategory(@PathVariable("id") Long id, HttpServletRequest request, @RequestBody Map<String, Object> params) {
         Long userId = (Long) request.getAttribute("userId");
-        return productService.updateCategory(id, userId,
+        return categoryService.updateCategory(id, userId,
                 params.get("name") != null ? params.get("name").toString() : null,
                 params.get("sort") != null ? Integer.valueOf(params.get("sort").toString()) : null);
     }
@@ -50,7 +53,7 @@ public class ProductController {
     @DeleteMapping("/categories/{id}")
     public Result<?> deleteCategory(@PathVariable("id") Long id, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
-        return productService.deleteCategory(id, userId);
+        return categoryService.deleteCategory(id, userId);
     }
 
     @Operation(summary = "商品列表", description = "获取当前店铺的商品列表")

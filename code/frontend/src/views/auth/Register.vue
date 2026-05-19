@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { authApi } from '@/api/auth'
+import { authApi } from '@/api/modules/auth'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
 
 const router = useRouter()

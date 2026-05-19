@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useThemeStore } from '@/stores/theme'
-import { getOrders, getOrder, closeOrder, completeOrder } from '@/api/user'
+import { getOrders, getOrder, closeOrder, completeOrder } from '@/api/modules/user'
 import { message } from 'ant-design-vue'
 import type { Order } from '@/types/api'
 import CyberPagination from '@/components/CyberPagination.vue'

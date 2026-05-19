@@ -8,8 +8,8 @@ import { useSidebarMenu } from '@/composables/useSidebarMenu'
 import { useOperatorShop } from '@/composables/useOperatorShop'
 import { useUserStore } from '@/stores/user'
 import ThemeToggleBtn from '@/components/layout/ThemeToggleBtn.vue'
-import { getMyShop } from '@/api/operator'
-import { authApi } from '@/api/auth'
+import { getMyShop } from '@/api/modules/operator'
+import { authApi } from '@/api/modules/auth'
 
 const themeStore = useThemeStore()
 const sidebarStore = useSidebarStore()
