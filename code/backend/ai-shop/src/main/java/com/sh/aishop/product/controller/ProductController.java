@@ -2,6 +2,7 @@ package com.sh.aishop.product.controller;
 
 import com.sh.aishop.common.Result;
 import com.sh.aishop.common.dto.PageRequest;
+import com.sh.aishop.product.dto.ProductRequest;
 import com.sh.aishop.product.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -73,9 +75,9 @@ public class ProductController {
     })
     @PostMapping("/products")
     public Result<?> createProduct(HttpServletRequest request,
-                                   @Parameter(description = "商品信息：name, categoryId, type, price, stock等") @RequestBody Map<String, Object> params) {
+                                   @Valid @RequestBody ProductRequest req) {
         Long userId = (Long) request.getAttribute("userId");
-        return productService.createProduct(userId, params);
+        return productService.createProduct(userId, req);
     }
 
     @Operation(summary = "商品详情", description = "获取商品详细信息")
@@ -87,9 +89,10 @@ public class ProductController {
 
     @Operation(summary = "更新商品", description = "修改商品信息")
     @PutMapping("/products/{id}")
-    public Result<?> updateProduct(@PathVariable("id") Long id, HttpServletRequest request, @RequestBody Map<String, Object> params) {
+    public Result<?> updateProduct(@PathVariable("id") Long id, HttpServletRequest request,
+                                   @Valid @RequestBody ProductRequest req) {
         Long userId = (Long) request.getAttribute("userId");
-        return productService.updateProduct(userId, id, params);
+        return productService.updateProduct(userId, id, req);
     }
 
     @Operation(summary = "删除商品", description = "删除商品")

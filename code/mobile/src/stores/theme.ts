@@ -49,9 +49,14 @@ export const useThemeStore = defineStore('theme', () => {
         ? `0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.12), 0 0 30px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.05)`
         : `0 0 20px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25), 0 0 40px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.10)`)
 
-    // Vant toast 文字颜色：深色模式用白色，浅色模式用深灰
-    const toastTextColor = actualMode === 'dark' ? '#ffffff' : '#323233'
-    document.documentElement.style.setProperty('--van-toast-text-color', toastTextColor)
+    // Vant toast 样式：深色模式用浅色背景+深色文字，浅色模式用深色背景+白色文字
+    if (actualMode === 'dark') {
+      document.documentElement.style.setProperty('--van-toast-background', 'rgba(255, 255, 255, 0.9)')
+      document.documentElement.style.setProperty('--van-toast-text-color', '#323233')
+    } else {
+      document.documentElement.style.setProperty('--van-toast-background', 'rgba(0, 0, 0, 0.8)')
+      document.documentElement.style.setProperty('--van-toast-text-color', '#ffffff')
+    }
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       mode: mode.value,

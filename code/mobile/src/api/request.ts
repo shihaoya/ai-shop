@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { showToast } from 'vant'
 import { useUserStore } from '@/stores/user'
-import router from '@/router'
 
 const request = axios.create({
   baseURL: '/api',
@@ -21,30 +20,24 @@ request.interceptors.response.use(
     const res = response.data
     if (res.code !== 200) {
       showToast(res.message || '请求失败')
-      if (res.code === 1005 || res.code === 1003) {
-        if (router.currentRoute.value.name !== 'Login') {
-          const userStore = useUserStore()
-          userStore.logout()
-          router.push('/mobile/login')
-          showToast('登录已过期，请重新登录')
-        }
-      }
       return Promise.reject(new Error(res.message || '请求失败'))
     }
     return res.data
   },
   (error) => {
-    if (error.response?.status === 401) {
-      if (router.currentRoute.value.name !== 'Login') {
-        const userStore = useUserStore()
-        userStore.logout()
-        router.push('/mobile/login')
-        showToast('登录已过期，请重新登录')
-      }
-    } else if (error.response?.status >= 500) {
+    const status = error.response?.status
+    const backendMessage = error.response?.data?.message
+    const errorMessage = backendMessage || error.message || '请求失败'
+
+    if (status === 401) {
+      showToast('登录已过期，请重新登录')
+      const userStore = useUserStore()
+      userStore.logout()
+      window.location.href = '/mobile/login'
+    } else if (status >= 500) {
       showToast('服务器异常')
-    } else if (error.message) {
-      showToast(error.message)
+    } else {
+      showToast(errorMessage)
     }
     return Promise.reject(error)
   },

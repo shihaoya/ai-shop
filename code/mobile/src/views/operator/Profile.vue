@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useThemeStore } from '@/stores/theme'
 import { authApi } from '@/api/auth'
+import { getInviteCode, createInviteCode } from '@/api/operatorUser'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -14,6 +15,9 @@ const themeVisible = ref(false)
 const changePwdVisible = ref(false)
 const themeMode = ref(themeStore.mode)
 const themeColor = ref(themeStore.accentColor)
+
+const showInviteDialog = ref(false)
+const inviteCode = ref('')
 
 function openThemeSetting() {
   themeMode.value = themeStore.mode
@@ -39,6 +43,42 @@ async function handleChangePwd({ oldPassword, newPassword }: { oldPassword: stri
     changePwdVisible.value = false
   } catch {
     showToast('密码修改失败')
+  }
+}
+
+async function handleInviteCode() {
+  try {
+    let code = await getInviteCode()
+    if (!code) {
+      code = await createInviteCode()
+    }
+    inviteCode.value = code
+    showInviteDialog.value = true
+  } catch {
+    showToast('获取邀请码失败')
+  }
+}
+
+async function handleRegenerate() {
+  try {
+    await showConfirmDialog({ title: '确认重新生成', message: '确定要重新生成邀请码吗？旧码将失效。' })
+    const code = await createInviteCode()
+    inviteCode.value = code
+    showToast('已重新生成')
+  } catch { /* cancelled */ }
+}
+
+function handleCopy() {
+  const input = document.createElement('input')
+  input.value = inviteCode.value
+  document.body.appendChild(input)
+  input.select()
+  const success = document.execCommand('copy')
+  document.body.removeChild(input)
+  if (success) {
+    showToast('已复制')
+  } else {
+    showToast('复制失败')
   }
 }
 
@@ -83,6 +123,13 @@ async function handleLogout() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <span class="menu-label">消息管理</span>
+            <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="menu-item" @click="handleInviteCode">
+            <div class="menu-icon" style="background: #fef3c7; color: #f59e0b;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <span class="menu-label">邀请码</span>
             <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
@@ -151,6 +198,20 @@ async function handleLogout() {
             <van-button type="primary" block native-type="submit">确认修改</van-button>
           </div>
         </van-form>
+      </div>
+    </van-popup>
+
+    <!-- 邀请码弹窗 -->
+    <van-popup v-model:show="showInviteDialog" position="bottom" round :close-on-click-overlay="false">
+      <div class="invite-dialog">
+        <div class="dialog-title">邀请码</div>
+        <div class="code-display">{{ inviteCode }}</div>
+        <div class="dialog-tip">使用此码注册可成为店铺用户</div>
+        <div class="dialog-actions">
+          <van-button size="small" type="default" round @click="handleRegenerate">重新生成</van-button>
+          <van-button size="small" type="primary" round @click="handleCopy">复制</van-button>
+          <van-button size="small" type="default" round @click="showInviteDialog = false">关闭</van-button>
+        </div>
       </div>
     </van-popup>
   </div>
@@ -298,5 +359,37 @@ async function handleLogout() {
 .btn-wrap {
   margin-top: 20px;
   padding: 0 16px;
+}
+
+.invite-dialog {
+  padding: 24px 20px 20px;
+}
+
+.code-display {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 4px;
+  color: var(--accent);
+  padding: 16px 24px;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.dialog-tip {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 16px;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dialog-actions .van-button {
+  flex: 1;
 }
 </style>

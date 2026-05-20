@@ -8,6 +8,7 @@ import com.sh.aishop.common.entity.Product;
 import com.sh.aishop.common.enums.ProductStatus;
 import com.sh.aishop.common.enums.ProductType;
 import com.sh.aishop.common.dto.PageRequest;
+import com.sh.aishop.product.dto.ProductRequest;
 import com.sh.aishop.product.mapper.CategoryMapper;
 import com.sh.aishop.product.mapper.ProductMapper;
 import com.sh.aishop.shop.service.ShopService;
@@ -73,6 +74,20 @@ class ProductServiceTest {
         data.put("hasShop", true);
         data.put("id", shopId.toString());
         return data;
+    }
+
+    private ProductRequest createProductRequest(Map<String, Object> params) {
+        ProductRequest req = new ProductRequest();
+        if (params.containsKey("name")) req.setName((String) params.get("name"));
+        if (params.containsKey("type")) req.setType((Integer) params.get("type"));
+        if (params.containsKey("price")) req.setPrice((Integer) params.get("price"));
+        if (params.containsKey("stock")) req.setStock((Integer) params.get("stock"));
+        if (params.containsKey("limitPerUser")) req.setLimitPerUser((Integer) params.get("limitPerUser"));
+        if (params.containsKey("categoryId")) req.setCategoryId((String) params.get("categoryId"));
+        if (params.containsKey("mainImage")) req.setMainImage((String) params.get("mainImage"));
+        if (params.containsKey("detailImages")) req.setDetailImages((String) params.get("detailImages"));
+        if (params.containsKey("description")) req.setDescription((String) params.get("description"));
+        return req;
     }
 
     @Nested
@@ -183,7 +198,7 @@ class ProductServiceTest {
             params.put("price", 100);
             params.put("stock", 10);
 
-            Result<?> result = productService.createProduct(100L, params);
+            Result<?> result = productService.createProduct(100L, createProductRequest(params));
 
             assertEquals(ResultCode.SUCCESS, result.getCode());
             verify(productMapper).insert(any(Product.class));
@@ -242,7 +257,7 @@ class ProductServiceTest {
             params.put("name", "更新商品");
             params.put("price", 200);
 
-            Result<?> result = productService.updateProduct(100L, 1L, params);
+            Result<?> result = productService.updateProduct(100L, 1L, createProductRequest(params));
 
             assertEquals(ResultCode.SUCCESS, result.getCode());
             verify(productMapper).updateById(any(Product.class));

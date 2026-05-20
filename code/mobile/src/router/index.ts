@@ -42,8 +42,8 @@ const routes: RouteRecordRaw[] = [
     redirect: '/mobile/operator/products',
     children: [
       { path: 'products', name: 'OpProducts', component: () => import('@/views/operator/ProductManage.vue'), meta: { title: '商品管理' } },
-      { path: 'products/add', name: 'OpProductAdd', component: () => import('@/views/operator/ProductAdd.vue'), meta: { title: '新增商品' } },
-      { path: 'products/edit/:id', name: 'OpProductEdit', component: () => import('@/views/operator/ProductEdit.vue'), meta: { title: '编辑商品' } },
+      { path: 'products/add', name: 'OpProductAdd', component: () => import('@/views/operator/ProductForm.vue'), meta: { title: '新增商品' } },
+      { path: 'products/edit/:id', name: 'OpProductEdit', component: () => import('@/views/operator/ProductForm.vue'), meta: { title: '编辑商品' } },
       { path: 'categories', name: 'OpCategories', component: () => import('@/views/operator/CategoryManage.vue'), meta: { title: '分类管理' } },
       { path: 'orders', name: 'OpOrders', component: () => import('@/views/operator/OrderManage.vue'), meta: { title: '订单管理' } },
       { path: 'users', name: 'OpUsers', component: () => import('@/views/operator/UserPoints.vue'), meta: { title: '用户积分' } },
@@ -75,18 +75,28 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, _from) => {
-  const userStore = useUserStore()
+  // 优先从 localStorage 读取，避免 Pinia 初始化时序问题
+  const token = localStorage.getItem('mobile_token')
+  const userInfoStr = localStorage.getItem('mobile_user_info')
+  const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null
 
   if (to.meta.guest) {
+    // 登录注册页：如果已有token且有userInfo，跳转对应首页
+    if (token && userInfo) {
+      const role = userInfo.role
+      if (role === 1) return '/mobile/admin/shops'
+      else if (role === 2) return '/mobile/operator/products'
+      else if (role === 3) return '/mobile/user/products'
+    }
     return true
   }
 
-  if (!userStore.token) {
+  if (!token) {
     return '/mobile/login'
   }
 
-  if (to.meta.role && to.meta.role !== userStore.userInfo?.role) {
-    const role = userStore.userInfo?.role
+  if (to.meta.role && to.meta.role !== userInfo?.role) {
+    const role = userInfo?.role
     if (role === 3) return '/mobile/user/products'
     else if (role === 2) return '/mobile/operator/products'
     else if (role === 1) return '/mobile/admin/shops'

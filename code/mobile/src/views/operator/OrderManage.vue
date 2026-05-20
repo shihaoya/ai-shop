@@ -10,6 +10,7 @@ const loading = ref(false)
 const finished = ref(false)
 const page = ref(1)
 const size = ref(10)
+const keyword = ref('')
 
 const showShipDialog = ref(false)
 const shipOrderId = ref('')
@@ -19,7 +20,7 @@ const expressCompany = ref('')
 async function fetchOrders() {
   loading.value = true
   try {
-    const res = await getOrders({ page: page.value, size: size.value })
+    const res = await getOrders({ page: page.value, size: size.value, keyword: keyword.value })
     if (page.value === 1) orders.value = res.list
     else orders.value.push(...res.list)
     if (res.list.length < size.value) finished.value = true
@@ -29,6 +30,13 @@ async function fetchOrders() {
   } finally {
     loading.value = false
   }
+}
+
+function onSearch() {
+  orders.value = []
+  page.value = 1
+  finished.value = false
+  fetchOrders()
 }
 
 function onLoad() {
@@ -101,6 +109,9 @@ onMounted(() => {
 <template>
   <div class="order-manage-page">
     <van-nav-bar title="订单管理" />
+    <div class="search-bar">
+      <van-search v-model="keyword" placeholder="搜索订单号/商品名称" @search="onSearch" />
+    </div>
     <div class="content">
       <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
         <div v-for="o in orders" :key="o.id" class="order-card">
@@ -134,8 +145,8 @@ onMounted(() => {
         <van-field v-model="expressCompany" label="快递公司" placeholder="请输入快递公司" />
         <van-field v-model="expressNo" label="快递单号" placeholder="请输入快递单号" />
         <div class="dialog-actions">
-          <van-button @click="showShipDialog = false">取消</van-button>
-          <van-button type="primary" @click="handleShip">确认发货</van-button>
+          <van-button size="small" type="default" round @click="showShipDialog = false">取消</van-button>
+          <van-button size="small" type="primary" round @click="handleShip">确认发货</van-button>
         </div>
       </div>
     </van-popup>
@@ -155,6 +166,11 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.search-bar {
+  background: var(--bg-card);
+  padding: 0 12px;
 }
 
 .order-card {
@@ -261,8 +277,11 @@ onMounted(() => {
 
 .dialog-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  gap: 8px;
   margin-top: 16px;
+}
+
+.dialog-actions .van-button {
+  flex: 1;
 }
 </style>

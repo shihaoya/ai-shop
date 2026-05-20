@@ -72,7 +72,7 @@ CREATE TABLE `product` (
   `price` INT NOT NULL COMMENT '积分价格',
   `stock` INT DEFAULT -1 COMMENT '-1=无限 0=不可下单',
   `limit_per_user` INT DEFAULT 0 COMMENT '0=不限',
-  `main_image` BIGINT COMMENT '主图 file_record.id',
+  `main_image` VARCHAR(30) COMMENT '主图 file_record.id',
   `detail_images` VARCHAR(500) COMMENT '详情图 file_record.id，逗号分隔',
   `description` TEXT COMMENT '商品描述',
   `delivery_info` TEXT COMMENT '发货说明',

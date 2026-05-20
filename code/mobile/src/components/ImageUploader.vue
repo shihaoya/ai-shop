@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { showToast } from 'vant'
-import { uploadProductImage } from '@/api/file'
+import { uploadProductImage, getFilesByIds } from '@/api/file'
 
 interface Props {
-  modelValue: string | string[]
+  modelValue: string | string[] | undefined | null
   multiple?: boolean
   maxCount?: number
   label?: string
@@ -13,7 +13,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   multiple: false,
-  maxCount: 5,
+  maxCount: 10,
   label: '',
   required: false
 })
@@ -22,18 +22,46 @@ const emit = defineEmits<{
   'update:modelValue': [value: string | string[]]
 }>()
 
-const imageList = ref<string[]>(Array.isArray(props.modelValue) ? props.modelValue : (props.modelValue ? [props.modelValue] : []))
+// 显示用的 URL 列表
+const imageUrls = ref<string[]>([])
+// 实际提交的 ID 列表
+const imageIds = ref<string[]>([])
+
+// 同步外部值（外部传的是文件 ID）
+watch(() => props.modelValue, async (val) => {
+  if (props.multiple && Array.isArray(val) && val.length > 0) {
+    imageIds.value = val.filter(Boolean)
+    // 批量获取 URL
+    const files = await getFilesByIds(imageIds.value)
+    imageUrls.value = imageIds.value.map(id => {
+      const file = files.find(f => f.id === id)
+      return file?.url || ''
+    }).filter(Boolean)
+  } else if (!props.multiple && typeof val === 'string' && val) {
+    imageIds.value = [val]
+    const files = await getFilesByIds([val])
+    imageUrls.value = files[0] ? [files[0].url] : []
+  } else {
+    imageUrls.value = []
+    imageIds.value = []
+  }
+}, { immediate: true })
 
 async function handleAfterRead(file: any) {
   if (!file.file) return
   try {
     const res = await uploadProductImage(file.file)
+    const fileId = res.id as string
+    const fileUrl = res.url as string
+
     if (props.multiple) {
-      imageList.value.push(res.url)
-      emit('update:modelValue', [...imageList.value])
+      imageUrls.value.push(fileUrl)
+      imageIds.value.push(fileId)
+      emit('update:modelValue', [...imageIds.value])
     } else {
-      imageList.value = [res.url]
-      emit('update:modelValue', res.url)
+      imageUrls.value = [fileUrl]
+      imageIds.value = [fileId]
+      emit('update:modelValue', fileId)
     }
   } catch {
     showToast('上传失败')
@@ -41,9 +69,10 @@ async function handleAfterRead(file: any) {
 }
 
 function handleRemove(index: number) {
-  imageList.value.splice(index, 1)
+  imageUrls.value.splice(index, 1)
+  imageIds.value.splice(index, 1)
   if (props.multiple) {
-    emit('update:modelValue', [...imageList.value])
+    emit('update:modelValue', [...imageIds.value])
   } else {
     emit('update:modelValue', '')
   }
@@ -58,14 +87,14 @@ function handleRemove(index: number) {
     </div>
     <div class="uploader-content">
       <template v-if="multiple">
-        <div v-for="(img, idx) in imageList" :key="idx" class="uploader-item">
+        <div v-for="(img, idx) in imageUrls" :key="idx" class="uploader-item">
           <van-image :src="img" width="80" height="80" fit="cover" radius="8" />
           <div class="remove-btn" @click="handleRemove(idx)">×</div>
         </div>
         <van-uploader
-          v-if="imageList.length < maxCount"
+          v-if="imageUrls.length < maxCount"
           :after-read="handleAfterRead"
-          :max-count="maxCount - imageList.length"
+          :max-count="maxCount - imageUrls.length"
           accept="image/*"
         >
           <div class="upload-placeholder">
@@ -80,13 +109,13 @@ function handleRemove(index: number) {
           :max-count="1"
           accept="image/*"
         >
-          <div v-if="imageList.length === 0" class="upload-placeholder">
+          <div v-if="imageUrls.length === 0" class="upload-placeholder">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             <span>点击上传</span>
           </div>
-          <van-image v-else :src="imageList[0]" width="80" height="80" fit="cover" radius="8" />
+          <van-image v-else :src="imageUrls[0]" width="80" height="80" fit="cover" radius="8" />
         </van-uploader>
-        <div v-if="imageList.length > 0" class="remove-single" @click="handleRemove(0)">×</div>
+        <div v-if="imageUrls.length > 0" class="remove-single" @click="handleRemove(0)">×</div>
       </template>
     </div>
   </div>

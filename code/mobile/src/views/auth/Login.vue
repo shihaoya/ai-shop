@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { showToast, showLoadingToast, closeToast } from 'vant'
+import { showToast } from 'vant'
 import { authApi } from '@/api/auth'
 import { useUserStore } from '@/stores/user'
 
@@ -19,7 +19,6 @@ async function handleLogin() {
   }
 
   loading.value = true
-  showLoadingToast({ message: '登录中...', forbidClick: true })
 
   try {
     const res = await authApi.login({ username: username.value, password: password.value })
@@ -27,17 +26,16 @@ async function handleLogin() {
     userStore.setUserInfo(res.userinfo)
 
     const role = res.userinfo.role
-    if (role === 3) router.replace('/mobile/user/products')
-    else if (role === 2) router.replace('/mobile/operator/products')
-    else if (role === 1) router.replace('/mobile/admin/shops')
-    else router.replace('/mobile/user/products')
+    let redirectUrl = '/mobile/user/products'
+    if (role === 3) redirectUrl = '/mobile/user/products'
+    else if (role === 2) redirectUrl = '/mobile/operator/products'
+    else if (role === 1) redirectUrl = '/mobile/admin/shops'
 
-    showToast('登录成功')
-  } catch {
-    // error handled by interceptor
+    await router.replace(redirectUrl)
+  } catch (e: any) {
+    console.error('Login error:', e)
   } finally {
     loading.value = false
-    closeToast()
   }
 }
 </script>

@@ -58,6 +58,12 @@ public class FileController {
         return fileService.getFile(fileId);
     }
 
+    @Operation(summary = "批量获取文件信息")
+    @PostMapping("/batch")
+    public Result<List<FileRecord>> getFilesByIds(@RequestBody List<Long> fileIds) {
+        return fileService.getFilesByIds(fileIds);
+    }
+
     @Operation(summary = "根据业务查询文件列表")
     @GetMapping("/list")
     public Result<List<FileRecord>> getFiles(

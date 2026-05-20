@@ -80,3 +80,9 @@ html, body {
 .page-content {
   /* padding 由各页面自行设置 */
 }
+
+/* Vant Toast 背景色修复：防止被 popup 样式覆盖导致白底白字 */
+.van-toast--text {
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: #ffffff !important;
+}

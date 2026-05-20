@@ -7,7 +7,7 @@ export interface PickerOption {
 }
 
 interface Props {
-  modelValue: string | number
+  modelValue: string | number | undefined | null
   options: PickerOption[]
   label?: string
   placeholder?: string
@@ -23,12 +23,13 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: string | number]
+  'update:modelValue': [value: string | number | undefined]
 }>()
 
 const showPicker = ref(false)
 
 const displayValue = computed(() => {
+  if (!props.modelValue) return ''
   const opt = props.options.find(o => String(o.value) === String(props.modelValue))
   return opt ? opt.text : ''
 })
@@ -37,8 +38,8 @@ function openPicker() {
   showPicker.value = true
 }
 
-function onConfirm(p: any) {
-  emit('update:modelValue', p.value)
+function onConfirm(p: { selectedValues: (string | number)[]; selectedOptions: { text: string; value: string | number }[] }) {
+  emit('update:modelValue', p.selectedValues[0])
   showPicker.value = false
 }
 </script>

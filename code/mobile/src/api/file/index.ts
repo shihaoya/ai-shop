@@ -70,6 +70,14 @@ export function getFile(fileId: string | number): Promise<FileRecord> {
 }
 
 /**
+ * 批量获取文件信息
+ * @param fileIds 文件ID列表
+ */
+export function getFilesByIds(fileIds: string[]): Promise<FileRecord[]> {
+  return request.post<FileRecord[]>('/file/batch', fileIds) as any
+}
+
+/**
  * 根据业务查询文件列表
  * @param businessType 业务类型
  * @param businessId 业务ID

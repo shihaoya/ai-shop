@@ -12,11 +12,12 @@ const loading = ref(false)
 const finished = ref(false)
 const page = ref(1)
 const size = ref(10)
+const keyword = ref('')
 
 async function fetchProducts() {
   loading.value = true
   try {
-    const res = await getProducts({ page: page.value, size: size.value })
+    const res = await getProducts({ page: page.value, size: size.value, keyword: keyword.value })
     if (page.value === 1) products.value = res.list
     else products.value.push(...res.list)
     if (res.list.length < size.value) finished.value = true
@@ -26,6 +27,13 @@ async function fetchProducts() {
   } finally {
     loading.value = false
   }
+}
+
+function onSearch() {
+  products.value = []
+  page.value = 1
+  finished.value = false
+  fetchProducts()
 }
 
 function onLoad() {
@@ -77,6 +85,9 @@ onMounted(() => {
         <van-button size="small" type="primary" round @click="goAddProduct">新增</van-button>
       </template>
     </van-nav-bar>
+    <div class="search-bar">
+      <van-search v-model="keyword" placeholder="搜索商品名称" @search="onSearch" />
+    </div>
     <div class="content">
       <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
         <div v-for="p in products" :key="p.id" class="product-card">
@@ -85,8 +96,13 @@ onMounted(() => {
             <div class="product-body">
               <div class="product-name">{{ p.name }}</div>
               <div class="product-meta">
-                <span class="price">{{ p.price }}积分</span>
+                <span class="category">{{ p.categoryName || '未分类' }}</span>
                 <span class="dot">·</span>
+                <span class="type">{{ p.type === 2 || p.type === '2' ? '虚拟' : '实体' }}</span>
+                <span class="dot">·</span>
+                <span class="price">{{ p.price }}积分</span>
+              </div>
+              <div class="product-meta">
                 <span :class="p.stock < 5 ? 'stock-low' : ''">库存 {{ p.stock }}</span>
               </div>
               <div class="product-status" :class="p.status === 1 ? 'status-on' : 'status-off'">
@@ -123,6 +139,11 @@ onMounted(() => {
   -webkit-overflow-scrolling: touch;
 }
 
+.search-bar {
+  background: var(--bg-card);
+  padding: 0 12px;
+}
+
 .product-card {
   margin: 10px 12px;
   background: var(--bg-card);
@@ -155,6 +176,7 @@ onMounted(() => {
 
 .dot { margin: 0 4px; }
 
+.category, .type { color: var(--text-muted); }
 .price { color: var(--accent); font-weight: 600; }
 .stock-low { color: #ef4444; }
 

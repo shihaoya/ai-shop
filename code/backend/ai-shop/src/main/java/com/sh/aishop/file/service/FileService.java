@@ -75,6 +75,16 @@ public class FileService {
         return Result.success(file);
     }
 
+    public Result<List<FileRecord>> getFilesByIds(List<Long> fileIds) {
+        if (fileIds == null || fileIds.isEmpty()) {
+            return Result.success(List.of());
+        }
+        List<FileRecord> files = fileRecordMapper.selectList(new LambdaQueryWrapper<FileRecord>()
+                .in(FileRecord::getId, fileIds)
+                .eq(FileRecord::getDeleted, 0));
+        return Result.success(files);
+    }
+
     public Result<List<FileRecord>> getFilesByBusiness(String businessType, Long businessId) {
         List<FileRecord> files = fileRecordMapper.selectList(new LambdaQueryWrapper<FileRecord>()
                 .eq(FileRecord::getBusinessType, businessType)

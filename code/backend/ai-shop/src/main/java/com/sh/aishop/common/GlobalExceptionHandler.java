@@ -65,13 +65,20 @@ public class GlobalExceptionHandler {
         return Result.fail(ex.getCode(), ex.getMessage());
     }
 
-    // ========== 7. 兜底处理未知异常 ==========
+    // ========== 7. 数字格式异常（如空字符串转数字） ==========
+    @ExceptionHandler(NumberFormatException.class)
+    public Result<?> handleNumberFormat(NumberFormatException ex) {
+        return Result.fail(ResultCode.REQUEST_FORMAT_ERROR, "参数格式错误：" + ex.getMessage());
+    }
+
+    // ========== 8. 兜底处理未知异常 ==========
     @ExceptionHandler(Exception.class)
     public Result<?> handleOther(Exception ex, HttpServletRequest request) {
         // 生产环境不打印堆栈，只记日志
         String method = request.getMethod();
         String uri = request.getRequestURI();
         System.err.println("[" + method + " " + uri + "] Unhandled exception: " + ex.getClass().getName());
+        ex.printStackTrace(); // 打印完整堆栈，方便调试
         return Result.fail(ResultCode.SERVER_ERROR, "系统繁忙，请稍后重试");
     }
 }

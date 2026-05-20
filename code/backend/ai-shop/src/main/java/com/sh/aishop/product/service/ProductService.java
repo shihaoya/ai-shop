@@ -10,6 +10,7 @@ import com.sh.aishop.common.enums.ProductType;
 import com.sh.aishop.common.dto.PageRequest;
 import com.sh.aishop.common.dto.PageResult;
 import com.sh.aishop.product.dto.ProductDTO;
+import com.sh.aishop.product.dto.ProductRequest;
 import com.sh.aishop.product.mapper.CategoryMapper;
 import com.sh.aishop.file.mapper.FileRecordMapper;
 import com.sh.aishop.product.mapper.ProductMapper;
@@ -189,7 +190,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Result<?> createProduct(Long operatorId, Map<String, Object> params) {
+    public Result<?> createProduct(Long operatorId, ProductRequest req) {
         var shopResult = shopService.getMyShop(operatorId);
         if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
@@ -199,10 +200,9 @@ public class ProductService {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
         }
 
-        String name = params.get("name") != null ? params.get("name").toString() : null;
-        if (StringUtils.hasText(name)) {
+        if (StringUtils.hasText(req.getName())) {
             Long shopId = Long.parseLong(shopData.get("id").toString());
-            if (productMapper.existsByShopIdAndName(shopId, name)) {
+            if (productMapper.existsByShopIdAndName(shopId, req.getName())) {
                 return Result.fail(ResultCode.PRODUCT_DUPLICATE, "商品名称已存在");
             }
         }
@@ -210,7 +210,7 @@ public class ProductService {
         Product product = new Product();
         product.setId(SnowflakeIdUtil.nextId());
         product.setShopId(Long.parseLong(shopData.get("id").toString()));
-        setProductFields(product, params);
+        setProductFields(product, req);
         product.setStatus(ProductStatus.ON_SALE.getCode());
         productMapper.insert(product);
 
@@ -236,7 +236,7 @@ public class ProductService {
     }
 
     @Transactional
-    public Result<?> updateProduct(Long operatorId, Long productId, Map<String, Object> params) {
+    public Result<?> updateProduct(Long operatorId, Long productId, ProductRequest req) {
         var shopResult = shopService.getMyShop(operatorId);
         if (shopResult.getData() == null || !((Map<?, ?>) shopResult.getData()).containsKey("hasShop")) {
             return Result.fail(ResultCode.SHOP_NOT_FOUND, "店铺不存在或未通过审核");
@@ -251,14 +251,13 @@ public class ProductService {
             return Result.fail(ResultCode.PRODUCT_NOT_FOUND, "商品不存在");
         }
 
-        String name = params.get("name") != null ? params.get("name").toString() : null;
-        if (StringUtils.hasText(name)) {
-            if (productMapper.existsByShopIdAndNameExcluding(product.getShopId(), name, productId)) {
+        if (StringUtils.hasText(req.getName())) {
+            if (productMapper.existsByShopIdAndNameExcluding(product.getShopId(), req.getName(), productId)) {
                 return Result.fail(ResultCode.PRODUCT_DUPLICATE, "商品名称已存在");
             }
         }
 
-        setProductFields(product, params);
+        setProductFields(product, req);
         productMapper.updateById(product);
         return Result.success();
     }
@@ -283,18 +282,18 @@ public class ProductService {
         return Result.success();
     }
 
-    private void setProductFields(Product product, Map<String, Object> params) {
-        if (params.get("categoryId") != null) product.setCategoryId(Long.valueOf(params.get("categoryId").toString()));
-        if (params.get("name") != null) product.setName(params.get("name").toString());
-        if (params.get("type") != null) product.setType(Integer.valueOf(params.get("type").toString()));
-        if (params.get("price") != null) product.setPrice(Integer.valueOf(params.get("price").toString()));
-        if (params.get("stock") != null) product.setStock(Integer.valueOf(params.get("stock").toString()));
-        if (params.get("limitPerUser") != null) product.setLimitPerUser(Integer.valueOf(params.get("limitPerUser").toString()));
-        if (params.get("mainImage") != null) product.setMainImage(params.get("mainImage").toString());
-        if (params.get("detailImages") != null) product.setDetailImages(params.get("detailImages").toString());
-        if (params.get("description") != null) product.setDescription(params.get("description").toString());
-        if (params.get("deliveryInfo") != null) product.setDeliveryInfo(params.get("deliveryInfo").toString());
-        if (params.get("status") != null) product.setStatus(Integer.valueOf(params.get("status").toString()));
+    private void setProductFields(Product product, ProductRequest req) {
+        if (req.getCategoryId() != null && !req.getCategoryId().isEmpty()) {
+            product.setCategoryId(Long.valueOf(req.getCategoryId()));
+        }
+        if (req.getName() != null) product.setName(req.getName());
+        if (req.getType() != null) product.setType(req.getType());
+        if (req.getPrice() != null) product.setPrice(req.getPrice());
+        if (req.getStock() != null) product.setStock(req.getStock());
+        if (req.getLimitPerUser() != null) product.setLimitPerUser(req.getLimitPerUser());
+        if (req.getMainImage() != null && !req.getMainImage().isEmpty()) product.setMainImage(req.getMainImage());
+        if (req.getDetailImages() != null && !req.getDetailImages().isEmpty()) product.setDetailImages(req.getDetailImages());
+        if (req.getDescription() != null) product.setDescription(req.getDescription());
     }
 
     private ProductDTO toProductDTO(Product p) {

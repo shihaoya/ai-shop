@@ -9,6 +9,7 @@ const loading = ref(false)
 const finished = ref(false)
 const page = ref(1)
 const size = ref(100)
+const keyword = ref('')
 
 const showAdjust = ref(false)
 const adjustUserId = ref('')
@@ -20,7 +21,7 @@ const remark = ref('')
 async function fetchUsers() {
   loading.value = true
   try {
-    const res = await getUsers({ page: page.value, size: size.value })
+    const res = await getUsers({ page: page.value, size: size.value, keyword: keyword.value })
     if (page.value === 1) users.value = res.list
     else users.value.push(...res.list)
     if (res.list.length < size.value) finished.value = true
@@ -30,6 +31,13 @@ async function fetchUsers() {
   } finally {
     loading.value = false
   }
+}
+
+function onSearch() {
+  users.value = []
+  page.value = 1
+  finished.value = false
+  fetchUsers()
 }
 
 function onLoad() {
@@ -73,6 +81,9 @@ onMounted(() => {
 <template>
   <div class="user-points-page">
     <van-nav-bar title="用户积分" />
+    <div class="search-bar">
+      <van-search v-model="keyword" placeholder="搜索用户名/昵称" @search="onSearch" />
+    </div>
     <div class="content">
       <van-list v-model:loading="loading" :finished="finished" finished-text="没有更多了" @load="onLoad">
         <div v-for="u in users" :key="u.id" class="user-card">
@@ -124,6 +135,11 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.search-bar {
+  background: var(--bg-card);
+  padding: 0 12px;
 }
 
 .user-card {
