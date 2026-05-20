@@ -74,6 +74,20 @@ services:
     networks:
       - ai-shop-net
 
+  # === Vue 移动端（Nginx） ===
+  mobile:
+    build:
+      context: ./code/mobile
+      dockerfile: Dockerfile
+    container_name: ai-shop-mobile
+    restart: unless-stopped
+    ports:
+      - "${MOBILE_PORT:-8080}:80"
+    depends_on:
+      - backend
+    networks:
+      - ai-shop-net
+
 volumes:
   mysql-data:
   redis-data:

@@ -8,7 +8,6 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { VantResolver } from 'unplugin-vue-components/resolvers'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
@@ -28,11 +27,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  base: './',
   server: {
     port: 18782,
     proxy: {
       '/api': {
-        target: 'http://localhost:18780',
+        target: process.env.VITE_API_BASE_URL || 'http://localhost:18780',
         changeOrigin: true,
       },
     },
