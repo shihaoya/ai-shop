@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>风格A2 - 底部整行按钮</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f7f8fc;
+      min-height: 100vh;
+      max-width: 430px;
+      margin: 0 auto;
+      color: #1a1a2e;
+    }
+    .nav {
+      background: #fff;
+      padding: 16px 20px;
+      font-size: 17px;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+    .list { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
+    .item {
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .body { flex: 1; }
+    .name-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+    .name { font-size: 15px; font-weight: 600; }
+    .tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .tag-1 { background: #fef2f2; color: #ef4444; }
+    .tag-2 { background: #fff7e6; color: #d97706; }
+    .tag-3 { background: #eff6ff; color: #3b82f6; }
+    .meta { font-size: 12px; color: #8b8ba7; }
+    .actions {
+      display: flex;
+      border-top: 1px solid #f0f0f0;
+    }
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      background: #fff;
+    }
+    .btn:not(:last-child) { border-right: 1px solid #f0f0f0; }
+    .btn-primary { color: #6366f1; }
+    .btn-warning { color: #d97706; background: #fffbf0; }
+    .btn-success { color: #16a34a; }
+    .btn-danger { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="nav">用户管理</div>
+  <div class="list">
+    <div class="item">
+      <div class="top">
+        <div class="avatar">张</div>
+        <div class="body">
+          <div class="name-row">
+            <span class="name">张伟</span>
+            <span class="tag tag-1">管理员</span>
+          </div>
+          <div class="meta">138****1234 · 正常</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary">重置密码</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="top">
+        <div class="avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706);">李</div>
+        <div class="body">
+          <div class="name-row">
+            <span class="name">李娜</span>
+            <span class="tag tag-2">店铺</span>
+          </div>
+          <div class="meta">139****5678 · 正常 · 5200积分</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-warning">冻结</button>
+        <button class="btn btn-primary">重置密码</button>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="top">
+        <div class="avatar" style="background: linear-gradient(135deg, #10b981, #059669);">王</div>
+        <div class="body">
+          <div class="name-row">
+            <span class="name">王芳</span>
+            <span class="tag tag-3">用户</span>
+          </div>
+          <div class="meta">137****9012 · 已冻结 · 1200积分</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-success">解冻</button>
+        <button class="btn btn-primary">重置密码</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

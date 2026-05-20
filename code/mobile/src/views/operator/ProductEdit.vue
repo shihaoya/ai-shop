@@ -1,0 +1,164 @@
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { showToast } from 'vant'
+import { getProduct, updateProduct, getCategories } from '@/api/product'
+import ImageUploader from '@/components/ImageUploader.vue'
+import SelectPicker from '@/components/SelectPicker.vue'
+import type { Product, Category } from '@/types'
+
+const route = useRoute()
+const router = useRouter()
+
+const loading = ref(false)
+const categories = ref<Category[]>([])
+
+const form = ref({
+  name: '',
+  categoryId: '',
+  type: 1 as number,
+  price: 0,
+  stock: 0,
+  limitPerUser: 0,
+  mainImage: '',
+  detailImages: [] as string[],
+  description: ''
+})
+
+const categoryOptions = computed(() =>
+  categories.value.map(c => ({ text: c.name, value: c.id }))
+)
+
+const productId = route.params.id as string
+
+onMounted(async () => {
+  try {
+    const [p, cats] = await Promise.all([
+      getProduct(productId),
+      getCategories()
+    ])
+    categories.value = cats
+    form.value = {
+      name: p.name,
+      categoryId: p.categoryId,
+      type: Number(p.type) || 1,
+      price: p.price,
+      stock: p.stock,
+      limitPerUser: (p as any).limitPerUser || 0,
+      mainImage: (p as any).mainImage || '',
+      detailImages: ((p as any).detailImages || '').split(',').filter(Boolean),
+      description: p.description || ''
+    }
+  } catch {
+    showToast('加载失败')
+    router.back()
+  } finally {
+    loading.value = false
+  }
+})
+
+async function handleSubmit() {
+  if (!form.value.name.trim()) {
+    showToast('请输入商品名称')
+    return
+  }
+  if (form.value.price <= 0) {
+    showToast('请输入有效的积分价格')
+    return
+  }
+  if (form.value.stock < 0) {
+    showToast('请输入有效的库存')
+    return
+  }
+  if (form.value.limitPerUser < 0) {
+    showToast('单人限购不能为负数')
+    return
+  }
+  try {
+    await updateProduct(productId, {
+      name: form.value.name,
+      categoryId: form.value.categoryId,
+      type: form.value.type,
+      price: form.value.price,
+      stock: form.value.stock,
+      limitPerUser: form.value.limitPerUser,
+      mainImage: form.value.mainImage,
+      detailImages: form.value.detailImages.join(','),
+      description: form.value.description
+    })
+    showToast('保存成功')
+    router.back()
+  } catch {
+    showToast('保存失败')
+  }
+}
+</script>
+
+<template>
+  <div class="product-edit-page">
+    <van-nav-bar title="编辑商品" left-arrow @click-left="router.back()" />
+    <div class="form-content">
+      <van-cell-group inset>
+        <van-field v-model="form.name" label="商品名称" placeholder="请输入商品名称" required />
+        <select-picker
+          v-model="form.categoryId"
+          :options="categoryOptions"
+          label="商品分类"
+          placeholder="请选择分类"
+        />
+        <van-cell title="发货类型" required>
+          <template #value>
+            <van-radio-group v-model="form.type" direction="horizontal">
+              <van-radio name="1" icon-size="16px">实体</van-radio>
+              <van-radio name="2" icon-size="16px">虚拟</van-radio>
+            </van-radio-group>
+          </template>
+        </van-cell>
+        <van-field v-model="form.price" type="number" label="积分价格" placeholder="请输入积分" required />
+        <van-field v-model="form.stock" type="number" label="库存" placeholder="请输入库存" required />
+        <van-field v-model="form.limitPerUser" type="number" label="单人限购" placeholder="0表示不限购" required />
+      </van-cell-group>
+
+      <image-uploader
+        v-model="form.mainImage"
+        :multiple="false"
+        label="商品主图"
+        :required="true"
+        style="margin-top: 12px;"
+      />
+
+      <image-uploader
+        v-model="form.detailImages"
+        :multiple="true"
+        :max-count="5"
+        label="详情图"
+        style="margin-top: 12px;"
+      />
+
+      <van-cell-group inset style="margin-top: 12px;">
+        <van-field v-model="form.description" type="textarea" label="商品描述" placeholder="请输入描述" rows="3" />
+      </van-cell-group>
+
+      <div class="submit-wrap">
+        <van-button type="primary" block round @click="handleSubmit">保存</van-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.product-edit-page {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  height: 100dvh;
+}
+
+.form-content {
+  padding: 16px 0;
+  padding-bottom: 80px;
+}
+
+.submit-wrap {
+  margin: 24px 16px;
+}
+</style>

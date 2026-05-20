@@ -1,0 +1,82 @@
+/* 移动端全局样式 */
+:root {
+  --accent: #6366f1;
+  --accent-rgb: 99, 102, 241;
+  --accent-light: rgb(139, 138, 255);
+  --accent-dark: rgb(70, 71, 175);
+  --accent-glow: 0 0 15px rgba(99, 102, 241, 0.12);
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a68;
+  --text-muted: #8b8ba7;
+  --bg-primary: #f7f8fc;
+  --bg-card: #ffffff;
+  --border-subtle: #e8e8f0;
+  --border-glow: rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="dark"] {
+  --text-primary: #f0f0f5;
+  --text-secondary: #b0b0c8;
+  --text-muted: #6b6b80;
+  --bg-primary: #0f0f1a;
+  --bg-card: #1a1a2e;
+  --border-subtle: #2a2a40;
+  --border-glow: rgba(99, 102, 241, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+}
+
+/* 安全区域适配 */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 通用工具类 */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.p-4 { padding: 16px; }
+.mt-4 { margin-top: 16px; }
+.mb-4 { margin-bottom: 16px; }
+.text-center { text-align: center; }
+.text-sm { font-size: 12px; }
+.text-base { font-size: 14px; }
+.text-lg { font-size: 16px; }
+.text-xl { font-size: 18px; }
+.font-bold { font-weight: 700; }
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--text-primary); }
+.text-accent { color: var(--accent); }
+
+/* 页面容器 */
+.page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+}
+
+.page-content {
+  /* padding 由各页面自行设置 */
+}
