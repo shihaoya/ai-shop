@@ -27,12 +27,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  base: './',
   server: {
     port: 18782,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:18780',
+        target: 'http://localhost:18780',
         changeOrigin: true,
       },
     },

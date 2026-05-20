@@ -68,7 +68,7 @@ services:
     container_name: ai-shop-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-18781}:80"
     depends_on:
       - backend
     networks:
@@ -82,7 +82,7 @@ services:
     container_name: ai-shop-mobile
     restart: unless-stopped
     ports:
-      - "${MOBILE_PORT:-8080}:80"
+      - "${MOBILE_PORT:-18782}:80"
     depends_on:
       - backend
     networks:
