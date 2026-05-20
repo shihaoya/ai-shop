@@ -8,6 +8,7 @@ const categories = ref<Category[]>([])
 const loading = ref(false)
 const showForm = ref(false)
 const formName = ref('')
+const formSort = ref<number | string>('')
 const editingId = ref<string | null>(null)
 
 async function fetchCategories() {
@@ -24,12 +25,14 @@ async function fetchCategories() {
 function openAdd() {
   editingId.value = null
   formName.value = ''
+  formSort.value = ''
   showForm.value = true
 }
 
 function openEdit(c: Category) {
   editingId.value = c.id
   formName.value = c.name
+  formSort.value = c.sort ?? ''
   showForm.value = true
 }
 
@@ -38,11 +41,12 @@ async function handleSave() {
     showToast('请输入分类名称')
     return
   }
+  const sortVal = formSort.value !== '' ? Number(formSort.value) : undefined
   try {
     if (editingId.value) {
-      await updateCategory(editingId.value, formName.value)
+      await updateCategory(editingId.value, formName.value.trim(), sortVal)
     } else {
-      await createCategory(formName.value)
+      await createCategory(formName.value.trim(), sortVal)
     }
     showToast('保存成功')
     showForm.value = false
@@ -69,7 +73,11 @@ onMounted(() => {
 
 <template>
   <div class="category-manage-page">
-    <van-nav-bar title="分类管理" />
+    <van-nav-bar title="分类管理">
+      <template #right>
+        <van-button size="small" type="primary" round @click="openAdd">新增</van-button>
+      </template>
+    </van-nav-bar>
     <div class="content">
       <div v-for="c in categories" :key="c.id" class="category-card">
         <div class="category-top">
@@ -78,7 +86,11 @@ onMounted(() => {
           </div>
           <div class="category-body">
             <div class="category-name">{{ c.name }}</div>
-            <div class="category-meta">商品 {{ c.productCount || 0 }}</div>
+            <div class="category-meta">
+              <span>排序 {{ c.sort ?? 0 }}</span>
+              <span class="meta-divider">|</span>
+              <span>商品 {{ c.productCount || 0 }}</span>
+            </div>
           </div>
         </div>
         <div class="category-actions">
@@ -88,12 +100,12 @@ onMounted(() => {
       </div>
       <van-empty v-if="!loading && categories.length === 0" description="暂无分类" />
     </div>
-    <van-button type="primary" block class="add-btn" @click="openAdd">新增分类</van-button>
 
     <van-popup v-model:show="showForm" position="bottom" round>
       <div class="form-panel">
         <div class="panel-title">{{ editingId ? '编辑分类' : '新增分类' }}</div>
         <van-field v-model="formName" placeholder="请输入分类名称" />
+        <van-field v-model="formSort" type="number" placeholder="排序（数字越小越靠前）" input-align="right" />
         <van-button type="primary" block class="submit-btn" @click="handleSave">保存</van-button>
       </div>
     </van-popup>

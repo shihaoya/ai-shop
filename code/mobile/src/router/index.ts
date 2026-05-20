@@ -48,6 +48,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'orders', name: 'OpOrders', component: () => import('@/views/operator/OrderManage.vue'), meta: { title: '订单管理' } },
       { path: 'users', name: 'OpUsers', component: () => import('@/views/operator/UserPoints.vue'), meta: { title: '用户积分' } },
       { path: 'messages', name: 'OpMessages', component: () => import('@/views/operator/MessageManage.vue'), meta: { title: '消息管理' } },
+      { path: 'shop', name: 'OpShop', component: () => import('@/views/operator/ShopInfo.vue'), meta: { title: '我的店铺' } },
       { path: 'profile', name: 'OpProfile', component: () => import('@/views/operator/Profile.vue'), meta: { title: '个人中心' } },
     ],
   },

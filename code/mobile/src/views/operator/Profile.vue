@@ -36,7 +36,11 @@ function openChangePwd() {
   changePwdVisible.value = true
 }
 
-async function handleChangePwd({ oldPassword, newPassword }: { oldPassword: string; newPassword: string }) {
+async function handleChangePwd({ oldPassword, newPassword, confirmPassword }: { oldPassword: string; newPassword: string; confirmPassword: string }) {
+  if (newPassword !== confirmPassword) {
+    showToast('两次输入的密码不一致')
+    return
+  }
   try {
     await authApi.updatePassword({ oldPassword, newPassword })
     showToast('密码修改成功')
@@ -125,6 +129,13 @@ async function handleLogout() {
             <span class="menu-label">消息管理</span>
             <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
+          <div class="menu-item" @click="router.push('/mobile/operator/shop')">
+            <div class="menu-icon" style="background: #fce7f3; color: #ec4899;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="menu-label">我的店铺</span>
+            <svg class="menu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
           <div class="menu-item" @click="handleInviteCode">
             <div class="menu-icon" style="background: #fef3c7; color: #f59e0b;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -193,6 +204,7 @@ async function handleLogout() {
           <van-cell-group inset>
             <van-field name="oldPassword" type="password" placeholder="原密码" :rules="[{ required: true, message: '请填写原密码' }]" />
             <van-field name="newPassword" type="password" placeholder="新密码（至少6位）" :rules="[{ required: true, message: '请填写新密码' }]" />
+            <van-field name="confirmPassword" type="password" placeholder="确认新密码" :rules="[{ required: true, message: '请确认新密码' }]" />
           </van-cell-group>
           <div class="btn-wrap">
             <van-button type="primary" block native-type="submit">确认修改</van-button>
