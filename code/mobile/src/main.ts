@@ -1,5 +1,4 @@
 import 'vant/lib/index.css'
-import 'virtual:uno.css'
 import './styles/main.css'
 
 import { createApp } from 'vue'

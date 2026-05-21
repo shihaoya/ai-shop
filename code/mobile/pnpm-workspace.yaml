@@ -1,6 +1,0 @@
-allowBuilds:
-  '0': esbuild
-  '1': vue-demi
-onlyBuiltDependencies:
-  - esbuild
-  - vue-demi
